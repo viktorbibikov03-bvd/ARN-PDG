@@ -12,109 +12,57 @@ namespace Model
 
         public DataBaseRepository()
         {
-            // Получаем абсолютный путь к базе данных
             _dbPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "ARN-DB.db");
             _connectionString = $"Data Source={_dbPath};";
 
-            Debug.WriteLine($"=== Инициализация БД ===");
+            Debug.WriteLine($"=== Подключение к БД ===");
             Debug.WriteLine($"Путь к БД: {_dbPath}");
             Debug.WriteLine($"БД существует: {File.Exists(_dbPath)}");
 
-            // Создаем таблицы при инициализации
-            InitializeDatabase();
+            CheckTablesExist();
         }
 
-        private void InitializeDatabase()
+        /// <summary>
+        /// Метод для проверки существования таблиц в БД
+        /// </summary>
+        private void CheckTablesExist()
         {
             using (var connection = new SqliteConnection(_connectionString))
             {
                 connection.Open();
 
-                var sqlCommands = new[]
-                {
-                    @"CREATE TABLE IF NOT EXISTS ""Adjustable RPCDs"" (
-                        ControlledRPCD_NodeNumber INTEGER NOT NULL,
-                        ReactivePower REAL NOT NULL,
-                        Name TEXT NOT NULL,
-                        MinReactivePower REAL NOT NULL,
-                        MaxReactivePower REAL NOT NULL,
-                        ""On/Off"" INTEGER NOT NULL,
-                        Hour INTEGER NOT NULL,
-                        VoltageAtNode REAL NOT NULL,
-                        PRIMARY KEY (ControlledRPCD_NodeNumber, Hour))",
-
-                    @"CREATE TABLE IF NOT EXISTS ""Generators"" (
-                        GeneratorNodeNumber INTEGER NOT NULL,
-                        BusVoltage REAL NOT NULL,
-                        PQDiagramNumber INTEGER NOT NULL,
-                        Name TEXT NOT NULL,
-                        Hour INTEGER NOT NULL,
-                        ""On/Off"" INTEGER NOT NULL,
-                        PRIMARY KEY (GeneratorNodeNumber, Hour))",
-
-                    @"CREATE TABLE IF NOT EXISTS ""PQ-Diagrams"" (
-                        PQDiagramNumber INTEGER NOT NULL,
-                        ActivePower REAL NOT NULL,
-                        MaxReactivePower REAL NOT NULL,
-                        MinReactivePower REAL NOT NULL,
-                        PRIMARY KEY (PQDiagramNumber, ActivePower))",
-
-                    @"CREATE TABLE IF NOT EXISTS ""SwitchedRPCDs"" (
-                        ReactorNumber INTEGER NOT NULL,
-                        Name TEXT NOT NULL,
-                        Capacity REAL NOT NULL,
-                        ""On/Off"" INTEGER NOT NULL,
-                        Hour INTEGER NOT NULL,
-                        PRIMARY KEY (ReactorNumber, Hour))",
-
-                    @"CREATE TABLE IF NOT EXISTS ""VoltageAtVSPs"" (
-                        VCP_NodeNumber INTEGER NOT NULL,
-                        Voltage REAL NOT NULL,
-                        MinVoltage INTEGER NOT NULL,
-                        MaxVoltage INTEGER NOT NULL,
-                        Hour INTEGER NOT NULL,
-                        PRIMARY KEY (VCP_NodeNumber, Hour))",
-
-                    @"CREATE TABLE IF NOT EXISTS ""EfficiencyTable"" (
-                        VCP_NodeNumber INTEGER NOT NULL,
-                        PriorityRPCDNumber INTEGER NOT NULL,
-                        ControlledRPCD_NodeNumber INTEGER,
-                        ReactorNumber INTEGER,
-                        GeneratorNodeNumber INTEGER,
-                        PRIMARY KEY (VCP_NodeNumber, PriorityRPCDNumber))"
+                var tables = new[] {
+                    "Adjustable RPCDs",
+                    "Generators",
+                    "PQ-Diagrams",
+                    "SwitchedRPCDs",
+                    "VoltageAtVSPs",
+                    "EfficiencyTable"
                 };
 
-                using (var transaction = connection.BeginTransaction())
+                foreach (var tableName in tables)
                 {
-                    foreach (var sql in sqlCommands)
+                    var command = new SqliteCommand(
+                        $"SELECT COUNT(*) FROM sqlite_master WHERE type='table' AND name='{tableName}'",
+                        connection);
+
+                    int count = Convert.ToInt32(command.ExecuteScalar());
+
+                    if (count == 0)
                     {
-                        try
-                        {
-                            using (var command = new SqliteCommand(sql, connection))
-                            {
-                                command.Transaction = transaction;
-                                command.ExecuteNonQuery();
-                            }
-                            Debug.WriteLine("Таблица создана/проверена");
-                        }
-                        catch (Exception ex)
-                        {
-                            Debug.WriteLine($"Ошибка при создании таблицы: {ex.Message}");
-                        }
+                        Debug.WriteLine($"️ ВНИМАНИЕ: Таблица '{tableName}' не найдена!");
                     }
-                    transaction.Commit();
+                    else
+                    {
+                        Debug.WriteLine($"✓ Таблица '{tableName}' существует");
+                    }
                 }
-
-                // Принудительно сохраняем изменения на диск
-                using (var command = new SqliteCommand("PRAGMA synchronous = FULL", connection))
-                {
-                    command.ExecuteNonQuery();
-                }
-
-                Debug.WriteLine("=== База данных инициализирована ===");
             }
         }
 
+        /// <summary>
+        /// Метод для очистки таблиц
+        /// </summary>
         public void ClearAllTables()
         {
             using (var connection = new SqliteConnection(_connectionString))
@@ -150,14 +98,13 @@ namespace Model
                     }
                     transaction.Commit();
                 }
-
-                // Принудительно сохраняем на диск
+                
                 using (var command = new SqliteCommand("PRAGMA wal_checkpoint(TRUNCATE)", connection))
                 {
                     command.ExecuteNonQuery();
                 }
 
-                Debug.WriteLine("Все таблицы очищены");
+                Debug.WriteLine("✓ Все таблицы очищены");
             }
         }
 
@@ -178,7 +125,8 @@ namespace Model
                     var command = new SqliteCommand();
                     command.Connection = connection;
                     command.Transaction = transaction;
-                    command.CommandText = @"INSERT INTO ""Adjustable RPCDs"" 
+
+                    command.CommandText = @"INSERT OR REPLACE INTO ""Adjustable RPCDs"" 
                         (ControlledRPCD_NodeNumber, ReactivePower, Name, MinReactivePower, MaxReactivePower, ""On/Off"", Hour, VoltageAtNode)
                         VALUES (@NodeNum, @Reactive, @Name, @MinReactive, @MaxReactive, @OnOff, @Hour, @Voltage)";
 
@@ -207,7 +155,6 @@ namespace Model
                     transaction.Commit();
                 }
 
-                // Принудительно сохраняем на диск
                 using (var command = new SqliteCommand("PRAGMA wal_checkpoint(TRUNCATE)", connection))
                 {
                     command.ExecuteNonQuery();
@@ -234,7 +181,8 @@ namespace Model
                     var command = new SqliteCommand();
                     command.Connection = connection;
                     command.Transaction = transaction;
-                    command.CommandText = @"INSERT INTO ""Generators"" 
+
+                    command.CommandText = @"INSERT OR REPLACE INTO ""Generators"" 
                         (GeneratorNodeNumber, BusVoltage, PQDiagramNumber, Name, Hour, ""On/Off"")
                         VALUES (@NodeNum, @Voltage, @PQNum, @Name, @Hour, @OnOff)";
 
@@ -259,7 +207,6 @@ namespace Model
                     transaction.Commit();
                 }
 
-                // Принудительно сохраняем на диск
                 using (var command = new SqliteCommand("PRAGMA wal_checkpoint(TRUNCATE)", connection))
                 {
                     command.ExecuteNonQuery();
@@ -286,7 +233,8 @@ namespace Model
                     var command = new SqliteCommand();
                     command.Connection = connection;
                     command.Transaction = transaction;
-                    command.CommandText = @"INSERT INTO ""PQ-Diagrams"" 
+
+                    command.CommandText = @"INSERT OR REPLACE INTO ""PQ-Diagrams"" 
                         (PQDiagramNumber, ActivePower, MaxReactivePower, MinReactivePower)
                         VALUES (@Num, @Active, @Max, @Min)";
 
@@ -307,7 +255,6 @@ namespace Model
                     transaction.Commit();
                 }
 
-                // Принудительно сохраняем на диск
                 using (var command = new SqliteCommand("PRAGMA wal_checkpoint(TRUNCATE)", connection))
                 {
                     command.ExecuteNonQuery();
@@ -334,7 +281,8 @@ namespace Model
                     var command = new SqliteCommand();
                     command.Connection = connection;
                     command.Transaction = transaction;
-                    command.CommandText = @"INSERT INTO ""SwitchedRPCDs"" 
+
+                    command.CommandText = @"INSERT OR REPLACE INTO ""SwitchedRPCDs"" 
                         (ReactorNumber, Name, Capacity, ""On/Off"", Hour)
                         VALUES (@Num, @Name, @Capacity, @OnOff, @Hour)";
 
@@ -357,7 +305,6 @@ namespace Model
                     transaction.Commit();
                 }
 
-                // Принудительно сохраняем на диск
                 using (var command = new SqliteCommand("PRAGMA wal_checkpoint(TRUNCATE)", connection))
                 {
                     command.ExecuteNonQuery();
@@ -384,7 +331,8 @@ namespace Model
                     var command = new SqliteCommand();
                     command.Connection = connection;
                     command.Transaction = transaction;
-                    command.CommandText = @"INSERT INTO ""VoltageAtVSPs"" 
+
+                    command.CommandText = @"INSERT OR REPLACE INTO ""VoltageAtVSPs"" 
                         (VCP_NodeNumber, Voltage, MinVoltage, MaxVoltage, Hour)
                         VALUES (@NodeNum, @Voltage, @MinVoltage, @MaxVoltage, @Hour)";
 
@@ -407,7 +355,6 @@ namespace Model
                     transaction.Commit();
                 }
 
-                // Принудительно сохраняем на диск
                 using (var command = new SqliteCommand("PRAGMA wal_checkpoint(TRUNCATE)", connection))
                 {
                     command.ExecuteNonQuery();
@@ -434,7 +381,8 @@ namespace Model
                     var command = new SqliteCommand();
                     command.Connection = connection;
                     command.Transaction = transaction;
-                    command.CommandText = @"INSERT INTO ""EfficiencyTable"" 
+
+                    command.CommandText = @"INSERT OR REPLACE INTO ""EfficiencyTable"" 
                         (VCP_NodeNumber, PriorityRPCDNumber, ControlledRPCD_NodeNumber, ReactorNumber, GeneratorNodeNumber)
                         VALUES (@VCPNode, @Priority, @ControlledNode, @Reactor, @Generator)";
 
@@ -457,7 +405,6 @@ namespace Model
                     transaction.Commit();
                 }
 
-                // Принудительно сохраняем на диск
                 using (var command = new SqliteCommand("PRAGMA wal_checkpoint(TRUNCATE)", connection))
                 {
                     command.ExecuteNonQuery();
@@ -492,7 +439,6 @@ namespace Model
                     }
                 }
             }
-            Debug.WriteLine($"Прочитано Adjustable RPCDs: {list.Count} записей");
             return list;
         }
 
@@ -519,7 +465,6 @@ namespace Model
                     }
                 }
             }
-            Debug.WriteLine($"Прочитано Generators: {list.Count} записей");
             return list;
         }
 
@@ -544,7 +489,6 @@ namespace Model
                     }
                 }
             }
-            Debug.WriteLine($"Прочитано PQ-Diagrams: {list.Count} записей");
             return list;
         }
 
@@ -570,7 +514,6 @@ namespace Model
                     }
                 }
             }
-            Debug.WriteLine($"Прочитано SwitchedRPCDs: {list.Count} записей");
             return list;
         }
 
@@ -596,7 +539,6 @@ namespace Model
                     }
                 }
             }
-            Debug.WriteLine($"Прочитано VoltageAtVSPs: {list.Count} записей");
             return list;
         }
 
@@ -622,7 +564,6 @@ namespace Model
                     }
                 }
             }
-            Debug.WriteLine($"Прочитано EfficiencyTables: {list.Count} записей");
             return list;
         }
 
@@ -651,7 +592,6 @@ namespace Model
                             string tableName = table.Replace("\"", "");
                             int count = Convert.ToInt32(command.ExecuteScalar());
                             stats[tableName] = count;
-                            Debug.WriteLine($"{tableName}: {count} записей");
                         }
                     }
                     catch (Exception ex)
@@ -670,10 +610,8 @@ namespace Model
             {
                 if (disposing)
                 {
-                    // Принудительно освобождаем ресурсы
                     GC.Collect();
                     GC.WaitForPendingFinalizers();
-                    Debug.WriteLine("Ресурсы DataBaseRepository освобождены");
                 }
                 _disposed = true;
             }

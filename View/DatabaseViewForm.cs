@@ -34,7 +34,7 @@ namespace View
             CreateTab("Generators", "Генераторы");
             CreateTab("PQ-Diagrams", "PQ-диаграммы");
             CreateTab("Switched RPCDs", "Коммутируемые реакторы");
-            CreateTab("VoltageAtVSPs", "Напряжение в УСП");
+            CreateTab("VoltageAtVSPs", "Напряжение в КП");
             CreateTab("EfficiencyTable", "Таблица эффективности");
         }
 
@@ -100,7 +100,9 @@ namespace View
                     Реактивная_мощность = x.ReactivePower,
                     Мин_реактивная = x.MinReactivePower,
                     Макс_реактивная = x.MaxReactivePower,
-                    Статус = x.OnOff ? "Вкл" : "Выкл",
+                    Статус = x.OnOff 
+                        ? "Вкл" 
+                        : "Выкл",
                     Напряжение = x.VoltageAtNode
                 }).ToList();
 
@@ -123,7 +125,9 @@ namespace View
                     Имя = x.Name,
                     Напряжение_шины = x.BusVoltage,
                     PQ_диаграмма = x.PQDiagramNumber,
-                    Статус = x.OnOff ? "Вкл" : "Выкл"
+                    Статус = x.OnOff 
+                        ? "Вкл" 
+                        : "Выкл"
                 }).ToList();
 
                 FormatDataGridView(grid);
@@ -164,7 +168,9 @@ namespace View
                     Час = x.Hour,
                     Имя = x.Name,
                     Мощность = x.Capacity,
-                    Статус = x.OnOff ? "Вкл" : "Выкл"
+                    Статус = x.OnOff 
+                        ? "Вкл" 
+                        : "Выкл"
                 }).ToList();
 
                 FormatDataGridView(grid);
