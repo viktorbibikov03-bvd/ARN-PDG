@@ -225,6 +225,7 @@ namespace Model
                             try { qmax = Convert.ToDouble(nodeQmax.get_ZN(i)); } catch { }
                             try { vras = Convert.ToDouble(nodeVras.get_ZN(i)); } catch { }
 
+                            // СОСТОЯНИЕ ОПРЕДЕЛЯЕТСЯ ПО НАПРЯЖЕНИЮ
                             bool isOn = (vras != 0.0);
 
                             rpcds.Add(new AdjustableRPCD
@@ -241,14 +242,14 @@ namespace Model
                         }
                         catch (Exception ex)
                         {
-                            Debug.WriteLine($"Ошибка при обработке узла {i}, час {hour}: {ex.Message}");
+                            System.Diagnostics.Debug.WriteLine($"Ошибка при обработке узла {i}, час {hour}: {ex.Message}");
                         }
                     }
                 }
             }
             catch (Exception ex)
             {
-                Debug.WriteLine($"Ошибка при получении Adjustable RPCDs: {ex.Message}");
+                System.Diagnostics.Debug.WriteLine($"Ошибка при получении Adjustable RPCDs: {ex.Message}");
             }
 
             return rpcds;
@@ -313,6 +314,7 @@ namespace Model
                                 }
                             }
 
+                            // СОСТОЯНИЕ ОПРЕДЕЛЯЕТСЯ ПО НАПРЯЖЕНИЮ
                             bool isOn = (busVoltage != 0.0);
 
                             generators.Add(new Generator
@@ -322,19 +324,19 @@ namespace Model
                                 PQDiagramNumber = pqDiagramNumber,
                                 Name = name,
                                 Hour = hour,
-                                OnOff = isOn
+                                OnOff = isOn  // Изменено: определяется по напряжению
                             });
                         }
                         catch (Exception ex)
                         {
-                            Debug.WriteLine($"Ошибка при обработке генератора {i}, час {hour}: {ex.Message}");
+                            System.Diagnostics.Debug.WriteLine($"Ошибка при обработке генератора {i}, час {hour}: {ex.Message}");
                         }
                     }
                 }
             }
             catch (Exception ex)
             {
-                Debug.WriteLine($"Ошибка при получении данных генераторов: {ex.Message}");
+                System.Diagnostics.Debug.WriteLine($"Ошибка при получении данных генераторов: {ex.Message}");
             }
 
             return generators;
@@ -394,13 +396,13 @@ namespace Model
                     }
                     catch (Exception ex)
                     {
-                        Debug.WriteLine($"Ошибка при обработке PQ-диаграммы {i}: {ex.Message}");
+                        System.Diagnostics.Debug.WriteLine($"Ошибка при обработке PQ-диаграммы {i}: {ex.Message}");
                     }
                 }
             }
             catch (Exception ex)
             {
-                Debug.WriteLine($"Ошибка при получении данных PQ-диаграмм: {ex.Message}");
+                System.Diagnostics.Debug.WriteLine($"Ошибка при получении данных PQ-диаграмм: {ex.Message}");
             }
 
             return diagrams;
@@ -440,6 +442,8 @@ namespace Model
                             int reactorNumber = Convert.ToInt32(rId.get_ZN(i));
                             string name = rName.get_ZN(i)?.ToString() ?? "";
                             double capacity = Convert.ToDouble(rQr.get_ZN(i));
+
+                            // СОСТОЯНИЕ ОПРЕДЕЛЯЕТСЯ ПО МОЩНОСТИ (так как нет напряжения)
                             bool isOn = (capacity != 0.0);
 
                             rpcds.Add(new SwitchedRPCD
@@ -448,19 +452,19 @@ namespace Model
                                 Name = name,
                                 Capacity = capacity,
                                 Hour = hour,
-                                OnOff = isOn
+                                OnOff = isOn  // Изменено: определяется по мощности
                             });
                         }
                         catch (Exception ex)
                         {
-                            Debug.WriteLine($"Ошибка при обработке реактора {i}, час {hour}: {ex.Message}");
+                            System.Diagnostics.Debug.WriteLine($"Ошибка при обработке реактора {i}, час {hour}: {ex.Message}");
                         }
                     }
                 }
             }
             catch (Exception ex)
             {
-                Debug.WriteLine($"Ошибка при получении данных реакторов: {ex.Message}");
+                System.Diagnostics.Debug.WriteLine($"Ошибка при получении данных реакторов: {ex.Message}");
             }
 
             return rpcds;
@@ -475,6 +479,8 @@ namespace Model
 
             try
             {
+                Debug.WriteLine("=== НАЧАЛО СОХРАНЕНИЯ В БД ===");
+
                 repository.ClearAllTables();
 
                 var pqDiagrams = GetPQDiagramsData();

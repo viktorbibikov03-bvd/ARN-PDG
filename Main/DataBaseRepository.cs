@@ -1,39 +1,163 @@
-﻿using Model.Models;
-using System.Data.Entity.Validation;
+﻿using Microsoft.Data.Sqlite;
+using Model.Models;
 using System.Diagnostics;
 
 namespace Model
 {
     public class DataBaseRepository : IDisposable
     {
-        private readonly AppDbContext _context;
+        private readonly string _connectionString;
+        private readonly string _dbPath;
         private bool _disposed = false;
 
         public DataBaseRepository()
         {
-            _context = new AppDbContext();
+            // Получаем абсолютный путь к базе данных
+            _dbPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "ARN-DB.db");
+            _connectionString = $"Data Source={_dbPath};";
+
+            Debug.WriteLine($"=== Инициализация БД ===");
+            Debug.WriteLine($"Путь к БД: {_dbPath}");
+            Debug.WriteLine($"БД существует: {File.Exists(_dbPath)}");
+
+            // Создаем таблицы при инициализации
+            InitializeDatabase();
+        }
+
+        private void InitializeDatabase()
+        {
+            using (var connection = new SqliteConnection(_connectionString))
+            {
+                connection.Open();
+
+                var sqlCommands = new[]
+                {
+                    @"CREATE TABLE IF NOT EXISTS ""Adjustable RPCDs"" (
+                        ControlledRPCD_NodeNumber INTEGER NOT NULL,
+                        ReactivePower REAL NOT NULL,
+                        Name TEXT NOT NULL,
+                        MinReactivePower REAL NOT NULL,
+                        MaxReactivePower REAL NOT NULL,
+                        ""On/Off"" INTEGER NOT NULL,
+                        Hour INTEGER NOT NULL,
+                        VoltageAtNode REAL NOT NULL,
+                        PRIMARY KEY (ControlledRPCD_NodeNumber, Hour))",
+
+                    @"CREATE TABLE IF NOT EXISTS ""Generators"" (
+                        GeneratorNodeNumber INTEGER NOT NULL,
+                        BusVoltage REAL NOT NULL,
+                        PQDiagramNumber INTEGER NOT NULL,
+                        Name TEXT NOT NULL,
+                        Hour INTEGER NOT NULL,
+                        ""On/Off"" INTEGER NOT NULL,
+                        PRIMARY KEY (GeneratorNodeNumber, Hour))",
+
+                    @"CREATE TABLE IF NOT EXISTS ""PQ-Diagrams"" (
+                        PQDiagramNumber INTEGER NOT NULL,
+                        ActivePower REAL NOT NULL,
+                        MaxReactivePower REAL NOT NULL,
+                        MinReactivePower REAL NOT NULL,
+                        PRIMARY KEY (PQDiagramNumber, ActivePower))",
+
+                    @"CREATE TABLE IF NOT EXISTS ""SwitchedRPCDs"" (
+                        ReactorNumber INTEGER NOT NULL,
+                        Name TEXT NOT NULL,
+                        Capacity REAL NOT NULL,
+                        ""On/Off"" INTEGER NOT NULL,
+                        Hour INTEGER NOT NULL,
+                        PRIMARY KEY (ReactorNumber, Hour))",
+
+                    @"CREATE TABLE IF NOT EXISTS ""VoltageAtVSPs"" (
+                        VCP_NodeNumber INTEGER NOT NULL,
+                        Voltage REAL NOT NULL,
+                        MinVoltage INTEGER NOT NULL,
+                        MaxVoltage INTEGER NOT NULL,
+                        Hour INTEGER NOT NULL,
+                        PRIMARY KEY (VCP_NodeNumber, Hour))",
+
+                    @"CREATE TABLE IF NOT EXISTS ""EfficiencyTable"" (
+                        VCP_NodeNumber INTEGER NOT NULL,
+                        PriorityRPCDNumber INTEGER NOT NULL,
+                        ControlledRPCD_NodeNumber INTEGER,
+                        ReactorNumber INTEGER,
+                        GeneratorNodeNumber INTEGER,
+                        PRIMARY KEY (VCP_NodeNumber, PriorityRPCDNumber))"
+                };
+
+                using (var transaction = connection.BeginTransaction())
+                {
+                    foreach (var sql in sqlCommands)
+                    {
+                        try
+                        {
+                            using (var command = new SqliteCommand(sql, connection))
+                            {
+                                command.Transaction = transaction;
+                                command.ExecuteNonQuery();
+                            }
+                            Debug.WriteLine("Таблица создана/проверена");
+                        }
+                        catch (Exception ex)
+                        {
+                            Debug.WriteLine($"Ошибка при создании таблицы: {ex.Message}");
+                        }
+                    }
+                    transaction.Commit();
+                }
+
+                // Принудительно сохраняем изменения на диск
+                using (var command = new SqliteCommand("PRAGMA synchronous = FULL", connection))
+                {
+                    command.ExecuteNonQuery();
+                }
+
+                Debug.WriteLine("=== База данных инициализирована ===");
+            }
         }
 
         public void ClearAllTables()
         {
-            try
+            using (var connection = new SqliteConnection(_connectionString))
             {
-                Debug.WriteLine("Очистка таблиц...");
+                connection.Open();
 
-                // Очищаем таблицы в правильном порядке (сначала зависимые)
-                _context.Database.ExecuteSqlCommand("DELETE FROM \"VoltageAtVSPs\"");
-                _context.Database.ExecuteSqlCommand("DELETE FROM \"EfficiencyTable\"");
-                _context.Database.ExecuteSqlCommand("DELETE FROM \"SwitchedRPCDs\"");
-                _context.Database.ExecuteSqlCommand("DELETE FROM \"Generators\"");
-                _context.Database.ExecuteSqlCommand("DELETE FROM \"PQ-Diagrams\"");
-                _context.Database.ExecuteSqlCommand("DELETE FROM \"Adjustable RPCDs\"");
+                var tables = new[] {
+                    "\"Adjustable RPCDs\"",
+                    "\"Generators\"",
+                    "\"PQ-Diagrams\"",
+                    "\"SwitchedRPCDs\"",
+                    "\"VoltageAtVSPs\"",
+                    "\"EfficiencyTable\""
+                };
 
-                _context.SaveChanges();
-                Debug.WriteLine("Таблицы очищены");
-            }
-            catch (Exception ex)
-            {
-                Debug.WriteLine($"Ошибка при очистке таблиц: {ex.Message}");
+                using (var transaction = connection.BeginTransaction())
+                {
+                    foreach (var table in tables)
+                    {
+                        try
+                        {
+                            using (var command = new SqliteCommand($"DELETE FROM {table}", connection))
+                            {
+                                command.Transaction = transaction;
+                                int rows = command.ExecuteNonQuery();
+                                Debug.WriteLine($"Очищено {rows} записей из {table}");
+                            }
+                        }
+                        catch (Exception ex)
+                        {
+                            Debug.WriteLine($"Ошибка при очистке {table}: {ex.Message}");
+                        }
+                    }
+                    transaction.Commit();
+                }
+
+                // Принудительно сохраняем на диск
+                using (var command = new SqliteCommand("PRAGMA wal_checkpoint(TRUNCATE)", connection))
+                {
+                    command.ExecuteNonQuery();
+                }
+
+                Debug.WriteLine("Все таблицы очищены");
             }
         }
 
@@ -45,59 +169,52 @@ namespace Model
                 return;
             }
 
-            try
+            using (var connection = new SqliteConnection(_connectionString))
             {
-                Debug.WriteLine($"SaveAdjustableRPCDs: начинаем добавление {rpcds.Count} записей...");
+                connection.Open();
 
-                // Проверяем первую запись
-                var first = rpcds.First();
-                Debug.WriteLine($"Пример первой записи: Node={first.ControlledRPCD_NodeNumber}, " +
-                               $"Hour={first.Hour}, Voltage={first.VoltageAtNode}");
-
-                foreach (var rpcd in rpcds)
+                using (var transaction = connection.BeginTransaction())
                 {
-                    var adjustableRpcd = new AdjustableRPCD
-                    {
-                        ControlledRPCD_NodeNumber = rpcd.ControlledRPCD_NodeNumber,
-                        Hour = rpcd.Hour,
-                        ReactivePower = rpcd.ReactivePower,
-                        Name = rpcd.Name ?? "",
-                        MinReactivePower = rpcd.MinReactivePower,
-                        MaxReactivePower = rpcd.MaxReactivePower,
-                        OnOff = rpcd.OnOff,
-                        VoltageAtNode = rpcd.VoltageAtNode
-                    };
+                    var command = new SqliteCommand();
+                    command.Connection = connection;
+                    command.Transaction = transaction;
+                    command.CommandText = @"INSERT INTO ""Adjustable RPCDs"" 
+                        (ControlledRPCD_NodeNumber, ReactivePower, Name, MinReactivePower, MaxReactivePower, ""On/Off"", Hour, VoltageAtNode)
+                        VALUES (@NodeNum, @Reactive, @Name, @MinReactive, @MaxReactive, @OnOff, @Hour, @Voltage)";
 
-                    _context.AdjustableRPCDs.Add(adjustableRpcd);
-                }
+                    command.Parameters.Add(new SqliteParameter("@NodeNum", SqliteType.Integer));
+                    command.Parameters.Add(new SqliteParameter("@Reactive", SqliteType.Real));
+                    command.Parameters.Add(new SqliteParameter("@Name", SqliteType.Text));
+                    command.Parameters.Add(new SqliteParameter("@MinReactive", SqliteType.Real));
+                    command.Parameters.Add(new SqliteParameter("@MaxReactive", SqliteType.Real));
+                    command.Parameters.Add(new SqliteParameter("@OnOff", SqliteType.Integer));
+                    command.Parameters.Add(new SqliteParameter("@Hour", SqliteType.Integer));
+                    command.Parameters.Add(new SqliteParameter("@Voltage", SqliteType.Real));
 
-                Debug.WriteLine("SaveAdjustableRPCDs: вызываем SaveChanges()...");
-                _context.SaveChanges();
-                Debug.WriteLine($"✓ SaveAdjustableRPCDs: успешно сохранено {rpcds.Count} записей");
-            }
-            catch (DbEntityValidationException dbEx)
-            {
-                // Специальная обработка ошибок валидации EF
-                string validationErrors = "";
-                foreach (var validationErrorsPerEntity in dbEx.EntityValidationErrors)
-                {
-                    foreach (var validationError in validationErrorsPerEntity.ValidationErrors)
+                    foreach (var rpcd in rpcds)
                     {
-                        validationErrors += $"Property: {validationError.PropertyName} " +
-                                          $"Error: {validationError.ErrorMessage}\n";
+                        command.Parameters["@NodeNum"].Value = rpcd.ControlledRPCD_NodeNumber;
+                        command.Parameters["@Reactive"].Value = rpcd.ReactivePower;
+                        command.Parameters["@Name"].Value = rpcd.Name ?? "";
+                        command.Parameters["@MinReactive"].Value = rpcd.MinReactivePower;
+                        command.Parameters["@MaxReactive"].Value = rpcd.MaxReactivePower;
+                        command.Parameters["@OnOff"].Value = rpcd.OnOff ? 1 : 0;
+                        command.Parameters["@Hour"].Value = rpcd.Hour;
+                        command.Parameters["@Voltage"].Value = rpcd.VoltageAtNode;
+                        command.ExecuteNonQuery();
                     }
+
+                    transaction.Commit();
                 }
 
-                Debug.WriteLine($"SaveAdjustableRPCDs: ошибка валидации EF:\n{validationErrors}");
-                throw new Exception($"Ошибка валидации данных:\n{validationErrors}", dbEx);
+                // Принудительно сохраняем на диск
+                using (var command = new SqliteCommand("PRAGMA wal_checkpoint(TRUNCATE)", connection))
+                {
+                    command.ExecuteNonQuery();
+                }
             }
-            catch (Exception ex)
-            {
-                Debug.WriteLine($"SaveAdjustableRPCDs: общая ошибка - {ex.Message}");
-                if (ex.InnerException != null)
-                    Debug.WriteLine($"  Inner: {ex.InnerException.Message}");
-                throw;
-            }
+
+            Debug.WriteLine($"✓ Сохранено Adjustable RPCDs: {rpcds.Count} записей");
         }
 
         public void SaveGenerators(List<Generator> generators)
@@ -108,36 +225,48 @@ namespace Model
                 return;
             }
 
-            try
+            using (var connection = new SqliteConnection(_connectionString))
             {
-                Debug.WriteLine($"SaveGenerators: добавление {generators.Count} записей");
+                connection.Open();
 
-                foreach (var gen in generators)
+                using (var transaction = connection.BeginTransaction())
                 {
-                    // Создаем объект
-                    var generator = new Generator
-                    {
-                        GeneratorNodeNumber = gen.GeneratorNodeNumber,
-                        Hour = gen.Hour,
-                        BusVoltage = gen.BusVoltage,
-                        PQDiagramNumber = gen.PQDiagramNumber,
-                        Name = gen.Name ?? "",
-                        OnOff = gen.OnOff
-                    };
+                    var command = new SqliteCommand();
+                    command.Connection = connection;
+                    command.Transaction = transaction;
+                    command.CommandText = @"INSERT INTO ""Generators"" 
+                        (GeneratorNodeNumber, BusVoltage, PQDiagramNumber, Name, Hour, ""On/Off"")
+                        VALUES (@NodeNum, @Voltage, @PQNum, @Name, @Hour, @OnOff)";
 
-                    // Добавляем объект через контекст
-                    _context.Generators.Add(generator);
+                    command.Parameters.Add(new SqliteParameter("@NodeNum", SqliteType.Integer));
+                    command.Parameters.Add(new SqliteParameter("@Voltage", SqliteType.Real));
+                    command.Parameters.Add(new SqliteParameter("@PQNum", SqliteType.Integer));
+                    command.Parameters.Add(new SqliteParameter("@Name", SqliteType.Text));
+                    command.Parameters.Add(new SqliteParameter("@Hour", SqliteType.Integer));
+                    command.Parameters.Add(new SqliteParameter("@OnOff", SqliteType.Integer));
+
+                    foreach (var gen in generators)
+                    {
+                        command.Parameters["@NodeNum"].Value = gen.GeneratorNodeNumber;
+                        command.Parameters["@Voltage"].Value = gen.BusVoltage;
+                        command.Parameters["@PQNum"].Value = gen.PQDiagramNumber;
+                        command.Parameters["@Name"].Value = gen.Name ?? "";
+                        command.Parameters["@Hour"].Value = gen.Hour;
+                        command.Parameters["@OnOff"].Value = gen.OnOff ? 1 : 0;
+                        command.ExecuteNonQuery();
+                    }
+
+                    transaction.Commit();
                 }
 
-                // Сохраняем изменения в БД
-                _context.SaveChanges();
-                Debug.WriteLine($"SaveGenerators: успешно сохранено {generators.Count} записей");
+                // Принудительно сохраняем на диск
+                using (var command = new SqliteCommand("PRAGMA wal_checkpoint(TRUNCATE)", connection))
+                {
+                    command.ExecuteNonQuery();
+                }
             }
-            catch (Exception ex)
-            {
-                Debug.WriteLine($"SaveGenerators: ошибка - {ex.Message}");
-                throw;
-            }
+
+            Debug.WriteLine($"✓ Сохранено Generators: {generators.Count} записей");
         }
 
         public void SavePQDiagrams(List<PQDiagram> diagrams)
@@ -148,34 +277,44 @@ namespace Model
                 return;
             }
 
-            try
+            using (var connection = new SqliteConnection(_connectionString))
             {
-                Debug.WriteLine($"SavePQDiagrams: добавление {diagrams.Count} записей");
+                connection.Open();
 
-                foreach (var diag in diagrams)
+                using (var transaction = connection.BeginTransaction())
                 {
-                    // Создаем объект
-                    var pqDiagram = new PQDiagram
-                    {
-                        PQDiagramNumber = diag.PQDiagramNumber,
-                        ActivePower = diag.ActivePower,
-                        MaxReactivePower = diag.MaxReactivePower,
-                        MinReactivePower = diag.MinReactivePower
-                    };
+                    var command = new SqliteCommand();
+                    command.Connection = connection;
+                    command.Transaction = transaction;
+                    command.CommandText = @"INSERT INTO ""PQ-Diagrams"" 
+                        (PQDiagramNumber, ActivePower, MaxReactivePower, MinReactivePower)
+                        VALUES (@Num, @Active, @Max, @Min)";
 
-                    // Добавляем объект через контекст
-                    _context.PQDiagrams.Add(pqDiagram);
+                    command.Parameters.Add(new SqliteParameter("@Num", SqliteType.Integer));
+                    command.Parameters.Add(new SqliteParameter("@Active", SqliteType.Real));
+                    command.Parameters.Add(new SqliteParameter("@Max", SqliteType.Real));
+                    command.Parameters.Add(new SqliteParameter("@Min", SqliteType.Real));
+
+                    foreach (var diag in diagrams)
+                    {
+                        command.Parameters["@Num"].Value = diag.PQDiagramNumber;
+                        command.Parameters["@Active"].Value = diag.ActivePower;
+                        command.Parameters["@Max"].Value = diag.MaxReactivePower;
+                        command.Parameters["@Min"].Value = diag.MinReactivePower;
+                        command.ExecuteNonQuery();
+                    }
+
+                    transaction.Commit();
                 }
 
-                // Сохраняем изменения в БД
-                _context.SaveChanges();
-                Debug.WriteLine($"SavePQDiagrams: успешно сохранено {diagrams.Count} записей");
+                // Принудительно сохраняем на диск
+                using (var command = new SqliteCommand("PRAGMA wal_checkpoint(TRUNCATE)", connection))
+                {
+                    command.ExecuteNonQuery();
+                }
             }
-            catch (Exception ex)
-            {
-                Debug.WriteLine($"SavePQDiagrams: ошибка - {ex.Message}");
-                throw;
-            }
+
+            Debug.WriteLine($"✓ Сохранено PQ-Diagrams: {diagrams.Count} записей");
         }
 
         public void SaveSwitchedRPCDs(List<SwitchedRPCD> rpcds)
@@ -186,35 +325,46 @@ namespace Model
                 return;
             }
 
-            try
+            using (var connection = new SqliteConnection(_connectionString))
             {
-                Debug.WriteLine($"SaveSwitchedRPCDs: добавление {rpcds.Count} записей");
+                connection.Open();
 
-                foreach (var rpcd in rpcds)
+                using (var transaction = connection.BeginTransaction())
                 {
-                    // Создаем объект
-                    var switchedRpcd = new SwitchedRPCD
-                    {
-                        ReactorNumber = rpcd.ReactorNumber,
-                        Hour = rpcd.Hour,
-                        Name = rpcd.Name ?? "",
-                        Capacity = rpcd.Capacity,
-                        OnOff = rpcd.OnOff
-                    };
+                    var command = new SqliteCommand();
+                    command.Connection = connection;
+                    command.Transaction = transaction;
+                    command.CommandText = @"INSERT INTO ""SwitchedRPCDs"" 
+                        (ReactorNumber, Name, Capacity, ""On/Off"", Hour)
+                        VALUES (@Num, @Name, @Capacity, @OnOff, @Hour)";
 
-                    // Добавляем объект через контекст
-                    _context.SwitchedRPCDs.Add(switchedRpcd);
+                    command.Parameters.Add(new SqliteParameter("@Num", SqliteType.Integer));
+                    command.Parameters.Add(new SqliteParameter("@Name", SqliteType.Text));
+                    command.Parameters.Add(new SqliteParameter("@Capacity", SqliteType.Real));
+                    command.Parameters.Add(new SqliteParameter("@OnOff", SqliteType.Integer));
+                    command.Parameters.Add(new SqliteParameter("@Hour", SqliteType.Integer));
+
+                    foreach (var rpcd in rpcds)
+                    {
+                        command.Parameters["@Num"].Value = rpcd.ReactorNumber;
+                        command.Parameters["@Name"].Value = rpcd.Name ?? "";
+                        command.Parameters["@Capacity"].Value = rpcd.Capacity;
+                        command.Parameters["@OnOff"].Value = rpcd.OnOff ? 1 : 0;
+                        command.Parameters["@Hour"].Value = rpcd.Hour;
+                        command.ExecuteNonQuery();
+                    }
+
+                    transaction.Commit();
                 }
 
-                // Сохраняем изменения в БД
-                _context.SaveChanges();
-                Debug.WriteLine($"SaveSwitchedRPCDs: успешно сохранено {rpcds.Count} записей");
+                // Принудительно сохраняем на диск
+                using (var command = new SqliteCommand("PRAGMA wal_checkpoint(TRUNCATE)", connection))
+                {
+                    command.ExecuteNonQuery();
+                }
             }
-            catch (Exception ex)
-            {
-                Debug.WriteLine($"SaveSwitchedRPCDs: ошибка - {ex.Message}");
-                throw;
-            }
+
+            Debug.WriteLine($"✓ Сохранено SwitchedRPCDs: {rpcds.Count} записей");
         }
 
         public void SaveVoltageAtVSPs(List<VoltageAtVSP> voltages)
@@ -225,35 +375,46 @@ namespace Model
                 return;
             }
 
-            try
+            using (var connection = new SqliteConnection(_connectionString))
             {
-                Debug.WriteLine($"SaveVoltageAtVSPs: добавление {voltages.Count} записей");
+                connection.Open();
 
-                foreach (var voltage in voltages)
+                using (var transaction = connection.BeginTransaction())
                 {
-                    // Создаем объект
-                    var voltageAtVsp = new VoltageAtVSP
-                    {
-                        VCP_NodeNumber = voltage.VCP_NodeNumber,
-                        Hour = voltage.Hour,
-                        Voltage = voltage.Voltage,
-                        MinVoltage = voltage.MinVoltage,
-                        MaxVoltage = voltage.MaxVoltage
-                    };
+                    var command = new SqliteCommand();
+                    command.Connection = connection;
+                    command.Transaction = transaction;
+                    command.CommandText = @"INSERT INTO ""VoltageAtVSPs"" 
+                        (VCP_NodeNumber, Voltage, MinVoltage, MaxVoltage, Hour)
+                        VALUES (@NodeNum, @Voltage, @MinVoltage, @MaxVoltage, @Hour)";
 
-                    // Добавляем объект через контекст
-                    _context.VoltageAtVSPs.Add(voltageAtVsp);
+                    command.Parameters.Add(new SqliteParameter("@NodeNum", SqliteType.Integer));
+                    command.Parameters.Add(new SqliteParameter("@Voltage", SqliteType.Real));
+                    command.Parameters.Add(new SqliteParameter("@MinVoltage", SqliteType.Integer));
+                    command.Parameters.Add(new SqliteParameter("@MaxVoltage", SqliteType.Integer));
+                    command.Parameters.Add(new SqliteParameter("@Hour", SqliteType.Integer));
+
+                    foreach (var voltage in voltages)
+                    {
+                        command.Parameters["@NodeNum"].Value = voltage.VCP_NodeNumber;
+                        command.Parameters["@Voltage"].Value = voltage.Voltage;
+                        command.Parameters["@MinVoltage"].Value = voltage.MinVoltage;
+                        command.Parameters["@MaxVoltage"].Value = voltage.MaxVoltage;
+                        command.Parameters["@Hour"].Value = voltage.Hour;
+                        command.ExecuteNonQuery();
+                    }
+
+                    transaction.Commit();
                 }
 
-                // Сохраняем изменения в БД
-                _context.SaveChanges();
-                Debug.WriteLine($"SaveVoltageAtVSPs: успешно сохранено {voltages.Count} записей");
+                // Принудительно сохраняем на диск
+                using (var command = new SqliteCommand("PRAGMA wal_checkpoint(TRUNCATE)", connection))
+                {
+                    command.ExecuteNonQuery();
+                }
             }
-            catch (Exception ex)
-            {
-                Debug.WriteLine($"SaveVoltageAtVSPs: ошибка - {ex.Message}");
-                throw;
-            }
+
+            Debug.WriteLine($"✓ Сохранено VoltageAtVSPs: {voltages.Count} записей");
         }
 
         public void SaveEfficiencyTables(List<EfficiencyTable> tables)
@@ -264,131 +425,241 @@ namespace Model
                 return;
             }
 
-            try
+            using (var connection = new SqliteConnection(_connectionString))
             {
-                Debug.WriteLine($"SaveEfficiencyTables: добавление {tables.Count} записей");
+                connection.Open();
 
-                foreach (var table in tables)
+                using (var transaction = connection.BeginTransaction())
                 {
-                    // Создаем объект
-                    var efficiencyTable = new EfficiencyTable
-                    {
-                        VCP_NodeNumber = table.VCP_NodeNumber,
-                        PriorityRPCDNumber = table.PriorityRPCDNumber,
-                        ControlledRPCD_NodeNumber = table.ControlledRPCD_NodeNumber,
-                        ReactorNumber = table.ReactorNumber,
-                        GeneratorNodeNumber = table.GeneratorNodeNumber
-                    };
+                    var command = new SqliteCommand();
+                    command.Connection = connection;
+                    command.Transaction = transaction;
+                    command.CommandText = @"INSERT INTO ""EfficiencyTable"" 
+                        (VCP_NodeNumber, PriorityRPCDNumber, ControlledRPCD_NodeNumber, ReactorNumber, GeneratorNodeNumber)
+                        VALUES (@VCPNode, @Priority, @ControlledNode, @Reactor, @Generator)";
 
-                    // Добавляем объект через контекст
-                    _context.EfficiencyTables.Add(efficiencyTable);
+                    command.Parameters.Add(new SqliteParameter("@VCPNode", SqliteType.Integer));
+                    command.Parameters.Add(new SqliteParameter("@Priority", SqliteType.Integer));
+                    command.Parameters.Add(new SqliteParameter("@ControlledNode", SqliteType.Integer));
+                    command.Parameters.Add(new SqliteParameter("@Reactor", SqliteType.Integer));
+                    command.Parameters.Add(new SqliteParameter("@Generator", SqliteType.Integer));
+
+                    foreach (var table in tables)
+                    {
+                        command.Parameters["@VCPNode"].Value = table.VCP_NodeNumber;
+                        command.Parameters["@Priority"].Value = table.PriorityRPCDNumber;
+                        command.Parameters["@ControlledNode"].Value = table.ControlledRPCD_NodeNumber;
+                        command.Parameters["@Reactor"].Value = table.ReactorNumber;
+                        command.Parameters["@Generator"].Value = table.GeneratorNodeNumber;
+                        command.ExecuteNonQuery();
+                    }
+
+                    transaction.Commit();
                 }
 
-                // Сохраняем изменения в БД
-                _context.SaveChanges();
-                Debug.WriteLine($"SaveEfficiencyTables: успешно сохранено {tables.Count} записей");
+                // Принудительно сохраняем на диск
+                using (var command = new SqliteCommand("PRAGMA wal_checkpoint(TRUNCATE)", connection))
+                {
+                    command.ExecuteNonQuery();
+                }
             }
-            catch (Exception ex)
-            {
-                Debug.WriteLine($"SaveEfficiencyTables: ошибка - {ex.Message}");
-                throw;
-            }
+
+            Debug.WriteLine($"✓ Сохранено EfficiencyTables: {tables.Count} записей");
         }
 
-        // Методы чтения данных
         public List<AdjustableRPCD> GetAdjustableRPCDs()
         {
-            try
+            var list = new List<AdjustableRPCD>();
+            using (var connection = new SqliteConnection(_connectionString))
             {
-                return _context.AdjustableRPCDs.ToList();
+                connection.Open();
+                using (var command = new SqliteCommand("SELECT * FROM \"Adjustable RPCDs\"", connection))
+                using (var reader = command.ExecuteReader())
+                {
+                    while (reader.Read())
+                    {
+                        list.Add(new AdjustableRPCD
+                        {
+                            ControlledRPCD_NodeNumber = reader.GetInt32(0),
+                            ReactivePower = reader.GetDouble(1),
+                            Name = reader.IsDBNull(2) ? "" : reader.GetString(2),
+                            MinReactivePower = reader.GetDouble(3),
+                            MaxReactivePower = reader.GetDouble(4),
+                            OnOff = reader.GetInt32(5) != 0,
+                            Hour = reader.GetInt32(6),
+                            VoltageAtNode = reader.GetDouble(7)
+                        });
+                    }
+                }
             }
-            catch (Exception ex)
-            {
-                Debug.WriteLine($"GetAdjustableRPCDs: ошибка - {ex.Message}");
-                return new List<AdjustableRPCD>();
-            }
+            Debug.WriteLine($"Прочитано Adjustable RPCDs: {list.Count} записей");
+            return list;
         }
 
         public List<Generator> GetGenerators()
         {
-            try
+            var list = new List<Generator>();
+            using (var connection = new SqliteConnection(_connectionString))
             {
-                return _context.Generators.ToList();
+                connection.Open();
+                using (var command = new SqliteCommand("SELECT * FROM \"Generators\"", connection))
+                using (var reader = command.ExecuteReader())
+                {
+                    while (reader.Read())
+                    {
+                        list.Add(new Generator
+                        {
+                            GeneratorNodeNumber = reader.GetInt32(0),
+                            BusVoltage = reader.GetDouble(1),
+                            PQDiagramNumber = reader.GetInt32(2),
+                            Name = reader.IsDBNull(3) ? "" : reader.GetString(3),
+                            Hour = reader.GetInt32(4),
+                            OnOff = reader.GetInt32(5) != 0
+                        });
+                    }
+                }
             }
-            catch (Exception ex)
-            {
-                Debug.WriteLine($"GetGenerators: ошибка - {ex.Message}");
-                return new List<Generator>();
-            }
+            Debug.WriteLine($"Прочитано Generators: {list.Count} записей");
+            return list;
         }
 
         public List<PQDiagram> GetPQDiagrams()
         {
-            try
+            var list = new List<PQDiagram>();
+            using (var connection = new SqliteConnection(_connectionString))
             {
-                return _context.PQDiagrams.ToList();
+                connection.Open();
+                using (var command = new SqliteCommand("SELECT * FROM \"PQ-Diagrams\"", connection))
+                using (var reader = command.ExecuteReader())
+                {
+                    while (reader.Read())
+                    {
+                        list.Add(new PQDiagram
+                        {
+                            PQDiagramNumber = reader.GetInt32(0),
+                            ActivePower = reader.GetDouble(1),
+                            MaxReactivePower = reader.GetDouble(2),
+                            MinReactivePower = reader.GetDouble(3)
+                        });
+                    }
+                }
             }
-            catch (Exception ex)
-            {
-                Debug.WriteLine($"GetPQDiagrams: ошибка - {ex.Message}");
-                return new List<PQDiagram>();
-            }
+            Debug.WriteLine($"Прочитано PQ-Diagrams: {list.Count} записей");
+            return list;
         }
 
         public List<SwitchedRPCD> GetSwitchedRPCDs()
         {
-            try
+            var list = new List<SwitchedRPCD>();
+            using (var connection = new SqliteConnection(_connectionString))
             {
-                return _context.SwitchedRPCDs.ToList();
+                connection.Open();
+                using (var command = new SqliteCommand("SELECT * FROM \"SwitchedRPCDs\"", connection))
+                using (var reader = command.ExecuteReader())
+                {
+                    while (reader.Read())
+                    {
+                        list.Add(new SwitchedRPCD
+                        {
+                            ReactorNumber = reader.GetInt32(0),
+                            Name = reader.IsDBNull(1) ? "" : reader.GetString(1),
+                            Capacity = reader.GetDouble(2),
+                            OnOff = reader.GetInt32(3) != 0,
+                            Hour = reader.GetInt32(4)
+                        });
+                    }
+                }
             }
-            catch (Exception ex)
-            {
-                Debug.WriteLine($"GetSwitchedRPCDs: ошибка - {ex.Message}");
-                return new List<SwitchedRPCD>();
-            }
+            Debug.WriteLine($"Прочитано SwitchedRPCDs: {list.Count} записей");
+            return list;
         }
 
         public List<VoltageAtVSP> GetVoltageAtVSPs()
         {
-            try
+            var list = new List<VoltageAtVSP>();
+            using (var connection = new SqliteConnection(_connectionString))
             {
-                return _context.VoltageAtVSPs.ToList();
+                connection.Open();
+                using (var command = new SqliteCommand("SELECT * FROM \"VoltageAtVSPs\"", connection))
+                using (var reader = command.ExecuteReader())
+                {
+                    while (reader.Read())
+                    {
+                        list.Add(new VoltageAtVSP
+                        {
+                            VCP_NodeNumber = reader.GetInt32(0),
+                            Voltage = reader.GetDouble(1),
+                            MinVoltage = reader.GetInt32(2),
+                            MaxVoltage = reader.GetInt32(3),
+                            Hour = reader.GetInt32(4)
+                        });
+                    }
+                }
             }
-            catch (Exception ex)
-            {
-                Debug.WriteLine($"GetVoltageAtVSPs: ошибка - {ex.Message}");
-                return new List<VoltageAtVSP>();
-            }
+            Debug.WriteLine($"Прочитано VoltageAtVSPs: {list.Count} записей");
+            return list;
         }
 
         public List<EfficiencyTable> GetEfficiencyTables()
         {
-            try
+            var list = new List<EfficiencyTable>();
+            using (var connection = new SqliteConnection(_connectionString))
             {
-                return _context.EfficiencyTables.ToList();
+                connection.Open();
+                using (var command = new SqliteCommand("SELECT * FROM \"EfficiencyTable\"", connection))
+                using (var reader = command.ExecuteReader())
+                {
+                    while (reader.Read())
+                    {
+                        list.Add(new EfficiencyTable
+                        {
+                            VCP_NodeNumber = reader.GetInt32(0),
+                            PriorityRPCDNumber = reader.GetInt32(1),
+                            ControlledRPCD_NodeNumber = reader.GetInt32(2),
+                            ReactorNumber = reader.GetInt32(3),
+                            GeneratorNodeNumber = reader.GetInt32(4)
+                        });
+                    }
+                }
             }
-            catch (Exception ex)
-            {
-                Debug.WriteLine($"GetEfficiencyTables: ошибка - {ex.Message}");
-                return new List<EfficiencyTable>();
-            }
+            Debug.WriteLine($"Прочитано EfficiencyTables: {list.Count} записей");
+            return list;
         }
 
         public Dictionary<string, int> GetTablesStatistics()
         {
             var stats = new Dictionary<string, int>();
-            try
+            using (var connection = new SqliteConnection(_connectionString))
             {
-                stats["Adjustable RPCDs"] = _context.AdjustableRPCDs.Count();
-                stats["Generators"] = _context.Generators.Count();
-                stats["PQ-Diagrams"] = _context.PQDiagrams.Count();
-                stats["SwitchedRPCDs"] = _context.SwitchedRPCDs.Count();
-                stats["VoltageAtVSPs"] = _context.VoltageAtVSPs.Count();
-                stats["EfficiencyTable"] = _context.EfficiencyTables.Count();
-            }
-            catch (Exception ex)
-            {
-                Debug.WriteLine($"GetTablesStatistics: ошибка - {ex.Message}");
+                connection.Open();
+
+                var tables = new[] {
+                    "\"Adjustable RPCDs\"",
+                    "\"Generators\"",
+                    "\"PQ-Diagrams\"",
+                    "\"SwitchedRPCDs\"",
+                    "\"VoltageAtVSPs\"",
+                    "\"EfficiencyTable\""
+                };
+
+                foreach (var table in tables)
+                {
+                    try
+                    {
+                        using (var command = new SqliteCommand($"SELECT COUNT(*) FROM {table}", connection))
+                        {
+                            string tableName = table.Replace("\"", "");
+                            int count = Convert.ToInt32(command.ExecuteScalar());
+                            stats[tableName] = count;
+                            Debug.WriteLine($"{tableName}: {count} записей");
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        Debug.WriteLine($"Ошибка при получении статистики {table}: {ex.Message}");
+                        stats[table.Replace("\"", "")] = 0;
+                    }
+                }
             }
             return stats;
         }
@@ -399,7 +670,10 @@ namespace Model
             {
                 if (disposing)
                 {
-                    _context?.Dispose();
+                    // Принудительно освобождаем ресурсы
+                    GC.Collect();
+                    GC.WaitForPendingFinalizers();
+                    Debug.WriteLine("Ресурсы DataBaseRepository освобождены");
                 }
                 _disposed = true;
             }
