@@ -476,86 +476,41 @@ namespace Model
 
             try
             {
-                repository.ClearAllTables();
+                //repository.ClearAllTables();
 
                 var pqDiagrams = GetPQDiagramsData();
                 Debug.WriteLine($"PQ-диаграмм найдено: {pqDiagrams.Count}");
                 if (pqDiagrams.Count > 0)
                 {
-                    try
-                    {
-                        repository.SavePQDiagrams(pqDiagrams);
-                        Debug.WriteLine($"✓ Сохранено PQ-диаграмм: {pqDiagrams.Count}");
-                    }
-                    catch (Exception ex)
-                    {
-                        Debug.WriteLine($"✗ Ошибка при сохранении PQ-диаграмм: {ex.Message}");
-                        if (ex.InnerException != null)
-                            Debug.WriteLine($"  Внутренняя ошибка: {ex.InnerException.Message}");
-                        throw;
-                    }
+                    repository.SavePQDiagrams(pqDiagrams);
+                    Debug.WriteLine($"✓ Сохранено PQ-диаграмм: {pqDiagrams.Count}");
                 }
 
                 var generators = GetGeneratorsData();
                 Debug.WriteLine($"Генераторов найдено: {generators.Count}");
                 if (generators.Count > 0)
                 {
-                    try
-                    {
-                        repository.SaveGenerators(generators);
-                        Debug.WriteLine($"✓ Сохранено записей генераторов: {generators.Count}");
-                    }
-                    catch (Exception ex)
-                    {
-                        Debug.WriteLine($" Ошибка при сохранении генераторов: {ex.Message}");
-                        if (ex.InnerException != null)
-                        {
-                            Debug.WriteLine($"  Внутренняя ошибка: {ex.InnerException.Message}");
-                        }
-                        Debug.WriteLine($"  Stack trace: {ex.StackTrace}");
-                        throw;
-                    }
+                    repository.SaveGenerators(generators);
+                    Debug.WriteLine($"✓ Сохранено записей генераторов: {generators.Count}");
                 }
 
                 var switchedRpcs = GetSwitchedRPCDsData();
                 Debug.WriteLine($"Реакторов найдено: {switchedRpcs.Count}");
                 if (switchedRpcs.Count > 0)
                 {
-                    try
-                    {
-                        repository.SaveSwitchedRPCDs(switchedRpcs);
-                        Debug.WriteLine($"✓ Сохранено записей реакторов: {switchedRpcs.Count}");
-                    }
-                    catch (Exception ex)
-                    {
-                        Debug.WriteLine($"✗ Ошибка при сохранении реакторов: {ex.Message}");
-                        if (ex.InnerException != null)
-                        {
-                            Debug.WriteLine($"  Внутренняя ошибка: {ex.InnerException.Message}");
-                        }
-                        throw;
-                    }
+                    repository.SaveSwitchedRPCDs(switchedRpcs);
+                    Debug.WriteLine($"✓ Сохранено записей реакторов: {switchedRpcs.Count}");
                 }
 
                 var adjustableRPCDs = GetAdjustableRPCDsData();
                 Debug.WriteLine($"Adjustable RPCDs найдено: {adjustableRPCDs.Count}");
                 if (adjustableRPCDs.Count > 0)
                 {
-                    try
-                    {
-                        repository.SaveAdjustableRPCDs(adjustableRPCDs);
-                        Debug.WriteLine($"✓ Сохранено записей Adjustable RPCDs: {adjustableRPCDs.Count}");
-                    }
-                    catch (Exception ex)
-                    {
-                        Debug.WriteLine($"✗ Ошибка при сохранении Adjustable RPCDs: {ex.Message}");
-                        if (ex.InnerException != null)
-                        {
-                            Debug.WriteLine($"  Внутренняя ошибка: {ex.InnerException.Message}");
-                        }
-                        throw;
-                    }
+                    repository.SaveAdjustableRPCDs(adjustableRPCDs);
+                    Debug.WriteLine($"✓ Сохранено записей Adjustable RPCDs: {adjustableRPCDs.Count}");
                 }
+
+                UpdateVoltageInDatabase(repository);
 
                 Debug.WriteLine("=== ВСЕ ДАННЫЕ УСПЕШНО СОХРАНЕНЫ ===");
             }
@@ -575,6 +530,125 @@ namespace Model
                 Debug.WriteLine($"Stack trace: {ex.StackTrace}");
 
                 throw new Exception(errorMsg, ex);
+            }
+        }
+
+
+        public List<VoltageAtVSP> GetVoltageAtVSPsData()
+        {
+            List<VoltageAtVSP> voltages = new List<VoltageAtVSP>();
+        
+            if (!_isLoaded)
+            {
+                return voltages;
+            }
+        
+            try
+            {
+                ITable nodeTable = (ITable)_rastr.Tables.Item("node");
+                ICol nodeNy = (ICol)nodeTable.Cols.Item("ny");
+                ICol nodeVras = (ICol)nodeTable.Cols.Item("vras");
+        
+                int nodeCount = nodeTable.Count;
+        
+                for (int hour = 1; hour <= 24; hour++)
+                {
+                    RastrRetCode retCode = RastrRetCode.AST_OK;
+                    _rastr.RgmMpt(hour, hour, ref retCode);
+        
+                    for (int i = 0; i < nodeCount; i++)
+                    {
+                        try
+                        {
+                            int nodeNumber = Convert.ToInt32(nodeNy.get_ZN(i));
+                            double voltage = 0.0;
+        
+                            try
+                            {
+                                voltage = Convert.ToDouble(nodeVras.get_ZN(i));
+                            }
+                            catch { }
+        
+        
+                            int minVoltage = 500;
+                            int maxVoltage = 525;
+        
+                            voltages.Add(new VoltageAtVSP
+                            {
+                                VCP_NodeNumber = nodeNumber,
+                                Voltage = voltage,
+                                MinVoltage = minVoltage,
+                                MaxVoltage = maxVoltage,
+                                Hour = hour
+                            });
+                        }
+                        catch (Exception ex)
+                        {
+                            Debug.WriteLine($"Ошибка при обработке узла {i}, час {hour}: {ex.Message}");
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"Ошибка при получении данных VoltageAtVSPs: {ex.Message}");
+            }
+        
+            return voltages;
+        }
+
+        public void UpdateVoltageInDatabase(DataBaseRepository repository)
+        {
+            if (!_isLoaded)
+            {
+                throw new InvalidOperationException("Сначала загрузите файл мегаточки");
+            }
+
+            try
+            {
+                Debug.WriteLine("=== Обновление напряжений в VoltageAtVSPs ===");
+
+                ITable nodeTable = (ITable)_rastr.Tables.Item("node");
+                ICol nodeNy = (ICol)nodeTable.Cols.Item("ny");
+                ICol nodeVras = (ICol)nodeTable.Cols.Item("vras");
+
+                int nodeCount = nodeTable.Count;
+                int updatedCount = 0;
+
+                for (int hour = 1; hour <= 24; hour++)
+                {
+                    RastrRetCode retCode = RastrRetCode.AST_OK;
+                    _rastr.RgmMpt(hour, hour, ref retCode);
+
+                    for (int i = 0; i < nodeCount; i++)
+                    {
+                        try
+                        {
+                            int nodeNumber = Convert.ToInt32(nodeNy.get_ZN(i));
+                            double voltage = 0.0;
+
+                            try
+                            {
+                                voltage = Convert.ToDouble(nodeVras.get_ZN(i));
+                            }
+                            catch { }
+
+                            repository.UpdateVoltageAtVSP(nodeNumber, voltage, hour);
+                            updatedCount++;
+                        }
+                        catch (Exception ex)
+                        {
+                            Debug.WriteLine($"Ошибка при обновлении узла {i}, час {hour}: {ex.Message}");
+                        }
+                    }
+                }
+
+                Debug.WriteLine($"✓ Обновлено напряжений: {updatedCount} записей");
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"Ошибка при обновлении напряжений: {ex.Message}");
+                throw;
             }
         }
 
