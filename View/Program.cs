@@ -1,15 +1,82 @@
-﻿using View;
+﻿using System;
+using System.IO;
+using System.Windows.Forms;
 
-namespace SKRM
+using VrdoPdg.Infrastructure;
+using VrdoPdg.Infrastructure.Bars;
+using VrdoPdg.Model.Protocol;
+using VrdoPdg.Model.Services;
+using VrdoPdg.View.Threading;
+
+namespace VrdoPdg.View
 {
-    static class Program
+    /// <summary>
+    /// Точка входа АС «ВРДО ПДГ»: создание модулей инфраструктуры, сервисов прикладного уровня
+    /// и главной формы.
+    /// </summary>
+    internal static class Program
     {
+        /// <summary>
+        /// Время ожидания освобождения ASTRALib при завершении программы.
+        /// </summary>
+        private static readonly TimeSpan _shutdownTimeout = TimeSpan.FromSeconds(10);
+
+        /// <summary>
+        /// Запускает приложение.
+        /// </summary>
         [STAThread]
-        static void Main()
+        private static void Main()
         {
+            Application.SetHighDpiMode(HighDpiMode.SystemAware);
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
-            Application.Run(new MainForm());
+
+            AppSettings settings = AppSettings.Load(Path.Combine(AppContext.BaseDirectory, AppSettings.FileName));
+            ModelDataRepository repository = new ModelDataRepository(settings.GetDatabasePath());
+            try
+            {
+                repository.EnsureCreated();
+            }
+            catch (Exception exception)
+            {
+                MessageBox.Show(
+                    "Не удалось открыть базу данных " + repository.DatabasePath
+                        + Environment.NewLine + exception.Message,
+                    "АС «ВРДО ПДГ»",
+                    MessageBoxButtons.OK,
+                    MessageBoxIcon.Error);
+                return;
+            }
+
+            using (StaWorker worker = new StaWorker())
+            {
+                RastrAdapter rastrAdapter = new RastrAdapter();
+                try
+                {
+                    CalculationProtocol protocol = new CalculationProtocol();
+                    CalculationArchiveService archive = new CalculationArchiveService();
+                    AppServices services = new AppServices(
+                        settings,
+                        worker,
+                        protocol,
+                        archive,
+                        new DataLoadService(
+                            rastrAdapter,
+                            repository,
+                            new CkModel(settings.LowerVoltageBound, settings.UpperVoltageBound),
+                            new SmpSmzuCsvReader(),
+                            archive,
+                            protocol),
+                        new VoltageRegulationService(rastrAdapter, repository, archive, protocol),
+                        new ResultExportService(new SmpSmzuCsvWriter(settings.GetCsvDecimalSeparator()), protocol),
+                        new EfficiencyTableService(repository, protocol));
+                    Application.Run(new MainForm(services));
+                }
+                finally
+                {
+                    worker.Run(rastrAdapter.Dispose).Wait(_shutdownTimeout);
+                }
+            }
         }
     }
 }

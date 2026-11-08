@@ -1,11 +1,22 @@
-﻿
-Microsoft Visual Studio Solution File, Format Version 12.00
+﻿Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.14.36414.22
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "View", "View\View.csproj", "{F29144BF-46B9-4BD3-91E0-816E7414E4BC}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Model", "Main\Model.csproj", "{481E26EC-A0C8-4BA4-940C-56EFC45AF34C}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Infrastructure", "Infrastructure\Infrastructure.csproj", "{7D3C1A52-4E8B-4F0A-9C21-6B5E2D8F1A30}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Infrastructure.Bars", "Infrastructure.Bars\Infrastructure.Bars.csproj", "{B2E6F4C8-1D7A-4A3E-8F59-0C4D6E2B9A71}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Tests", "Tests\Tests.csproj", "{E5A9C3D1-7B2F-4C68-A0E4-3F1B8D6C2E95}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Database", "Database", "{3C8F2A71-5D4E-4B9A-8E1F-7A6D2C9B4E10}"
+	ProjectSection(SolutionItems) = preProject
+		Database\create_database.sql = Database\create_database.sql
+		Database\fill_barnaulskaya.sql = Database\fill_barnaulskaya.sql
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -31,6 +42,30 @@ Global
 		{481E26EC-A0C8-4BA4-940C-56EFC45AF34C}.Release|Any CPU.Build.0 = Release|Any CPU
 		{481E26EC-A0C8-4BA4-940C-56EFC45AF34C}.Release|x86.ActiveCfg = Release|x86
 		{481E26EC-A0C8-4BA4-940C-56EFC45AF34C}.Release|x86.Build.0 = Release|x86
+		{7D3C1A52-4E8B-4F0A-9C21-6B5E2D8F1A30}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{7D3C1A52-4E8B-4F0A-9C21-6B5E2D8F1A30}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{7D3C1A52-4E8B-4F0A-9C21-6B5E2D8F1A30}.Debug|x86.ActiveCfg = Debug|x86
+		{7D3C1A52-4E8B-4F0A-9C21-6B5E2D8F1A30}.Debug|x86.Build.0 = Debug|x86
+		{7D3C1A52-4E8B-4F0A-9C21-6B5E2D8F1A30}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{7D3C1A52-4E8B-4F0A-9C21-6B5E2D8F1A30}.Release|Any CPU.Build.0 = Release|Any CPU
+		{7D3C1A52-4E8B-4F0A-9C21-6B5E2D8F1A30}.Release|x86.ActiveCfg = Release|x86
+		{7D3C1A52-4E8B-4F0A-9C21-6B5E2D8F1A30}.Release|x86.Build.0 = Release|x86
+		{B2E6F4C8-1D7A-4A3E-8F59-0C4D6E2B9A71}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B2E6F4C8-1D7A-4A3E-8F59-0C4D6E2B9A71}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B2E6F4C8-1D7A-4A3E-8F59-0C4D6E2B9A71}.Debug|x86.ActiveCfg = Debug|x86
+		{B2E6F4C8-1D7A-4A3E-8F59-0C4D6E2B9A71}.Debug|x86.Build.0 = Debug|x86
+		{B2E6F4C8-1D7A-4A3E-8F59-0C4D6E2B9A71}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B2E6F4C8-1D7A-4A3E-8F59-0C4D6E2B9A71}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B2E6F4C8-1D7A-4A3E-8F59-0C4D6E2B9A71}.Release|x86.ActiveCfg = Release|x86
+		{B2E6F4C8-1D7A-4A3E-8F59-0C4D6E2B9A71}.Release|x86.Build.0 = Release|x86
+		{E5A9C3D1-7B2F-4C68-A0E4-3F1B8D6C2E95}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E5A9C3D1-7B2F-4C68-A0E4-3F1B8D6C2E95}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E5A9C3D1-7B2F-4C68-A0E4-3F1B8D6C2E95}.Debug|x86.ActiveCfg = Debug|x86
+		{E5A9C3D1-7B2F-4C68-A0E4-3F1B8D6C2E95}.Debug|x86.Build.0 = Debug|x86
+		{E5A9C3D1-7B2F-4C68-A0E4-3F1B8D6C2E95}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E5A9C3D1-7B2F-4C68-A0E4-3F1B8D6C2E95}.Release|Any CPU.Build.0 = Release|Any CPU
+		{E5A9C3D1-7B2F-4C68-A0E4-3F1B8D6C2E95}.Release|x86.ActiveCfg = Release|x86
+		{E5A9C3D1-7B2F-4C68-A0E4-3F1B8D6C2E95}.Release|x86.Build.0 = Release|x86
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
