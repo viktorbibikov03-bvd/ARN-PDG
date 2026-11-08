@@ -161,20 +161,25 @@ namespace VrdoPdg.Infrastructure.Bars
                 return null;
             }
 
+            // Узел подключения генератора: столбец Node таблицы «Генераторы УР» — номер ny таблицы «Узлы».
+            // Заданное напряжение, загрузка и пределы реактивной мощности берутся из строки узла:
+            // после расчета УР обновляется qg узла, а столбец Q таблицы генераторов не меняется.
             int nodeNumber = _generators.ReadInteger("Node", row);
             int nodeRow;
-            bool isNodeFound = nodes.TryFindRow(nodeNumber, out nodeRow);
-            bool isOn = !_generators.ReadBoolean("sta", row)
-                && isNodeFound
-                && !nodes.ReadBoolean("sta", nodeRow);
+            if (!nodes.TryFindRow(nodeNumber, out nodeRow))
+            {
+                return null;
+            }
+
+            bool isOn = !_generators.ReadBoolean("sta", row) && !nodes.ReadBoolean("sta", nodeRow);
             return new GeneratorState(
                 isOn,
                 nodeNumber,
                 _generators.ReadDouble("P", row),
-                _generators.ReadDouble("Q", row),
-                isNodeFound ? nodes.ReadDouble("vzd", nodeRow) : 0,
-                _generators.ReadDouble("Qmin", row),
-                _generators.ReadDouble("Qmax", row),
+                nodes.ReadDouble("qg", nodeRow),
+                nodes.ReadDouble("vzd", nodeRow),
+                nodes.ReadDouble("qmin", nodeRow),
+                nodes.ReadDouble("qmax", nodeRow),
                 _generators.ReadInteger("NumPQ", row));
         }
 

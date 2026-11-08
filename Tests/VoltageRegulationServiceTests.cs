@@ -101,6 +101,48 @@ namespace VrdoPdg.Tests
         }
 
         /// <summary>
+        /// Генератор изменяется шагами по 0,3 кВ, пока его загрузка не станет равной пределу;
+        /// шаг, выводящий генератор на предел, — последнее действие с ним, после чего
+        /// изменяется следующий генератор таблицы эффективности.
+        /// </summary>
+        [Test]
+        public void Run_GeneratorReachesLimit_ContinuesWithNextGenerator()
+        {
+            const int secondId = 42;
+            const int secondNumber = 14;
+            const int secondNode = 6001;
+            RegulationScenario scenario = new RegulationScenario();
+            scenario.SetVoltage(1, 526.4);
+            scenario.Adapter.ControlledDevices[RegulationScenario.ControlledNode].IsOn = false;
+            scenario.Adapter.SwitchedDevices[RegulationScenario.ReactorNumber] =
+                new FakeSwitchedDevice(true, -6, RegulationScenario.MainNode);
+            scenario.Adapter.SwitchedDevices[RegulationScenario.CapacitorNumber] =
+                new FakeSwitchedDevice(false, 4, RegulationScenario.MainNode);
+            scenario.Adapter.Generators[RegulationScenario.GeneratorNumber] = new FakeGenerator(
+                RegulationScenario.GeneratorNode, RegulationScenario.GeneratorSetVoltage, 4, -2, 100, 10, 0.05,
+                RegulationScenario.MainNode);
+            scenario.Adapter.Generators[secondNumber] = new FakeGenerator(
+                secondNode, RegulationScenario.GeneratorSetVoltage, 50, -50, 100, 10, 0.05,
+                RegulationScenario.MainNode);
+            scenario.Repository.Devices.Add(
+                new Device(secondId, DeviceType.Generator, "Барнаульская ТЭЦ-2, ТГ-6", secondNumber, null));
+            scenario.Repository.EfficiencyEntries.Add(
+                new EfficiencyEntry(RegulationScenario.ControlPointId, secondId, 5, 5));
+
+            CalculationResult result = scenario.Run();
+
+            DeviceMode firstMode = result.After.GetMode(RegulationScenario.GeneratorId, 1)!;
+            Assert.That(firstMode.ReactivePower, Is.EqualTo(-2).Within(Tolerance));
+            Assert.That(
+                firstMode.SetVoltage,
+                Is.EqualTo(RegulationScenario.GeneratorSetVoltage - 0.6).Within(Tolerance));
+            Assert.That(result.After.GetMode(secondId, 1)!.SetVoltage,
+                Is.EqualTo(RegulationScenario.GeneratorSetVoltage - 2.4).Within(Tolerance));
+            Assert.That(result.After.GetVoltage(RegulationScenario.MainNode, 1), Is.EqualTo(524.9).Within(Tolerance));
+            Assert.That(result.UnresolvedViolations, Is.Empty);
+        }
+
+        /// <summary>
         /// Напряжение ниже нижней границы: управляемое СКРМ загружается до Qmax,
         /// включенный реактор отключается.
         /// </summary>

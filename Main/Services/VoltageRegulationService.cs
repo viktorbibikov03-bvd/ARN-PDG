@@ -527,9 +527,9 @@ namespace VrdoPdg.Model.Services
         }
 
         /// <summary>
-        /// Формирует изменение заданного напряжения генератора на 0,3 кВ: снижение,
-        /// если загрузка выше Qmin, или повышение, если загрузка ниже Qmax по PQ-диаграмме.
-        /// Отключенный генератор пропускается.
+        /// Формирует изменение заданного напряжения vzd узла генератора на 0,3 кВ: снижение,
+        /// если загрузка узла qg выше qmin, или повышение, если qg ниже qmax. Генератор изменяется,
+        /// пока qg не станет равна qmin или qmax; отключенный генератор пропускается.
         /// </summary>
         /// <param name="run">Данные расчета.</param>
         /// <param name="hourState">Состояние часа.</param>
@@ -553,7 +553,7 @@ namespace VrdoPdg.Model.Services
                 return null;
             }
 
-            ReactivePowerLimits limits = RegimeReader.GetGeneratorLimits(state, run.Session.GetPQDiagram(device.Id));
+            ReactivePowerLimits limits = RegimeReader.GetGeneratorLimits(state);
             if (limits.Range <= ReactivePowerTolerance)
             {
                 return null;
@@ -582,8 +582,8 @@ namespace VrdoPdg.Model.Services
             target = Math.Round(target, 3);
             int nodeNumber = state.NodeNumber;
             string description = device.TypeName + " · Uзад: " + ValueFormat.Voltage(state.SetVoltage)
-                + " → " + ValueFormat.Voltage(target) + " кВ (Q = " + ValueFormat.Power(state.ReactivePower)
-                + " Мвар, допустимо " + ValueFormat.Power(limits.Min) + "…" + ValueFormat.Power(limits.Max) + ")";
+                + " → " + ValueFormat.Voltage(target) + " кВ (qg = " + ValueFormat.Power(state.ReactivePower)
+                + " Мвар, qmin…qmax = " + ValueFormat.Power(limits.Min) + "…" + ValueFormat.Power(limits.Max) + ")";
             return new DeviceChange(
                 device,
                 direction,

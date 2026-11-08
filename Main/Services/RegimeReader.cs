@@ -103,7 +103,7 @@ namespace VrdoPdg.Model.Services
                         return null;
                     }
 
-                    ReactivePowerLimits limits = GetGeneratorLimits(generator, session.GetPQDiagram(device.Id));
+                    ReactivePowerLimits limits = GetGeneratorLimits(generator);
                     return new DeviceMode(
                         device.Id,
                         hour,
@@ -118,17 +118,15 @@ namespace VrdoPdg.Model.Services
         }
 
         /// <summary>
-        /// Определяет пределы реактивной мощности генератора: по PQ-диаграмме при текущей
-        /// активной мощности, а если диаграмма не задана — по таблице генераторов МТ.
+        /// Определяет пределы реактивной мощности генератора: минимальная и максимальная генерация Q
+        /// (qmin, qmax) узла подключения. Эти пределы соблюдает расчет УР, поэтому генератор
+        /// выходит на предел, когда загрузка узла qg становится равной qmin или qmax.
         /// </summary>
         /// <param name="generator">Состояние генератора.</param>
-        /// <param name="diagram">PQ-диаграмма генератора.</param>
         /// <returns>Пределы реактивной мощности.</returns>
-        public static ReactivePowerLimits GetGeneratorLimits(GeneratorState generator, PQDiagram diagram)
+        public static ReactivePowerLimits GetGeneratorLimits(GeneratorState generator)
         {
-            return diagram.IsEmpty
-                ? new ReactivePowerLimits(generator.MinReactivePower, generator.MaxReactivePower)
-                : diagram.GetLimits(generator.ActivePower);
+            return new ReactivePowerLimits(generator.MinReactivePower, generator.MaxReactivePower);
         }
     }
 }
