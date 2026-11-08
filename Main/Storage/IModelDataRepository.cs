@@ -11,9 +11,10 @@ namespace VrdoPdg.Model.Storage
     public interface IModelDataRepository
     {
         /// <summary>
-        /// Создает таблицы БД, если файл БД новый или не содержит таблиц системы.
+        /// Проверяет, что файл БД существует и содержит таблицы системы. БД не создается.
         /// </summary>
-        void EnsureCreated();
+        /// <exception cref="VrdoException">Файл БД не найден или в нем нет таблиц системы.</exception>
+        void CheckDatabase();
 
         /// <summary>
         /// Возвращает энергосистемы, упорядоченные по коду.

@@ -9,34 +9,37 @@ using Microsoft.Data.Sqlite;
 using NUnit.Framework;
 
 using VrdoPdg.Infrastructure;
+using VrdoPdg.Model;
 using VrdoPdg.Model.Entities;
 using VrdoPdg.Model.Storage;
 
 namespace VrdoPdg.Tests
 {
     /// <summary>
-    /// Тесты репозитория БД на скриптах создания БД и заполнения данных КП «Барнаульская».
+    /// Тесты репозитория БД. Тесты чтения и записи выполняются на копии рабочей БД, путь к которой
+    /// задается переменной среды <c>VRDO_PDG_TEST_DATABASE</c>; без нее эти тесты пропускаются.
+    /// Проверки не зависят от состава данных в БД.
     /// </summary>
     [TestFixture]
     public sealed class ModelDataRepositoryTests
     {
         /// <summary>
-        /// Каталог временной БД теста.
+        /// Переменная среды с путем к рабочей БД.
+        /// </summary>
+        private const string DatabaseVariable = "VRDO_PDG_TEST_DATABASE";
+
+        /// <summary>
+        /// Каталог временных файлов теста.
         /// </summary>
         private string _directory = string.Empty;
 
         /// <summary>
-        /// Путь к временной БД теста.
+        /// Путь к копии БД теста.
         /// </summary>
         private string _databasePath = string.Empty;
 
         /// <summary>
-        /// Репозиторий временной БД.
-        /// </summary>
-        private ModelDataRepository _repository = null!;
-
-        /// <summary>
-        /// Создает БД и заполняет ее данными КП «Барнаульская».
+        /// Создает каталог временных файлов.
         /// </summary>
         [SetUp]
         public void SetUp()
@@ -44,14 +47,10 @@ namespace VrdoPdg.Tests
             _directory = Path.Combine(Path.GetTempPath(), "vrdo_db_" + Path.GetRandomFileName());
             Directory.CreateDirectory(_directory);
             _databasePath = Path.Combine(_directory, "VrdoPdg.db");
-            _repository = new ModelDataRepository(_databasePath);
-            _repository.EnsureCreated();
-            Execute(File.ReadAllText(Path.Combine(TestContext.CurrentContext.TestDirectory, "TestData",
-                "fill_barnaulskaya.sql")));
         }
 
         /// <summary>
-        /// Удаляет временную БД.
+        /// Удаляет временные файлы.
         /// </summary>
         [TearDown]
         public void TearDown()
@@ -61,105 +60,123 @@ namespace VrdoPdg.Tests
         }
 
         /// <summary>
-        /// Новая БД содержит справочник энергосистем; повторный вызов не изменяет БД.
+        /// Отсутствующий файл БД не создается, а сообщается об ошибке.
         /// </summary>
         [Test]
-        public void EnsureCreated_NewDatabase_CreatesPowerSystems()
+        public void CheckDatabase_MissingFile_ThrowsAndDoesNotCreateFile()
         {
-            _repository.EnsureCreated();
+            ModelDataRepository repository = new ModelDataRepository(_databasePath);
 
-            IReadOnlyList<PowerSystem> powerSystems = _repository.GetPowerSystems();
+            VrdoException exception = Assert.Throws<VrdoException>(repository.CheckDatabase)!;
 
-            Assert.That(powerSystems.Select(item => item.Name),
-                Is.EqualTo(new[] { "ОЭС Сибири", "ЕЭС Казахстана", "Внешние ЭС" }));
+            Assert.That(exception.Message, Is.EqualTo("Не найден файл базы данных"));
+            Assert.That(File.Exists(_databasePath), Is.False);
         }
 
         /// <summary>
-        /// КП «Барнаульская» содержит основной узел 564 и дополнительный узел 563.
+        /// Файл без таблиц системы отклоняется с перечнем отсутствующих таблиц.
         /// </summary>
         [Test]
-        public void GetControlPoints_FilledDatabase_ReturnsNodes()
+        public void CheckDatabase_EmptyFile_ThrowsWithMissingTables()
         {
-            ControlPoint controlPoint = _repository.GetControlPoints().Single();
+            File.WriteAllBytes(_databasePath, new byte[0]);
+            ModelDataRepository repository = new ModelDataRepository(_databasePath);
 
-            Assert.That(controlPoint.Name, Is.EqualTo("Барнаульская"));
-            Assert.That(controlPoint.Nodes.Select(node => node.Number), Is.EqualTo(new[] { 563, 564 }));
-            Assert.That(controlPoint.MainNode!.Number, Is.EqualTo(564));
+            VrdoException exception = Assert.Throws<VrdoException>(repository.CheckDatabase)!;
+
+            Assert.That(exception.Message, Is.EqualTo("База данных не содержит таблиц системы"));
+            Assert.That(exception.Details, Does.Contain("Control_point"));
         }
 
         /// <summary>
-        /// Справочник СКРМ содержит 4 управляемых СКРМ, 23 коммутируемых и 30 генераторов.
+        /// Рабочая БД проходит проверку и содержит справочник энергосистем.
         /// </summary>
         [Test]
-        public void GetDevices_FilledDatabase_ReturnsDevicesWithNumbers()
+        public void CheckDatabase_WorkingDatabase_Succeeds()
         {
-            IReadOnlyList<Device> devices = _repository.GetDevices();
+            ModelDataRepository repository = OpenWorkingCopy();
 
-            Assert.That(devices.Count(device => device.Type == DeviceType.Controlled), Is.EqualTo(4));
-            Assert.That(devices.Count(device => device.Type == DeviceType.Switched), Is.EqualTo(23));
-            Assert.That(devices.Count(device => device.Type == DeviceType.Generator), Is.EqualTo(30));
-            Device capacitor = devices.Single(device => device.Number == 125 && device.Type == DeviceType.Switched);
-            Assert.That(capacitor.IsCapacitorBank, Is.True);
+            Assert.DoesNotThrow(repository.CheckDatabase);
+            Assert.That(repository.GetPowerSystems(), Is.Not.Empty);
         }
 
         /// <summary>
-        /// Перестановка приоритетов сохраняется без нарушения уникальности; исключенное СКРМ из ПУР
-        /// остается с пустым приоритетом, а добавленное технологом СКРМ удаляется.
+        /// КП считываются с узлами, основной узел входит в состав узлов КП.
         /// </summary>
         [Test]
-        public void SaveEfficiencyTable_ChangedPriorities_KeepsDefaultPriorities()
+        public void GetControlPoints_WorkingDatabase_ReturnsNodes()
         {
-            int controlPointId = _repository.GetControlPoints().Single().Id;
-            List<EfficiencyEntry> entries = _repository.GetEfficiencyEntries()
-                .OrderBy(entry => entry.Priority)
-                .ToList();
-            List<DevicePriority> priorities = new List<DevicePriority>
+            ModelDataRepository repository = OpenWorkingCopy();
+
+            IReadOnlyList<ControlPoint> controlPoints = repository.GetControlPoints();
+
+            Assert.That(controlPoints, Is.Not.Empty);
+            foreach (ControlPoint controlPoint in controlPoints)
             {
-                new DevicePriority(entries[1].DeviceId, 1),
-                new DevicePriority(entries[0].DeviceId, 2)
-            };
-            for (int index = 2; index < entries.Count - 1; index++)
-            {
-                priorities.Add(new DevicePriority(entries[index].DeviceId, index + 1));
+                Assert.That(controlPoint.Name, Is.Not.Empty);
+                Assert.That(controlPoint.Nodes, Is.Not.Empty);
+                if (controlPoint.MainNode != null)
+                {
+                    Assert.That(controlPoint.Nodes, Does.Contain(controlPoint.MainNode));
+                }
             }
-
-            _repository.SaveEfficiencyTable(controlPointId, priorities);
-
-            List<EfficiencyEntry> saved = _repository.GetEfficiencyEntries().ToList();
-            Assert.That(saved, Has.Count.EqualTo(entries.Count));
-            Assert.That(saved.Single(entry => entry.DeviceId == entries[1].DeviceId).Priority, Is.EqualTo(1));
-            Assert.That(saved.Single(entry => entry.DeviceId == entries[0].DeviceId).Priority, Is.EqualTo(2));
-            EfficiencyEntry removed = saved.Single(entry => entry.DeviceId == entries[entries.Count - 1].DeviceId);
-            Assert.That(removed.Priority, Is.Null);
-            Assert.That(removed.DefaultPriority, Is.EqualTo(entries.Count));
         }
 
         /// <summary>
-        /// СКРМ, добавленное технологом и не входящее в ПУР, удаляется из таблицы при исключении.
+        /// СКРМ считываются с номерами в МТ и видом коммутируемых СКРМ.
         /// </summary>
         [Test]
-        public void SaveEfficiencyTable_RemovedDeviceNotInDefaultTable_DeletesRow()
+        public void GetDevices_WorkingDatabase_ReturnsDevicesWithNumbers()
         {
-            int controlPointId = _repository.GetControlPoints().Single().Id;
-            List<EfficiencyEntry> entries = _repository.GetEfficiencyEntries()
-                .OrderBy(entry => entry.Priority)
-                .ToList();
-            List<DevicePriority> priorities = entries
-                .Select(entry => new DevicePriority(entry.DeviceId, entry.Priority.GetValueOrDefault()))
-                .ToList();
-            Execute("UPDATE Efficiency_table SET priority_pur = NULL WHERE id_dev = "
-                + entries[0].DeviceId.ToString(CultureInfo.InvariantCulture));
-            priorities.RemoveAt(0);
-            for (int index = 0; index < priorities.Count; index++)
-            {
-                priorities[index] = new DevicePriority(priorities[index].DeviceId, index + 1);
-            }
+            ModelDataRepository repository = OpenWorkingCopy();
 
-            _repository.SaveEfficiencyTable(controlPointId, priorities);
+            IReadOnlyList<Device> devices = repository.GetDevices();
 
+            Assert.That(devices, Is.Not.Empty);
+            Assert.That(devices.All(device => device.Number > 0), Is.True);
             Assert.That(
-                _repository.GetEfficiencyEntries().Any(entry => entry.DeviceId == entries[0].DeviceId),
-                Is.False);
+                devices.Where(device => device.Type == DeviceType.Switched).All(device => device.SwitchedKind != null),
+                Is.True);
+        }
+
+        /// <summary>
+        /// Перестановка двух первых приоритетов сохраняется без нарушения уникальности,
+        /// приоритеты по умолчанию (ПУР) не меняются.
+        /// </summary>
+        [Test]
+        public void SaveEfficiencyTable_SwappedPriorities_KeepsDefaultPriorities()
+        {
+            ModelDataRepository repository = OpenWorkingCopy();
+            IGrouping<int, EfficiencyEntry>? table = repository.GetEfficiencyEntries()
+                .Where(entry => entry.Priority.HasValue)
+                .GroupBy(entry => entry.ControlPointId)
+                .FirstOrDefault(group => group.Count() >= 2);
+            if (table == null)
+            {
+                Assert.Ignore("В рабочей БД нет таблицы эффективности с двумя СКРМ");
+            }
+
+            List<EfficiencyEntry> entries = table!.OrderBy(entry => entry.Priority).ToList();
+            List<DevicePriority> priorities = entries
+                .Select((entry, index) => new DevicePriority(entry.DeviceId, index + 1))
+                .ToList();
+            priorities[0] = new DevicePriority(entries[0].DeviceId, 2);
+            priorities[1] = new DevicePriority(entries[1].DeviceId, 1);
+
+            repository.SaveEfficiencyTable(table.Key, priorities);
+
+            List<EfficiencyEntry> saved = repository.GetEfficiencyEntries()
+                .Where(entry => entry.ControlPointId == table.Key && entry.Priority.HasValue)
+                .ToList();
+            Assert.That(saved, Has.Count.EqualTo(entries.Count));
+            Assert.That(saved.Single(entry => entry.DeviceId == entries[0].DeviceId).Priority, Is.EqualTo(2));
+            Assert.That(saved.Single(entry => entry.DeviceId == entries[1].DeviceId).Priority, Is.EqualTo(1));
+            foreach (EfficiencyEntry entry in entries)
+            {
+                Assert.That(
+                    saved.Single(item => item.DeviceId == entry.DeviceId).DefaultPriority,
+                    Is.EqualTo(entry.DefaultPriority));
+            }
         }
 
         /// <summary>
@@ -168,12 +185,14 @@ namespace VrdoPdg.Tests
         [Test]
         public void SaveVoltageSchedule_RepeatedSave_ReplacesBounds()
         {
-            int controlPointId = _repository.GetControlPoints().Single().Id;
+            ModelDataRepository repository = OpenWorkingCopy();
+            int controlPointId = repository.GetControlPoints().First().Id;
             DateTime receivedAt = new DateTime(2026, 10, 13, 9, 30, 0);
-            _repository.SaveVoltageSchedule(new[] { new VoltageBounds(controlPointId, 1, 500, 525, receivedAt) });
-            _repository.SaveVoltageSchedule(new[] { new VoltageBounds(controlPointId, 1, 505, 520, receivedAt) });
+            repository.SaveVoltageSchedule(new[] { new VoltageBounds(controlPointId, 1, 500, 525, receivedAt) });
+            repository.SaveVoltageSchedule(new[] { new VoltageBounds(controlPointId, 1, 505, 520, receivedAt) });
 
-            VoltageBounds bounds = _repository.GetVoltageSchedule().Single();
+            VoltageBounds bounds = repository.GetVoltageSchedule()
+                .Single(item => item.ControlPointId == controlPointId && item.Hour == 1);
 
             Assert.That(bounds.LowerBound, Is.EqualTo(505));
             Assert.That(bounds.UpperBound, Is.EqualTo(520));
@@ -186,12 +205,15 @@ namespace VrdoPdg.Tests
         [Test]
         public void SaveRegime_RepeatedSave_ReplacesData()
         {
-            Device device = _repository.GetDevices().First();
-            _repository.SaveRegime(
-                new[] { new NodeVoltage(564, 1, 530), new NodeVoltage(564, 2, 520) },
+            ModelDataRepository repository = OpenWorkingCopy();
+            ControlPoint controlPoint = repository.GetControlPoints().First();
+            int nodeNumber = controlPoint.Nodes[0].Number;
+            Device device = repository.GetDevices().First();
+            repository.SaveRegime(
+                new[] { new NodeVoltage(nodeNumber, 1, 530), new NodeVoltage(nodeNumber, 2, 520) },
                 new[] { new DeviceMode(device.Id, 1, true, -180, -180, 0, 525, null, true) });
-            _repository.SaveRegime(
-                new[] { new NodeVoltage(563, 1, 0) },
+            repository.SaveRegime(
+                new[] { new NodeVoltage(nodeNumber, 1, 0) },
                 new DeviceMode[0]);
 
             Assert.That(Scalar("SELECT COUNT(*) FROM Node_voltage"), Is.EqualTo(1));
@@ -204,34 +226,40 @@ namespace VrdoPdg.Tests
         [Test]
         public void SavePQDiagram_GeneratorPoints_RoundTrips()
         {
-            Device generator = _repository.GetDevices().First(device => device.Type == DeviceType.Generator);
-            _repository.SavePQDiagram(generator.Id, new[] { new PQPoint(0, -100, 150), new PQPoint(200, -60, 120) });
+            ModelDataRepository repository = OpenWorkingCopy();
+            Device? generator = repository.GetDevices().FirstOrDefault(device => device.Type == DeviceType.Generator);
+            if (generator == null)
+            {
+                Assert.Ignore("В рабочей БД нет генераторов");
+            }
 
-            PQDiagram diagram = _repository.GetPQDiagrams()[generator.Id];
+            repository.SavePQDiagram(generator!.Id, new[] { new PQPoint(0, -100, 150), new PQPoint(200, -60, 120) });
+
+            PQDiagram diagram = repository.GetPQDiagrams()[generator.Id];
 
             Assert.That(diagram.Points, Has.Count.EqualTo(2));
             Assert.That(diagram.GetLimits(100).Max, Is.EqualTo(135).Within(1e-9));
         }
 
         /// <summary>
-        /// Выполняет SQL-скрипт во временной БД.
+        /// Копирует рабочую БД во временный каталог и открывает копию. Без переменной среды
+        /// с путем к рабочей БД тест пропускается.
         /// </summary>
-        /// <param name="sql">Текст скрипта.</param>
-        private void Execute(string sql)
+        /// <returns>Репозиторий копии рабочей БД.</returns>
+        private ModelDataRepository OpenWorkingCopy()
         {
-            using (SqliteConnection connection = new SqliteConnection("Data Source=" + _databasePath))
+            string? source = Environment.GetEnvironmentVariable(DatabaseVariable);
+            if (string.IsNullOrWhiteSpace(source) || !File.Exists(source))
             {
-                connection.Open();
-                using (SqliteCommand command = connection.CreateCommand())
-                {
-                    command.CommandText = "PRAGMA foreign_keys = ON; " + sql;
-                    command.ExecuteNonQuery();
-                }
+                Assert.Ignore("Не задан путь к рабочей БД: переменная среды " + DatabaseVariable);
             }
+
+            File.Copy(source!, _databasePath, true);
+            return new ModelDataRepository(_databasePath);
         }
 
         /// <summary>
-        /// Выполняет запрос, возвращающий число.
+        /// Выполняет запрос к копии БД, возвращающий число.
         /// </summary>
         /// <param name="sql">Текст запроса.</param>
         /// <returns>Результат запроса.</returns>

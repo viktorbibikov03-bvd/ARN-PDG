@@ -6,6 +6,7 @@ using System.Linq;
 
 using Microsoft.Data.Sqlite;
 
+using VrdoPdg.Model;
 using VrdoPdg.Model.Entities;
 using VrdoPdg.Model.Storage;
 
@@ -14,19 +15,34 @@ namespace VrdoPdg.Infrastructure
     /// <summary>
     /// Репозиторий базы данных SQLite: доступ к данным системы с помощью
     /// параметризованных SQL-запросов через библиотеку Microsoft.Data.Sqlite.
-    /// При открытии каждого соединения включается проверка внешних ключей.
+    /// Работает с существующим файлом БД и не создает его. При открытии каждого соединения
+    /// включается проверка внешних ключей.
     /// </summary>
     public sealed class ModelDataRepository : IModelDataRepository
     {
         /// <summary>
-        /// Имя ресурса со скриптом создания БД.
+        /// Сообщение об отсутствии файла БД.
         /// </summary>
-        private const string SchemaResourceName = "VrdoPdg.Infrastructure.CreateDatabase.sql";
+        private const string MissingDatabaseMessage = "Не найден файл базы данных";
+
+        /// <summary>
+        /// Сообщение об отсутствии таблиц системы в БД.
+        /// </summary>
+        private const string MissingTablesMessage = "База данных не содержит таблиц системы";
 
         /// <summary>
         /// Формат хранения даты и времени (ISO 8601).
         /// </summary>
         private const string DateTimeFormat = "yyyy-MM-dd HH:mm:ss";
+
+        /// <summary>
+        /// Таблицы БД, с которыми работает система.
+        /// </summary>
+        private static readonly string[] _requiredTables =
+        {
+            "Power_system", "Control_point", "Node", "Device", "Controlled_device", "Switched_device",
+            "Generator", "PQ_point", "Efficiency_table", "Voltage_schedule", "Node_voltage", "Device_mode"
+        };
 
         /// <summary>
         /// Строка подключения к БД.
@@ -48,7 +64,7 @@ namespace VrdoPdg.Infrastructure
             SqliteConnectionStringBuilder builder = new SqliteConnectionStringBuilder
             {
                 DataSource = DatabasePath,
-                Mode = SqliteOpenMode.ReadWriteCreate
+                Mode = SqliteOpenMode.ReadWrite
             };
             _connectionString = builder.ToString();
         }
@@ -59,40 +75,35 @@ namespace VrdoPdg.Infrastructure
         public string DatabasePath { get; }
 
         /// <inheritdoc/>
-        public void EnsureCreated()
+        public void CheckDatabase()
         {
-            using (SqliteConnection connection = OpenConnection())
+            if (!File.Exists(DatabasePath))
             {
-                using (SqliteCommand check = connection.CreateCommand())
+                throw new VrdoException(MissingDatabaseMessage, DatabasePath);
+            }
+
+            HashSet<string> tables = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+            using (SqliteConnection connection = OpenConnection())
+            using (SqliteCommand command = connection.CreateCommand())
+            {
+                command.CommandText = "SELECT name FROM sqlite_master WHERE type = 'table'";
+                using (SqliteDataReader reader = command.ExecuteReader())
                 {
-                    check.CommandText = "SELECT COUNT(*) FROM sqlite_master "
-                        + "WHERE type = 'table' AND name = 'Control_point'";
-                    if (Convert.ToInt64(check.ExecuteScalar(), CultureInfo.InvariantCulture) > 0)
+                    while (reader.Read())
                     {
-                        return;
+                        tables.Add(reader.GetString(0));
                     }
                 }
+            }
 
-                using (SqliteTransaction transaction = connection.BeginTransaction())
-                {
-                    using (SqliteCommand create = connection.CreateCommand())
-                    {
-                        create.Transaction = transaction;
-                        create.CommandText = ReadSchemaScript();
-                        create.ExecuteNonQuery();
-                    }
-
-                    using (SqliteCommand seed = connection.CreateCommand())
-                    {
-                        seed.Transaction = transaction;
-                        seed.CommandText = "INSERT INTO Power_system (name_ps) VALUES "
-                            + "('ОЭС Сибири'), ('ЕЭС Казахстана'), ('Внешние ЭС') "
-                            + "ON CONFLICT (name_ps) DO NOTHING";
-                        seed.ExecuteNonQuery();
-                    }
-
-                    transaction.Commit();
-                }
+            List<string> missing = _requiredTables
+                .Where(table => !tables.Contains(table))
+                .ToList();
+            if (missing.Count > 0)
+            {
+                throw new VrdoException(
+                    MissingTablesMessage,
+                    DatabasePath + Environment.NewLine + "Нет таблиц: " + string.Join(", ", missing));
             }
         }
 
@@ -493,26 +504,6 @@ namespace VrdoPdg.Infrastructure
                 }
 
                 transaction.Commit();
-            }
-        }
-
-        /// <summary>
-        /// Читает скрипт создания БД из ресурсов сборки.
-        /// </summary>
-        /// <returns>Текст скрипта.</returns>
-        private static string ReadSchemaScript()
-        {
-            using (Stream? stream = typeof(ModelDataRepository).Assembly.GetManifestResourceStream(SchemaResourceName))
-            {
-                if (stream == null)
-                {
-                    throw new InvalidOperationException("Не найден скрипт создания базы данных " + SchemaResourceName);
-                }
-
-                using (StreamReader reader = new StreamReader(stream))
-                {
-                    return reader.ReadToEnd();
-                }
             }
         }
 

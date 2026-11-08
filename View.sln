@@ -12,12 +12,6 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Infrastructure.Bars", "Infr
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Tests", "Tests\Tests.csproj", "{E5A9C3D1-7B2F-4C68-A0E4-3F1B8D6C2E95}"
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Database", "Database", "{3C8F2A71-5D4E-4B9A-8E1F-7A6D2C9B4E10}"
-	ProjectSection(SolutionItems) = preProject
-		Database\create_database.sql = Database\create_database.sql
-		Database\fill_barnaulskaya.sql = Database\fill_barnaulskaya.sql
-	EndProjectSection
-EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU

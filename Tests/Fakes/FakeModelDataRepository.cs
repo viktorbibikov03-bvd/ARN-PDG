@@ -52,7 +52,7 @@ namespace VrdoPdg.Tests.Fakes
         public List<DeviceMode> SavedModes { get; } = new List<DeviceMode>();
 
         /// <inheritdoc/>
-        public void EnsureCreated()
+        public void CheckDatabase()
         {
         }
 

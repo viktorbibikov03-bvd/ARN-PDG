@@ -4,6 +4,7 @@ using System.Windows.Forms;
 
 using VrdoPdg.Infrastructure;
 using VrdoPdg.Infrastructure.Bars;
+using VrdoPdg.Model;
 using VrdoPdg.Model.Protocol;
 using VrdoPdg.Model.Services;
 using VrdoPdg.View.Threading;
@@ -35,13 +36,16 @@ namespace VrdoPdg.View
             ModelDataRepository repository = new ModelDataRepository(settings.GetDatabasePath());
             try
             {
-                repository.EnsureCreated();
+                repository.CheckDatabase();
             }
             catch (Exception exception)
             {
+                string details = exception is VrdoException vrdoException
+                    ? exception.Message + Environment.NewLine + vrdoException.Details
+                    : exception.Message;
                 MessageBox.Show(
                     "Не удалось открыть базу данных " + repository.DatabasePath
-                        + Environment.NewLine + exception.Message,
+                        + Environment.NewLine + details,
                     "АС «ВРДО ПДГ»",
                     MessageBoxButtons.OK,
                     MessageBoxIcon.Error);

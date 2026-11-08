@@ -19,8 +19,4 @@
     <ProjectReference Include="..\Main\Model.csproj" />
   </ItemGroup>
 
-  <ItemGroup>
-    <EmbeddedResource Include="..\Database\create_database.sql" LogicalName="VrdoPdg.Infrastructure.CreateDatabase.sql" />
-  </ItemGroup>
-
 </Project>
