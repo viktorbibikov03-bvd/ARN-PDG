@@ -375,8 +375,7 @@ namespace VrdoPdg.Model.Services
         }
 
         /// <summary>
-        /// Считывает генератор по номеру узла подключения и PQ-диаграмму его единственного
-        /// работающего генератора.
+        /// Считывает узел подключения и PQ-диаграмму генератора.
         /// </summary>
         /// <param name="device">СКРМ генератора.</param>
         /// <param name="diagrams">PQ-диаграммы генераторов по коду СКРМ.</param>
@@ -396,19 +395,14 @@ namespace VrdoPdg.Model.Services
             }
 
             generatorNodes[device.Id] = generator.NodeNumber;
-            if (generator.PQDiagramNumber <= 0)
+            if (generator.PQDiagramNumber > 0)
             {
-                // В узле несколько генераторов или PQ-диаграмма не задана: пределы реактивной
-                // мощности берутся из таблицы «Узлы», сохраненная в БД диаграмма не используется.
-                diagrams.Remove(device.Id);
-                return true;
-            }
-
-            IReadOnlyList<PQPoint> points = _rastrAdapter.GetPQDiagram(generator.PQDiagramNumber);
-            if (points.Count > 0)
-            {
-                diagrams[device.Id] = new PQDiagram(points);
-                updatedDiagrams.Add(device.Id);
+                IReadOnlyList<PQPoint> points = _rastrAdapter.GetPQDiagram(generator.PQDiagramNumber);
+                if (points.Count > 0)
+                {
+                    diagrams[device.Id] = new PQDiagram(points);
+                    updatedDiagrams.Add(device.Id);
+                }
             }
 
             return true;

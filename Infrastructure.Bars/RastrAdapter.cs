@@ -152,32 +152,30 @@ namespace VrdoPdg.Infrastructure.Bars
         }
 
         /// <inheritdoc/>
-        public GeneratorState? GetGenerator(int nodeNumber)
+        public GeneratorState? GetGenerator(int generatorNumber)
         {
             RastrTable nodes = GetNodes();
-            int nodeRow;
-            if (!nodes.TryFindRow(nodeNumber, out nodeRow))
+            int row;
+            if (_generators == null || !_generators.TryFindRow(generatorNumber, out row))
             {
                 return null;
             }
 
-            List<int> units = FindGeneratorRows(nodeNumber);
-            List<int> workingUnits = units
-                .Where(row => !_generators!.ReadBoolean("sta", row))
-                .ToList();
-            bool isOn = !nodes.ReadBoolean("sta", nodeRow) && (units.Count == 0 || workingUnits.Count > 0);
-            int pqDiagramNumber = workingUnits.Count == 1
-                ? _generators!.ReadInteger("NumPQ", workingUnits[0])
-                : 0;
+            int nodeNumber = _generators.ReadInteger("Node", row);
+            int nodeRow;
+            bool isNodeFound = nodes.TryFindRow(nodeNumber, out nodeRow);
+            bool isOn = !_generators.ReadBoolean("sta", row)
+                && isNodeFound
+                && !nodes.ReadBoolean("sta", nodeRow);
             return new GeneratorState(
                 isOn,
                 nodeNumber,
-                nodes.ReadDouble("pg", nodeRow),
-                nodes.ReadDouble("qg", nodeRow),
-                nodes.ReadDouble("vzd", nodeRow),
-                nodes.ReadDouble("qmin", nodeRow),
-                nodes.ReadDouble("qmax", nodeRow),
-                pqDiagramNumber);
+                _generators.ReadDouble("P", row),
+                _generators.ReadDouble("Q", row),
+                isNodeFound ? nodes.ReadDouble("vzd", nodeRow) : 0,
+                _generators.ReadDouble("Qmin", row),
+                _generators.ReadDouble("Qmax", row),
+                _generators.ReadInteger("NumPQ", row));
         }
 
         /// <inheritdoc/>
@@ -336,30 +334,6 @@ namespace VrdoPdg.Infrastructure.Bars
             }
 
             return _rastr;
-        }
-
-        /// <summary>
-        /// Возвращает строки таблицы «Генераторы УР» с генераторами, подключенными к узлу.
-        /// </summary>
-        /// <param name="nodeNumber">Номер узла.</param>
-        /// <returns>Номера строк; пустой список, если таблицы нет в МТ.</returns>
-        private List<int> FindGeneratorRows(int nodeNumber)
-        {
-            List<int> rows = new List<int>();
-            if (_generators == null)
-            {
-                return rows;
-            }
-
-            for (int row = 0; row < _generators.Count; row++)
-            {
-                if (_generators.ReadInteger("Node", row) == nodeNumber)
-                {
-                    rows.Add(row);
-                }
-            }
-
-            return rows;
         }
 
         /// <summary>

@@ -42,7 +42,7 @@ namespace VrdoPdg.Tests.Fakes
         public Dictionary<int, FakeSwitchedDevice> SwitchedDevices { get; } = new Dictionary<int, FakeSwitchedDevice>();
 
         /// <summary>
-        /// Генераторы по номеру узла подключения.
+        /// Генераторы по номеру генератора.
         /// </summary>
         public Dictionary<int, FakeGenerator> Generators { get; } = new Dictionary<int, FakeGenerator>();
 
@@ -152,10 +152,10 @@ namespace VrdoPdg.Tests.Fakes
         }
 
         /// <inheritdoc/>
-        public GeneratorState? GetGenerator(int nodeNumber)
+        public GeneratorState? GetGenerator(int generatorNumber)
         {
             FakeGenerator? generator;
-            return Generators.TryGetValue(nodeNumber, out generator)
+            return Generators.TryGetValue(generatorNumber, out generator)
                 ? new GeneratorState(generator.IsOn, generator.NodeNumber, generator.ActivePower,
                     generator.ReactivePower, generator.SetVoltage, generator.MinReactivePower,
                     generator.MaxReactivePower, 0)

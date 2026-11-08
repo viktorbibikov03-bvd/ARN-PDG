@@ -69,9 +69,9 @@ namespace VrdoPdg.Tests.Fakes
         public const int GeneratorId = 41;
 
         /// <summary>
-        /// Номер генератора в БД: номер узла подключения в таблице «Узлы» МТ.
+        /// Номер генератора.
         /// </summary>
-        public const int GeneratorNumber = GeneratorNode;
+        public const int GeneratorNumber = 13;
 
         /// <summary>
         /// Узел подключения генератора.

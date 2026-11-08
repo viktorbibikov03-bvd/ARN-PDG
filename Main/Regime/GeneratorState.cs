@@ -1,7 +1,7 @@
 namespace VrdoPdg.Model.Regime
 {
     /// <summary>
-    /// Состояние и загрузка генератора по данным узла его подключения в таблице «Узлы» МТ.
+    /// Состояние и загрузка генератора по данным таблицы «Генераторы УР» МТ.
     /// </summary>
     public sealed class GeneratorState
     {
@@ -10,13 +10,12 @@ namespace VrdoPdg.Model.Regime
         /// </summary>
         /// <param name="isOn">Признак состояния «Включено».</param>
         /// <param name="nodeNumber">Номер узла подключения генератора.</param>
-        /// <param name="activePower">Активная мощность генерации в узле (pg), МВт.</param>
-        /// <param name="reactivePower">Реактивная мощность генерации в узле (qg), Мвар.</param>
-        /// <param name="setVoltage">Заданное напряжение узла (vzd), кВ.</param>
-        /// <param name="minReactivePower">Нижний предел реактивной мощности узла (qmin), Мвар.</param>
-        /// <param name="maxReactivePower">Верхний предел реактивной мощности узла (qmax), Мвар.</param>
-        /// <param name="pqDiagramNumber">Номер PQ-диаграммы единственного работающего генератора узла
-        /// (0 — не задана или в узле несколько генераторов).</param>
+        /// <param name="activePower">Активная мощность, МВт.</param>
+        /// <param name="reactivePower">Реактивная мощность, Мвар.</param>
+        /// <param name="setVoltage">Заданное напряжение на шинах генератора, кВ.</param>
+        /// <param name="minReactivePower">Нижний предел реактивной мощности из таблицы генераторов, Мвар.</param>
+        /// <param name="maxReactivePower">Верхний предел реактивной мощности из таблицы генераторов, Мвар.</param>
+        /// <param name="pqDiagramNumber">Номер PQ-диаграммы (0 — не задана).</param>
         public GeneratorState(
             bool isOn,
             int nodeNumber,
