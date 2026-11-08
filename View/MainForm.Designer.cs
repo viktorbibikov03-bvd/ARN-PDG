@@ -102,6 +102,7 @@ namespace VrdoPdg.View
             //
             // _settingsButton
             //
+            _settingsButton.AutoSize = true;
             _settingsButton.Margin = new System.Windows.Forms.Padding(0);
             _settingsButton.Name = "_settingsButton";
             _settingsButton.Size = new System.Drawing.Size(146, 40);
@@ -128,6 +129,7 @@ namespace VrdoPdg.View
             //
             // _loadButton
             //
+            _loadButton.AutoSize = true;
             _loadButton.Margin = new System.Windows.Forms.Padding(0, 0, 4, 0);
             _loadButton.Name = "_loadButton";
             _loadButton.Size = new System.Drawing.Size(140, 40);
@@ -137,6 +139,7 @@ namespace VrdoPdg.View
             //
             // _saveButton
             //
+            _saveButton.AutoSize = true;
             _saveButton.Margin = new System.Windows.Forms.Padding(0, 0, 4, 0);
             _saveButton.Name = "_saveButton";
             _saveButton.Size = new System.Drawing.Size(144, 40);
@@ -146,6 +149,7 @@ namespace VrdoPdg.View
             //
             // _helpButton
             //
+            _helpButton.AutoSize = true;
             _helpButton.Margin = new System.Windows.Forms.Padding(0, 0, 4, 0);
             _helpButton.Name = "_helpButton";
             _helpButton.Size = new System.Drawing.Size(124, 40);
@@ -165,13 +169,14 @@ namespace VrdoPdg.View
             //
             _runButton.Margin = new System.Windows.Forms.Padding(0, 0, 8, 0);
             _runButton.Name = "_runButton";
-            _runButton.Size = new System.Drawing.Size(160, 40);
+            _runButton.Size = new System.Drawing.Size(150, 40);
             _runButton.TabIndex = 4;
             _runButton.Text = "Запустить";
             _runButton.Click += RunButton_Click;
             //
             // _previewButton
             //
+            _previewButton.AutoSize = true;
             _previewButton.Margin = new System.Windows.Forms.Padding(0, 0, 8, 0);
             _previewButton.Name = "_previewButton";
             _previewButton.Size = new System.Drawing.Size(176, 40);
@@ -181,6 +186,7 @@ namespace VrdoPdg.View
             //
             // _archiveButton
             //
+            _archiveButton.AutoSize = true;
             _archiveButton.Margin = new System.Windows.Forms.Padding(0);
             _archiveButton.Name = "_archiveButton";
             _archiveButton.Size = new System.Drawing.Size(116, 40);
@@ -279,7 +285,7 @@ namespace VrdoPdg.View
             Controls.Add(_toolbarLine);
             Controls.Add(_toolbarPanel);
             ForeColor = System.Drawing.Color.FromArgb(236, 236, 236);
-            MinimumSize = new System.Drawing.Size(1120, 560);
+            MinimumSize = new System.Drawing.Size(1220, 560);
             Name = "MainForm";
             StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
             Text = "ВРДО ПДГ — Ввод режима по напряжению в допустимую область";

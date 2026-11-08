@@ -144,6 +144,27 @@ namespace VrdoPdg.View.Controls
         }
 
         /// <summary>
+        /// Признак подбора ширины кнопки по значку и тексту; высота кнопки не меняется.
+        /// </summary>
+        [Browsable(true)]
+        [EditorBrowsable(EditorBrowsableState.Always)]
+        [DesignerSerializationVisibility(DesignerSerializationVisibility.Visible)]
+        [DefaultValue(false)]
+        public override bool AutoSize
+        {
+            get
+            {
+                return base.AutoSize;
+            }
+
+            set
+            {
+                base.AutoSize = value;
+                AdjustWidth();
+            }
+        }
+
+        /// <summary>
         /// Радиус скругления углов, пикселей.
         /// </summary>
         [Category("Appearance")]
@@ -239,6 +260,7 @@ namespace VrdoPdg.View.Controls
             set
             {
                 _image = value;
+                AdjustWidth();
                 Invalidate();
             }
         }
@@ -351,6 +373,32 @@ namespace VrdoPdg.View.Controls
         protected override Size DefaultSize => new Size(120, 40);
 
         /// <summary>
+        /// Возвращает размер кнопки, вмещающий значок и текст, при текущей высоте кнопки.
+        /// </summary>
+        /// <param name="proposedSize">Предлагаемый размер.</param>
+        /// <returns>Предпочтительный размер.</returns>
+        public override Size GetPreferredSize(Size proposedSize)
+        {
+            string text = Text;
+            int width = Padding.Horizontal;
+            if (text.Length > 0)
+            {
+                width += TextRenderer.MeasureText(text, Font, new Size(int.MaxValue, int.MaxValue), TextFlags).Width;
+            }
+
+            if (_image != null)
+            {
+                width += _image.Width;
+                if (text.Length > 0)
+                {
+                    width += LogicalToDeviceUnits(ImageSpacing);
+                }
+            }
+
+            return new Size(width, Height);
+        }
+
+        /// <summary>
         /// Сообщает кнопке, что она стала кнопкой окна по умолчанию. Оформление при этом не меняется.
         /// </summary>
         /// <param name="value">Признак кнопки по умолчанию.</param>
@@ -400,8 +448,29 @@ namespace VrdoPdg.View.Controls
         /// <param name="e">Аргументы события.</param>
         protected override void OnTextChanged(EventArgs e)
         {
+            AdjustWidth();
             Invalidate();
             base.OnTextChanged(e);
+        }
+
+        /// <summary>
+        /// Подбирает ширину кнопки при изменении шрифта.
+        /// </summary>
+        /// <param name="e">Аргументы события.</param>
+        protected override void OnFontChanged(EventArgs e)
+        {
+            AdjustWidth();
+            base.OnFontChanged(e);
+        }
+
+        /// <summary>
+        /// Подбирает ширину кнопки при изменении отступов содержимого.
+        /// </summary>
+        /// <param name="e">Аргументы события.</param>
+        protected override void OnPaddingChanged(EventArgs e)
+        {
+            AdjustWidth();
+            base.OnPaddingChanged(e);
         }
 
         /// <summary>
@@ -563,6 +632,17 @@ namespace VrdoPdg.View.Controls
             graphics.SmoothingMode = smoothingMode;
             DrawContent(graphics, foreColor, image);
             base.OnPaint(e);
+        }
+
+        /// <summary>
+        /// Устанавливает ширину кнопки по значку и тексту, если включен подбор размера.
+        /// </summary>
+        private void AdjustWidth()
+        {
+            if (AutoSize)
+            {
+                Width = GetPreferredSize(Size.Empty).Width;
+            }
         }
 
         /// <summary>
