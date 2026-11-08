@@ -30,18 +30,18 @@ namespace VrdoPdg.View
         {
             _headerPanel = new System.Windows.Forms.Panel();
             _titleLabel = new System.Windows.Forms.Label();
-            _backButton = new Guna.UI2.WinForms.Guna2Button();
+            _backButton = new VrdoPdg.View.Controls.RoundedButton();
             _headerLine = new System.Windows.Forms.Panel();
             _bodyPanel = new System.Windows.Forms.Panel();
-            _frame = new Guna.UI2.WinForms.Guna2Panel();
+            _frame = new VrdoPdg.View.Controls.RoundedPanel();
             _grid = new System.Windows.Forms.DataGridView();
             _selectColumn = new System.Windows.Forms.DataGridViewTextBoxColumn();
             _numberColumn = new System.Windows.Forms.DataGridViewTextBoxColumn();
             _startColumn = new System.Windows.Forms.DataGridViewTextBoxColumn();
             _emptyLabel = new System.Windows.Forms.Label();
             _footerPanel = new System.Windows.Forms.Panel();
-            _resetButton = new Guna.UI2.WinForms.Guna2Button();
-            _compareButton = new Guna.UI2.WinForms.Guna2Button();
+            _resetButton = new VrdoPdg.View.Controls.RoundedButton();
+            _compareButton = new VrdoPdg.View.Controls.RoundedButton();
             _headerPanel.SuspendLayout();
             _bodyPanel.SuspendLayout();
             _frame.SuspendLayout();
@@ -222,7 +222,7 @@ namespace VrdoPdg.View
         /// <summary>
         /// Кнопка «К расчёту».
         /// </summary>
-        private Guna.UI2.WinForms.Guna2Button _backButton;
+        private VrdoPdg.View.Controls.RoundedButton _backButton;
 
         /// <summary>
         /// Линия под заголовком.
@@ -237,7 +237,7 @@ namespace VrdoPdg.View
         /// <summary>
         /// Рамка списка расчетов.
         /// </summary>
-        private Guna.UI2.WinForms.Guna2Panel _frame;
+        private VrdoPdg.View.Controls.RoundedPanel _frame;
 
         /// <summary>
         /// Список расчетов.
@@ -272,11 +272,11 @@ namespace VrdoPdg.View
         /// <summary>
         /// Кнопка «Сбросить выбор».
         /// </summary>
-        private Guna.UI2.WinForms.Guna2Button _resetButton;
+        private VrdoPdg.View.Controls.RoundedButton _resetButton;
 
         /// <summary>
         /// Кнопка «Сравнить».
         /// </summary>
-        private Guna.UI2.WinForms.Guna2Button _compareButton;
+        private VrdoPdg.View.Controls.RoundedButton _compareButton;
     }
 }

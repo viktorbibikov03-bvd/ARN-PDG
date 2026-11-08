@@ -28,26 +28,24 @@ namespace VrdoPdg.View
         /// </summary>
         private void InitializeComponent()
         {
-            components = new System.ComponentModel.Container();
-            _borderlessForm = new Guna.UI2.WinForms.Guna2BorderlessForm(components);
             _headerPanel = new System.Windows.Forms.Panel();
             _titlePanel = new System.Windows.Forms.Panel();
             _subtitleLabel = new System.Windows.Forms.Label();
             _titleLabel = new System.Windows.Forms.Label();
-            _statusPill = new Guna.UI2.WinForms.Guna2Button();
-            _closeButton = new Guna.UI2.WinForms.Guna2Button();
-            _iconBox = new Guna.UI2.WinForms.Guna2Panel();
+            _statusPill = new VrdoPdg.View.Controls.RoundedButton();
+            _closeButton = new VrdoPdg.View.Controls.RoundedButton();
+            _iconBox = new VrdoPdg.View.Controls.RoundedPanel();
             _icon = new System.Windows.Forms.PictureBox();
             _headerLine = new System.Windows.Forms.Panel();
             _footerPanel = new System.Windows.Forms.Panel();
-            _defaultButton = new Guna.UI2.WinForms.Guna2Button();
-            _cancelButton = new Guna.UI2.WinForms.Guna2Button();
-            _saveButton = new Guna.UI2.WinForms.Guna2Button();
+            _defaultButton = new VrdoPdg.View.Controls.RoundedButton();
+            _cancelButton = new VrdoPdg.View.Controls.RoundedButton();
+            _saveButton = new VrdoPdg.View.Controls.RoundedButton();
             _footerLine = new System.Windows.Forms.Panel();
             _leftPanel = new System.Windows.Forms.Panel();
             _controlPointList = new System.Windows.Forms.ListBox();
             _searchSpacer = new System.Windows.Forms.Panel();
-            _searchBox = new Guna.UI2.WinForms.Guna2TextBox();
+            _searchBox = new VrdoPdg.View.Controls.SearchBox();
             _leftLine = new System.Windows.Forms.Panel();
             _rightPanel = new System.Windows.Forms.Panel();
             _grid = new System.Windows.Forms.DataGridView();
@@ -59,12 +57,12 @@ namespace VrdoPdg.View
             _upColumn = new System.Windows.Forms.DataGridViewTextBoxColumn();
             _downColumn = new System.Windows.Forms.DataGridViewTextBoxColumn();
             _deleteColumn = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            _errorBanner = new Guna.UI2.WinForms.Guna2Panel();
+            _errorBanner = new VrdoPdg.View.Controls.RoundedPanel();
             _errorLabel = new System.Windows.Forms.Label();
             _errorIcon = new System.Windows.Forms.PictureBox();
             _tableHeaderPanel = new System.Windows.Forms.Panel();
             _controlPointLabel = new System.Windows.Forms.Label();
-            _addButton = new Guna.UI2.WinForms.Guna2Button();
+            _addButton = new VrdoPdg.View.Controls.RoundedButton();
             _headerPanel.SuspendLayout();
             _titlePanel.SuspendLayout();
             _iconBox.SuspendLayout();
@@ -77,14 +75,6 @@ namespace VrdoPdg.View
             ((System.ComponentModel.ISupportInitialize)_errorIcon).BeginInit();
             _tableHeaderPanel.SuspendLayout();
             SuspendLayout();
-            //
-            // _borderlessForm
-            //
-            _borderlessForm.BorderRadius = 18;
-            _borderlessForm.ContainerControl = this;
-            _borderlessForm.DragForm = true;
-            _borderlessForm.ResizeForm = false;
-            _borderlessForm.TransparentWhileDrag = true;
             //
             // _headerPanel
             //
@@ -468,11 +458,6 @@ namespace VrdoPdg.View
         }
 
         /// <summary>
-        /// Оформление окна без рамки.
-        /// </summary>
-        private Guna.UI2.WinForms.Guna2BorderlessForm _borderlessForm;
-
-        /// <summary>
         /// Заголовок окна.
         /// </summary>
         private System.Windows.Forms.Panel _headerPanel;
@@ -480,7 +465,7 @@ namespace VrdoPdg.View
         /// <summary>
         /// Подложка значка окна.
         /// </summary>
-        private Guna.UI2.WinForms.Guna2Panel _iconBox;
+        private VrdoPdg.View.Controls.RoundedPanel _iconBox;
 
         /// <summary>
         /// Значок окна.
@@ -505,12 +490,12 @@ namespace VrdoPdg.View
         /// <summary>
         /// Счетчик несохраненных изменений или ошибок.
         /// </summary>
-        private Guna.UI2.WinForms.Guna2Button _statusPill;
+        private VrdoPdg.View.Controls.RoundedButton _statusPill;
 
         /// <summary>
         /// Кнопка закрытия окна.
         /// </summary>
-        private Guna.UI2.WinForms.Guna2Button _closeButton;
+        private VrdoPdg.View.Controls.RoundedButton _closeButton;
 
         /// <summary>
         /// Линия под заголовком.
@@ -525,17 +510,17 @@ namespace VrdoPdg.View
         /// <summary>
         /// Кнопка «По умолчанию».
         /// </summary>
-        private Guna.UI2.WinForms.Guna2Button _defaultButton;
+        private VrdoPdg.View.Controls.RoundedButton _defaultButton;
 
         /// <summary>
         /// Кнопка «Отмена».
         /// </summary>
-        private Guna.UI2.WinForms.Guna2Button _cancelButton;
+        private VrdoPdg.View.Controls.RoundedButton _cancelButton;
 
         /// <summary>
         /// Кнопка «Сохранить».
         /// </summary>
-        private Guna.UI2.WinForms.Guna2Button _saveButton;
+        private VrdoPdg.View.Controls.RoundedButton _saveButton;
 
         /// <summary>
         /// Линия над нижней панелью.
@@ -550,7 +535,7 @@ namespace VrdoPdg.View
         /// <summary>
         /// Поле поиска КП.
         /// </summary>
-        private Guna.UI2.WinForms.Guna2TextBox _searchBox;
+        private VrdoPdg.View.Controls.SearchBox _searchBox;
 
         /// <summary>
         /// Отступ под полем поиска.
@@ -585,12 +570,12 @@ namespace VrdoPdg.View
         /// <summary>
         /// Кнопка «Добавить СКРМ».
         /// </summary>
-        private Guna.UI2.WinForms.Guna2Button _addButton;
+        private VrdoPdg.View.Controls.RoundedButton _addButton;
 
         /// <summary>
         /// Сообщение об ошибках сохранения.
         /// </summary>
-        private Guna.UI2.WinForms.Guna2Panel _errorBanner;
+        private VrdoPdg.View.Controls.RoundedPanel _errorBanner;
 
         /// <summary>
         /// Значок сообщения об ошибках.

@@ -32,6 +32,81 @@ namespace VrdoPdg.View.Theme
         }
 
         /// <summary>
+        /// Создает контур прямоугольника со скругленными углами в дробных координатах.
+        /// Используется при сглаживании со смещением пикселей на половину пикселя.
+        /// </summary>
+        /// <param name="bounds">Прямоугольник.</param>
+        /// <param name="radius">Радиус скругления.</param>
+        /// <returns>Контур.</returns>
+        public static GraphicsPath CreateRoundedRectangle(RectangleF bounds, float radius)
+        {
+            GraphicsPath path = new GraphicsPath();
+            float diameter = Math.Min(radius * 2, Math.Min(bounds.Width, bounds.Height));
+            if (diameter <= 0)
+            {
+                path.AddRectangle(bounds);
+                return path;
+            }
+
+            RectangleF arc = new RectangleF(bounds.Location, new SizeF(diameter, diameter));
+            path.AddArc(arc, 180, 90);
+            arc.X = bounds.Right - diameter;
+            path.AddArc(arc, 270, 90);
+            arc.Y = bounds.Bottom - diameter;
+            path.AddArc(arc, 0, 90);
+            arc.X = bounds.Left;
+            path.AddArc(arc, 90, 90);
+            path.CloseFigure();
+            return path;
+        }
+
+        /// <summary>
+        /// Возвращает прямоугольник заливки элемента. Без смещения пикселей пиксель i занимает
+        /// отрезок [i - 0,5; i + 0,5], поэтому заливка от -0,5 покрывает крайние пиксели целиком.
+        /// </summary>
+        /// <param name="size">Размер элемента.</param>
+        /// <returns>Прямоугольник заливки.</returns>
+        public static RectangleF GetFillBounds(Size size)
+        {
+            return new RectangleF(-0.5f, -0.5f, size.Width, size.Height);
+        }
+
+        /// <summary>
+        /// Возвращает прямоугольник средней линии рамки: рамка заданной толщины занимает
+        /// целые пиксели начиная с отступа от края элемента.
+        /// </summary>
+        /// <param name="size">Размер элемента.</param>
+        /// <param name="thickness">Толщина рамки, пикселей.</param>
+        /// <param name="inset">Отступ рамки от края элемента, пикселей.</param>
+        /// <returns>Прямоугольник средней линии рамки.</returns>
+        public static RectangleF GetStrokeBounds(Size size, float thickness, float inset)
+        {
+            float offset = inset + ((thickness - 1f) / 2f);
+            return new RectangleF(
+                offset,
+                offset,
+                size.Width - 1f - (offset * 2f),
+                size.Height - 1f - (offset * 2f));
+        }
+
+        /// <summary>
+        /// Смешивает цвет с другим цветом, сохраняя прозрачность исходного цвета.
+        /// </summary>
+        /// <param name="color">Исходный цвет.</param>
+        /// <param name="other">Цвет, с которым смешивается исходный.</param>
+        /// <param name="amount">Доля второго цвета от 0 до 1.</param>
+        /// <returns>Смешанный цвет.</returns>
+        public static Color Blend(Color color, Color other, float amount)
+        {
+            float weight = Math.Max(0f, Math.Min(1f, amount));
+            return Color.FromArgb(
+                color.A,
+                (int)Math.Round(color.R + ((other.R - color.R) * weight)),
+                (int)Math.Round(color.G + ((other.G - color.G) * weight)),
+                (int)Math.Round(color.B + ((other.B - color.B) * weight)));
+        }
+
+        /// <summary>
         /// Заливает прямоугольник со скругленными углами.
         /// </summary>
         /// <param name="graphics">Поверхность рисования.</param>

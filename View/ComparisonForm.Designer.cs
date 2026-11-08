@@ -32,7 +32,7 @@ namespace VrdoPdg.View
             _titlePanel = new System.Windows.Forms.Panel();
             _subtitleLabel = new System.Windows.Forms.Label();
             _titleLabel = new System.Windows.Forms.Label();
-            _backButton = new Guna.UI2.WinForms.Guna2Button();
+            _backButton = new VrdoPdg.View.Controls.RoundedButton();
             _headerLine = new System.Windows.Forms.Panel();
             _bodyPanel = new System.Windows.Forms.Panel();
             _tableView = new VrdoPdg.View.Controls.HourlyTableView();
@@ -156,7 +156,7 @@ namespace VrdoPdg.View
         /// <summary>
         /// Кнопка «К архиву».
         /// </summary>
-        private Guna.UI2.WinForms.Guna2Button _backButton;
+        private VrdoPdg.View.Controls.RoundedButton _backButton;
 
         /// <summary>
         /// Линия под заголовком.

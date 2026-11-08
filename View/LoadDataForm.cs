@@ -13,7 +13,7 @@ namespace VrdoPdg.View
     /// <summary>
     /// Модальное окно «Загрузка данных»: выбор файла МТ (*.mptsmz) и файла топологии (*.csv).
     /// </summary>
-    internal sealed partial class LoadDataForm : Form
+    internal sealed partial class LoadDataForm : BorderlessForm
     {
         /// <summary>
         /// Имя файла МТ по умолчанию.
@@ -36,6 +36,7 @@ namespace VrdoPdg.View
         public LoadDataForm()
         {
             InitializeComponent();
+            EnableWindowDrag(_titleLabel, _hintPanel, _hintLabel, _hintIcon);
         }
 
         /// <summary>
@@ -71,11 +72,9 @@ namespace VrdoPdg.View
 
             _closeButton.Text = string.Empty;
             UiStyle.ApplyFlat(_closeButton, IconGlyph.Close);
-            _closeButton.ImageAlign = HorizontalAlignment.Center;
             UiStyle.ApplyOutlined(_cancelButton, null);
             UiStyle.ApplyPrimary(_doneButton, null);
             _hintIcon.Image = IconFactory.Create(IconGlyph.Info, Palette.TextSecondary, 20);
-            _borderlessForm.ShadowColor = Palette.Background;
             UpdateDoneButton();
         }
 

@@ -1,12 +1,11 @@
-using System;
 using System.Drawing;
-using System.Runtime.InteropServices;
 using System.Windows.Forms;
 
 namespace VrdoPdg.View.Theme
 {
     /// <summary>
-    /// Оформление заголовка окна в темной теме средствами DWM (Windows 10 20H1 и новее).
+    /// Оформление окон средствами DWM: темный заголовок (Windows 10 20H1 и новее)
+    /// и скругленные углы окон без рамки (Windows 11).
     /// </summary>
     internal static class WindowTheme
     {
@@ -19,6 +18,21 @@ namespace VrdoPdg.View.Theme
         /// Атрибут DWM темного заголовка окна в ранних сборках Windows 10.
         /// </summary>
         private const int DarkModeAttributeLegacy = 19;
+
+        /// <summary>
+        /// Атрибут DWM скругления углов окна (Windows 11).
+        /// </summary>
+        private const int CornerPreferenceAttribute = 33;
+
+        /// <summary>
+        /// Значение атрибута скругления углов: стандартное скругление.
+        /// </summary>
+        private const int RoundCorners = 2;
+
+        /// <summary>
+        /// Атрибут DWM цвета рамки окна (Windows 11).
+        /// </summary>
+        private const int BorderColorAttribute = 34;
 
         /// <summary>
         /// Атрибут DWM цвета заголовка окна (Windows 11).
@@ -37,13 +51,39 @@ namespace VrdoPdg.View.Theme
             }
 
             int enabled = 1;
-            if (DwmSetWindowAttribute(form.Handle, DarkModeAttribute, ref enabled, sizeof(int)) != 0)
+            if (NativeMethods.DwmSetWindowAttribute(form.Handle, DarkModeAttribute, ref enabled, sizeof(int)) != 0)
             {
-                DwmSetWindowAttribute(form.Handle, DarkModeAttributeLegacy, ref enabled, sizeof(int));
+                NativeMethods.DwmSetWindowAttribute(form.Handle, DarkModeAttributeLegacy, ref enabled, sizeof(int));
             }
 
             int captionColor = ToColorRef(Palette.Background);
-            DwmSetWindowAttribute(form.Handle, CaptionColorAttribute, ref captionColor, sizeof(int));
+            NativeMethods.DwmSetWindowAttribute(form.Handle, CaptionColorAttribute, ref captionColor, sizeof(int));
+        }
+
+        /// <summary>
+        /// Включает системное скругление углов окна и задает цвет его рамки (Windows 11).
+        /// </summary>
+        /// <param name="form">Окно.</param>
+        /// <param name="borderColor">Цвет рамки окна.</param>
+        /// <returns><c>true</c>, если углы окна скругляет система; <c>false</c>, если система
+        /// этого не поддерживает (Windows 10).</returns>
+        public static bool ApplyRoundedCorners(Form form, Color borderColor)
+        {
+            if (!form.IsHandleCreated)
+            {
+                return false;
+            }
+
+            int preference = RoundCorners;
+            if (NativeMethods.DwmSetWindowAttribute(form.Handle, CornerPreferenceAttribute, ref preference, sizeof(int))
+                != 0)
+            {
+                return false;
+            }
+
+            int color = ToColorRef(borderColor);
+            NativeMethods.DwmSetWindowAttribute(form.Handle, BorderColorAttribute, ref color, sizeof(int));
+            return true;
         }
 
         /// <summary>
@@ -55,16 +95,5 @@ namespace VrdoPdg.View.Theme
         {
             return color.R | (color.G << 8) | (color.B << 16);
         }
-
-        /// <summary>
-        /// Устанавливает атрибут окна DWM.
-        /// </summary>
-        /// <param name="hwnd">Дескриптор окна.</param>
-        /// <param name="attribute">Атрибут.</param>
-        /// <param name="value">Значение.</param>
-        /// <param name="size">Размер значения.</param>
-        /// <returns>Код результата HRESULT.</returns>
-        [DllImport("dwmapi.dll")]
-        private static extern int DwmSetWindowAttribute(IntPtr hwnd, int attribute, ref int value, int size);
     }
 }

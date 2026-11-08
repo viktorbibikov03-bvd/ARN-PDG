@@ -4,9 +4,6 @@ using System.Drawing;
 using System.Linq;
 using System.Windows.Forms;
 
-using Guna.UI2.WinForms;
-using Guna.UI2.WinForms.Enums;
-
 using VrdoPdg.Model.Entities;
 using VrdoPdg.View.Theme;
 
@@ -42,7 +39,7 @@ namespace VrdoPdg.View.Controls
         /// <summary>
         /// Кнопки энергосистем.
         /// </summary>
-        private readonly List<Guna2Button> _powerSystemButtons = new List<Guna2Button>();
+        private readonly List<RoundedButton> _powerSystemButtons = new List<RoundedButton>();
 
         /// <summary>
         /// Данные таблицы.
@@ -69,7 +66,7 @@ namespace VrdoPdg.View.Controls
                 Padding = new Padding(0, 8, 0, 8)
             };
 
-            Guna2Panel switchFrame = new Guna2Panel
+            RoundedPanel switchFrame = new RoundedPanel
             {
                 Dock = DockStyle.Left,
                 Width = 420,
@@ -77,13 +74,12 @@ namespace VrdoPdg.View.Controls
                 FillColor = Palette.Surface,
                 BorderColor = Palette.Border,
                 BorderThickness = 1,
-                Padding = new Padding(4),
-                UseTransparentBackground = true
+                Padding = new Padding(4)
             };
             _powerSystemPanel = new FlowLayoutPanel
             {
                 Dock = DockStyle.Fill,
-                BackColor = Palette.Surface,
+                BackColor = Color.Transparent,
                 WrapContents = false
             };
             switchFrame.Controls.Add(_powerSystemPanel);
@@ -149,9 +145,9 @@ namespace VrdoPdg.View.Controls
         /// <param name="foreColor">Цвет текста.</param>
         /// <param name="fillColor">Цвет заливки.</param>
         /// <returns>Метка легенды.</returns>
-        private static Guna2Button CreateLegendItem(string text, Color foreColor, Color fillColor)
+        private static RoundedButton CreateLegendItem(string text, Color foreColor, Color fillColor)
         {
-            Guna2Button item = new Guna2Button
+            RoundedButton item = new RoundedButton
             {
                 Text = text,
                 Margin = new Padding(0, 4, 8, 0),
@@ -173,13 +169,12 @@ namespace VrdoPdg.View.Controls
             _powerSystemButtons.Clear();
             foreach (PowerSystem powerSystem in powerSystems)
             {
-                Guna2Button button = new Guna2Button
+                RoundedButton button = new RoundedButton
                 {
                     Text = powerSystem.Name,
                     Tag = powerSystem.Id,
                     Height = 36,
-                    Margin = new Padding(0, 0, 4, 0),
-                    ButtonMode = ButtonMode.ToogleButton
+                    Margin = new Padding(0, 0, 4, 0)
                 };
                 UiStyle.ApplyFlat(button, null);
                 button.Font = UiFonts.Semibold(10f);
@@ -221,7 +216,7 @@ namespace VrdoPdg.View.Controls
         private void SelectPowerSystem(int? powerSystemId)
         {
             _powerSystemId = powerSystemId;
-            foreach (Guna2Button button in _powerSystemButtons)
+            foreach (RoundedButton button in _powerSystemButtons)
             {
                 button.Checked = powerSystemId.HasValue && (int)button.Tag! == powerSystemId.Value;
             }
@@ -243,7 +238,7 @@ namespace VrdoPdg.View.Controls
         /// <param name="e">Аргументы события.</param>
         private void PowerSystemButton_Click(object? sender, EventArgs e)
         {
-            Guna2Button? button = sender as Guna2Button;
+            RoundedButton? button = sender as RoundedButton;
             if (button?.Tag is int powerSystemId)
             {
                 SelectPowerSystem(powerSystemId);

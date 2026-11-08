@@ -28,25 +28,15 @@ namespace VrdoPdg.View
         /// </summary>
         private void InitializeComponent()
         {
-            components = new System.ComponentModel.Container();
-            _borderlessForm = new Guna.UI2.WinForms.Guna2BorderlessForm(components);
-            _iconBox = new Guna.UI2.WinForms.Guna2Panel();
+            _iconBox = new VrdoPdg.View.Controls.RoundedPanel();
             _icon = new System.Windows.Forms.PictureBox();
             _titleLabel = new System.Windows.Forms.Label();
             _messageLabel = new System.Windows.Forms.Label();
-            _cancelButton = new Guna.UI2.WinForms.Guna2Button();
-            _confirmButton = new Guna.UI2.WinForms.Guna2Button();
+            _cancelButton = new VrdoPdg.View.Controls.RoundedButton();
+            _confirmButton = new VrdoPdg.View.Controls.RoundedButton();
             _iconBox.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)_icon).BeginInit();
             SuspendLayout();
-            //
-            // _borderlessForm
-            //
-            _borderlessForm.BorderRadius = 18;
-            _borderlessForm.ContainerControl = this;
-            _borderlessForm.DragForm = true;
-            _borderlessForm.ResizeForm = false;
-            _borderlessForm.TransparentWhileDrag = true;
             //
             // _iconBox
             //
@@ -130,14 +120,9 @@ namespace VrdoPdg.View
         }
 
         /// <summary>
-        /// Оформление окна без рамки.
-        /// </summary>
-        private Guna.UI2.WinForms.Guna2BorderlessForm _borderlessForm;
-
-        /// <summary>
         /// Подложка значка.
         /// </summary>
-        private Guna.UI2.WinForms.Guna2Panel _iconBox;
+        private VrdoPdg.View.Controls.RoundedPanel _iconBox;
 
         /// <summary>
         /// Значок предупреждения.
@@ -157,11 +142,11 @@ namespace VrdoPdg.View
         /// <summary>
         /// Кнопка отказа от действия.
         /// </summary>
-        private Guna.UI2.WinForms.Guna2Button _cancelButton;
+        private VrdoPdg.View.Controls.RoundedButton _cancelButton;
 
         /// <summary>
         /// Кнопка подтверждения действия.
         /// </summary>
-        private Guna.UI2.WinForms.Guna2Button _confirmButton;
+        private VrdoPdg.View.Controls.RoundedButton _confirmButton;
     }
 }

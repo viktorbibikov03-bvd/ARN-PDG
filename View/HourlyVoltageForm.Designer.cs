@@ -30,10 +30,10 @@ namespace VrdoPdg.View
         {
             _headerPanel = new System.Windows.Forms.Panel();
             _titleLabel = new System.Windows.Forms.Label();
-            _backButton = new Guna.UI2.WinForms.Guna2Button();
-            _modePanel = new Guna.UI2.WinForms.Guna2Panel();
-            _afterButton = new Guna.UI2.WinForms.Guna2Button();
-            _beforeButton = new Guna.UI2.WinForms.Guna2Button();
+            _backButton = new VrdoPdg.View.Controls.RoundedButton();
+            _modePanel = new VrdoPdg.View.Controls.RoundedPanel();
+            _afterButton = new VrdoPdg.View.Controls.RoundedButton();
+            _beforeButton = new VrdoPdg.View.Controls.RoundedButton();
             _headerLine = new System.Windows.Forms.Panel();
             _bodyPanel = new System.Windows.Forms.Panel();
             _tableView = new VrdoPdg.View.Controls.HourlyTableView();
@@ -159,22 +159,22 @@ namespace VrdoPdg.View
         /// <summary>
         /// Кнопка «К расчёту».
         /// </summary>
-        private Guna.UI2.WinForms.Guna2Button _backButton;
+        private VrdoPdg.View.Controls.RoundedButton _backButton;
 
         /// <summary>
         /// Переключатель «До расчёта» / «После расчёта».
         /// </summary>
-        private Guna.UI2.WinForms.Guna2Panel _modePanel;
+        private VrdoPdg.View.Controls.RoundedPanel _modePanel;
 
         /// <summary>
         /// Кнопка «До расчёта».
         /// </summary>
-        private Guna.UI2.WinForms.Guna2Button _beforeButton;
+        private VrdoPdg.View.Controls.RoundedButton _beforeButton;
 
         /// <summary>
         /// Кнопка «После расчёта».
         /// </summary>
-        private Guna.UI2.WinForms.Guna2Button _afterButton;
+        private VrdoPdg.View.Controls.RoundedButton _afterButton;
 
         /// <summary>
         /// Линия под заголовком.

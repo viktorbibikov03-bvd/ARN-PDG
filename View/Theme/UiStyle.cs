@@ -1,7 +1,7 @@
 using System.Drawing;
 using System.Windows.Forms;
 
-using Guna.UI2.WinForms;
+using VrdoPdg.View.Controls;
 
 namespace VrdoPdg.View.Theme
 {
@@ -26,7 +26,7 @@ namespace VrdoPdg.View.Theme
         /// </summary>
         /// <param name="button">Кнопка.</param>
         /// <param name="glyph">Значок.</param>
-        public static void ApplyFlat(Guna2Button button, char? glyph)
+        public static void ApplyFlat(RoundedButton button, char? glyph)
         {
             ApplyCommon(button);
             button.FillColor = Color.Transparent;
@@ -45,7 +45,7 @@ namespace VrdoPdg.View.Theme
         /// </summary>
         /// <param name="button">Кнопка.</param>
         /// <param name="glyph">Значок.</param>
-        public static void ApplyOutlined(Guna2Button button, char? glyph)
+        public static void ApplyOutlined(RoundedButton button, char? glyph)
         {
             ApplyCommon(button);
             button.FillColor = Color.Transparent;
@@ -67,7 +67,7 @@ namespace VrdoPdg.View.Theme
         /// </summary>
         /// <param name="button">Кнопка.</param>
         /// <param name="glyph">Значок.</param>
-        public static void ApplyPrimary(Guna2Button button, char? glyph)
+        public static void ApplyPrimary(RoundedButton button, char? glyph)
         {
             ApplyFilled(button, glyph, Palette.Accent, Palette.OnAccent);
         }
@@ -77,7 +77,7 @@ namespace VrdoPdg.View.Theme
         /// </summary>
         /// <param name="button">Кнопка.</param>
         /// <param name="glyph">Значок.</param>
-        public static void ApplyDanger(Guna2Button button, char? glyph)
+        public static void ApplyDanger(RoundedButton button, char? glyph)
         {
             ApplyFilled(button, glyph, Palette.Danger, Palette.OnAccent);
         }
@@ -89,9 +89,8 @@ namespace VrdoPdg.View.Theme
         /// <param name="foreColor">Цвет текста.</param>
         /// <param name="fillColor">Цвет заливки.</param>
         /// <param name="glyph">Значок.</param>
-        public static void ApplyPill(Guna2Button button, Color foreColor, Color fillColor, char? glyph)
+        public static void ApplyPill(RoundedButton button, Color foreColor, Color fillColor, char? glyph)
         {
-            button.Animated = false;
             button.BorderRadius = 10;
             button.Cursor = Cursors.Default;
             button.TabStop = false;
@@ -101,12 +100,10 @@ namespace VrdoPdg.View.Theme
             button.BorderThickness = 0;
             button.HoverState.FillColor = fillColor;
             button.HoverState.ForeColor = foreColor;
-            button.PressedDepth = 0;
-            button.PressedColor = fillColor;
+            button.PressedState.FillColor = fillColor;
             button.Image = glyph.HasValue
                 ? IconFactory.Create(glyph.Value, foreColor, 14)
                 : null;
-            button.ImageSize = new Size(14, 14);
         }
 
         /// <summary>
@@ -144,7 +141,7 @@ namespace VrdoPdg.View.Theme
         /// <param name="glyph">Значок.</param>
         /// <param name="color">Цвет значка.</param>
         /// <param name="disabledColor">Цвет значка недоступной кнопки.</param>
-        public static void SetIcon(Guna2Button button, char? glyph, Color color, Color disabledColor)
+        public static void SetIcon(RoundedButton button, char? glyph, Color color, Color disabledColor)
         {
             if (!glyph.HasValue)
             {
@@ -154,10 +151,7 @@ namespace VrdoPdg.View.Theme
             }
 
             button.Image = IconFactory.Create(glyph.Value, color, IconSize);
-            button.HoverState.Image = button.Image;
             button.DisabledState.Image = IconFactory.Create(glyph.Value, disabledColor, IconSize);
-            button.ImageSize = new Size(IconSize, IconSize);
-            button.ImageAlign = HorizontalAlignment.Left;
         }
 
         /// <summary>
@@ -167,7 +161,7 @@ namespace VrdoPdg.View.Theme
         /// <param name="glyph">Значок.</param>
         /// <param name="fillColor">Цвет заливки.</param>
         /// <param name="foreColor">Цвет текста.</param>
-        private static void ApplyFilled(Guna2Button button, char? glyph, Color fillColor, Color foreColor)
+        private static void ApplyFilled(RoundedButton button, char? glyph, Color fillColor, Color foreColor)
         {
             ApplyCommon(button);
             button.FillColor = fillColor;
@@ -185,14 +179,12 @@ namespace VrdoPdg.View.Theme
         /// Задает общие свойства кнопок.
         /// </summary>
         /// <param name="button">Кнопка.</param>
-        private static void ApplyCommon(Guna2Button button)
+        private static void ApplyCommon(RoundedButton button)
         {
-            button.Animated = true;
             button.BorderRadius = ButtonRadius;
             button.Cursor = Cursors.Hand;
             button.Font = UiFonts.Semibold(10.5f);
             button.TextAlign = HorizontalAlignment.Center;
-            button.UseTransparentBackground = true;
         }
     }
 }

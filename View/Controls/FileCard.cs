@@ -4,8 +4,6 @@ using System.Drawing.Drawing2D;
 using System.IO;
 using System.Windows.Forms;
 
-using Guna.UI2.WinForms;
-
 using VrdoPdg.View.Theme;
 
 namespace VrdoPdg.View.Controls
@@ -19,12 +17,12 @@ namespace VrdoPdg.View.Controls
         /// <summary>
         /// Рамка карточки.
         /// </summary>
-        private readonly Guna2Panel _frame;
+        private readonly RoundedPanel _frame;
 
         /// <summary>
         /// Значок карточки.
         /// </summary>
-        private readonly Guna2Panel _iconBox;
+        private readonly RoundedPanel _iconBox;
 
         /// <summary>
         /// Изображение значка.
@@ -54,7 +52,7 @@ namespace VrdoPdg.View.Controls
         /// <summary>
         /// Кнопка «Выбрать файл» / «Заменить».
         /// </summary>
-        private readonly Guna2Button _chooseButton;
+        private readonly RoundedButton _chooseButton;
 
         /// <summary>
         /// Подсказка: предлагаемый путь к файлу.
@@ -69,20 +67,18 @@ namespace VrdoPdg.View.Controls
             BackColor = Palette.Surface;
             Size = new Size(470, 96);
 
-            _frame = new Guna2Panel
+            _frame = new RoundedPanel
             {
                 Dock = DockStyle.Fill,
                 BorderRadius = 14,
-                BorderThickness = 1,
-                UseTransparentBackground = true
+                BorderThickness = 1
             };
 
-            _iconBox = new Guna2Panel
+            _iconBox = new RoundedPanel
             {
                 Location = new Point(16, 24),
                 Size = new Size(46, 46),
-                BorderRadius = 10,
-                UseTransparentBackground = true
+                BorderRadius = 10
             };
             _icon = new PictureBox
             {
@@ -101,7 +97,7 @@ namespace VrdoPdg.View.Controls
             _statusLabel.Size = new Size(240, 20);
             _statusLabel.Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right;
 
-            _chooseButton = new Guna2Button
+            _chooseButton = new RoundedButton
             {
                 Size = new Size(140, 36),
                 Location = new Point(316, 30),
@@ -222,7 +218,7 @@ namespace VrdoPdg.View.Controls
             {
                 _frame.FillColor = Palette.AccentDark;
                 _frame.BorderColor = Palette.Accent;
-                _frame.BorderStyle = DashStyle.Solid;
+                _frame.BorderDashStyle = DashStyle.Solid;
                 _iconBox.FillColor = Palette.Accent;
                 _icon.Image = IconFactory.Create(IconGlyph.CheckMark, Palette.OnAccent, 24);
                 _extensionLabel.ForeColor = Palette.Accent;
@@ -235,7 +231,7 @@ namespace VrdoPdg.View.Controls
             {
                 _frame.FillColor = Palette.Surface;
                 _frame.BorderColor = Palette.Border;
-                _frame.BorderStyle = DashStyle.Dash;
+                _frame.BorderDashStyle = DashStyle.Dash;
                 _iconBox.FillColor = Palette.SurfaceSunken;
                 _icon.Image = IconFactory.Create(IconGlyph.Document, Palette.TextSecondary, 24);
                 _extensionLabel.ForeColor = Palette.TextSecondary;

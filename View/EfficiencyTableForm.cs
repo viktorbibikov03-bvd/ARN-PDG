@@ -15,7 +15,7 @@ namespace VrdoPdg.View
     /// Модальное окно «Таблица эффективности»: просмотр и изменение порядка задействования СКРМ
     /// для выбранного КП, проверка и сохранение таблицы, восстановление состава СКРМ согласно ПУР.
     /// </summary>
-    internal sealed partial class EfficiencyTableForm : Form
+    internal sealed partial class EfficiencyTableForm : BorderlessForm
     {
         /// <summary>
         /// Сервис таблицы эффективности.
@@ -89,6 +89,7 @@ namespace VrdoPdg.View
         public EfficiencyTableForm(EfficiencyTableService service)
         {
             InitializeComponent();
+            EnableWindowDrag(_headerPanel, _titlePanel, _titleLabel, _subtitleLabel, _iconBox, _icon);
             _service = service ?? throw new ArgumentNullException(nameof(service));
             _devices = service.GetDevices();
             _controlPoints = service.GetControlPoints();
@@ -170,22 +171,19 @@ namespace VrdoPdg.View
             _errorIcon.Image = IconFactory.Create(IconGlyph.Warning, Palette.Danger, 20);
             _closeButton.Text = string.Empty;
             UiStyle.ApplyFlat(_closeButton, IconGlyph.Close);
-            _closeButton.ImageAlign = HorizontalAlignment.Center;
             UiStyle.ApplyPrimary(_defaultButton, null);
             UiStyle.ApplyOutlined(_cancelButton, null);
             UiStyle.ApplyPrimary(_saveButton, IconGlyph.Save);
             UiStyle.ApplyOutlined(_addButton, IconGlyph.Add);
-            _borderlessForm.ShadowColor = Palette.Background;
 
             _searchBox.BorderRadius = 10;
             _searchBox.FillColor = Palette.Surface;
             _searchBox.BorderColor = Palette.Border;
             _searchBox.ForeColor = Palette.Text;
-            _searchBox.PlaceholderForeColor = Palette.TextSecondary;
             _searchBox.Font = UiFonts.Regular(10.5f);
-            _searchBox.IconLeft = IconFactory.Create(IconGlyph.Search, Palette.TextSecondary, 18);
-            _searchBox.FocusedState.BorderColor = Palette.Accent;
-            _searchBox.HoverState.BorderColor = Palette.TextMuted;
+            _searchBox.Image = IconFactory.Create(IconGlyph.Search, Palette.TextSecondary, 18);
+            _searchBox.FocusedBorderColor = Palette.Accent;
+            _searchBox.HoverBorderColor = Palette.TextMuted;
 
             UiStyle.ApplyGrid(_grid);
             _grid.ColumnHeadersHeight = 44;

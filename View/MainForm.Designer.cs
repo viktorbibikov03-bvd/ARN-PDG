@@ -30,20 +30,20 @@ namespace VrdoPdg.View
         {
             _toolbarPanel = new System.Windows.Forms.Panel();
             _rightToolbar = new System.Windows.Forms.FlowLayoutPanel();
-            _megapointIndicator = new Guna.UI2.WinForms.Guna2Button();
-            _smpSmzuIndicator = new Guna.UI2.WinForms.Guna2Button();
-            _settingsButton = new Guna.UI2.WinForms.Guna2Button();
+            _megapointIndicator = new VrdoPdg.View.Controls.RoundedButton();
+            _smpSmzuIndicator = new VrdoPdg.View.Controls.RoundedButton();
+            _settingsButton = new VrdoPdg.View.Controls.RoundedButton();
             _leftToolbar = new System.Windows.Forms.FlowLayoutPanel();
-            _loadButton = new Guna.UI2.WinForms.Guna2Button();
-            _saveButton = new Guna.UI2.WinForms.Guna2Button();
-            _helpButton = new Guna.UI2.WinForms.Guna2Button();
+            _loadButton = new VrdoPdg.View.Controls.RoundedButton();
+            _saveButton = new VrdoPdg.View.Controls.RoundedButton();
+            _helpButton = new VrdoPdg.View.Controls.RoundedButton();
             _separatorPanel = new System.Windows.Forms.Panel();
-            _runButton = new Guna.UI2.WinForms.Guna2Button();
-            _previewButton = new Guna.UI2.WinForms.Guna2Button();
-            _archiveButton = new Guna.UI2.WinForms.Guna2Button();
+            _runButton = new VrdoPdg.View.Controls.RoundedButton();
+            _previewButton = new VrdoPdg.View.Controls.RoundedButton();
+            _archiveButton = new VrdoPdg.View.Controls.RoundedButton();
             _toolbarLine = new System.Windows.Forms.Panel();
             _progressPanel = new System.Windows.Forms.Panel();
-            _progressBar = new Guna.UI2.WinForms.Guna2ProgressBar();
+            _progressBar = new VrdoPdg.View.Controls.SlimProgressBar();
             _progressPercentLabel = new System.Windows.Forms.Label();
             _progressLabel = new System.Windows.Forms.Label();
             _progressIcon = new System.Windows.Forms.PictureBox();
@@ -214,12 +214,10 @@ namespace VrdoPdg.View
             //
             // _progressBar
             //
-            _progressBar.BorderRadius = 4;
             _progressBar.Dock = System.Windows.Forms.DockStyle.Fill;
-            _progressBar.FillColor = System.Drawing.Color.FromArgb(40, 40, 40);
+            _progressBar.TrackColor = System.Drawing.Color.FromArgb(40, 40, 40);
             _progressBar.Name = "_progressBar";
             _progressBar.ProgressColor = System.Drawing.Color.FromArgb(176, 150, 255);
-            _progressBar.ProgressColor2 = System.Drawing.Color.FromArgb(176, 150, 255);
             _progressBar.TabIndex = 0;
             //
             // _progressPercentLabel
@@ -314,17 +312,17 @@ namespace VrdoPdg.View
         /// <summary>
         /// Кнопка «Загрузить».
         /// </summary>
-        private Guna.UI2.WinForms.Guna2Button _loadButton;
+        private VrdoPdg.View.Controls.RoundedButton _loadButton;
 
         /// <summary>
         /// Кнопка «Сохранить».
         /// </summary>
-        private Guna.UI2.WinForms.Guna2Button _saveButton;
+        private VrdoPdg.View.Controls.RoundedButton _saveButton;
 
         /// <summary>
         /// Кнопка «Справка».
         /// </summary>
-        private Guna.UI2.WinForms.Guna2Button _helpButton;
+        private VrdoPdg.View.Controls.RoundedButton _helpButton;
 
         /// <summary>
         /// Вертикальный разделитель панели инструментов.
@@ -334,32 +332,32 @@ namespace VrdoPdg.View
         /// <summary>
         /// Кнопка «Запустить» / «Остановить».
         /// </summary>
-        private Guna.UI2.WinForms.Guna2Button _runButton;
+        private VrdoPdg.View.Controls.RoundedButton _runButton;
 
         /// <summary>
         /// Кнопка «Предпросмотр».
         /// </summary>
-        private Guna.UI2.WinForms.Guna2Button _previewButton;
+        private VrdoPdg.View.Controls.RoundedButton _previewButton;
 
         /// <summary>
         /// Кнопка «Архив».
         /// </summary>
-        private Guna.UI2.WinForms.Guna2Button _archiveButton;
+        private VrdoPdg.View.Controls.RoundedButton _archiveButton;
 
         /// <summary>
         /// Индикатор загрузки файла МТ.
         /// </summary>
-        private Guna.UI2.WinForms.Guna2Button _megapointIndicator;
+        private VrdoPdg.View.Controls.RoundedButton _megapointIndicator;
 
         /// <summary>
         /// Индикатор загрузки файла smp_smzu.csv.
         /// </summary>
-        private Guna.UI2.WinForms.Guna2Button _smpSmzuIndicator;
+        private VrdoPdg.View.Controls.RoundedButton _smpSmzuIndicator;
 
         /// <summary>
         /// Кнопка «Настройка».
         /// </summary>
-        private Guna.UI2.WinForms.Guna2Button _settingsButton;
+        private VrdoPdg.View.Controls.RoundedButton _settingsButton;
 
         /// <summary>
         /// Линия под панелью инструментов.
@@ -389,7 +387,7 @@ namespace VrdoPdg.View
         /// <summary>
         /// Полоса хода расчета.
         /// </summary>
-        private Guna.UI2.WinForms.Guna2ProgressBar _progressBar;
+        private VrdoPdg.View.Controls.SlimProgressBar _progressBar;
 
         /// <summary>
         /// Область панели протокола.

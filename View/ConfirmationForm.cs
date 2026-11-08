@@ -9,7 +9,7 @@ namespace VrdoPdg.View
     /// Окно подтверждения действия в темном оформлении: остановка расчета,
     /// отказ от несохраненных изменений, восстановление таблицы эффективности по умолчанию.
     /// </summary>
-    internal sealed partial class ConfirmationForm : Form
+    internal sealed partial class ConfirmationForm : BorderlessForm
     {
         /// <summary>
         /// Создает окно подтверждения.
@@ -17,6 +17,7 @@ namespace VrdoPdg.View
         public ConfirmationForm()
         {
             InitializeComponent();
+            EnableWindowDrag(_titleLabel, _messageLabel, _iconBox, _icon);
         }
 
         /// <summary>
@@ -45,7 +46,6 @@ namespace VrdoPdg.View
                 UiStyle.ApplyPrimary(_confirmButton, null);
             }
 
-            _borderlessForm.ShadowColor = Palette.Background;
             AdjustButtons();
         }
 

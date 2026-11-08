@@ -10,7 +10,7 @@
 
 | Проект | Каталог | Уровень (диаграмма C3) | Состав |
 | --- | --- | --- | --- |
-| `View` | `View` | Представление | Главная форма, окна «Загрузка данных», «Таблица эффективности», формы «Напряжение по часам», «Архив расчетов», «Сравнение расчетов», справка (Windows Forms, Guna UI2) |
+| `View` | `View` | Представление | Главная форма, окна «Загрузка данных», «Таблица эффективности», формы «Напряжение по часам», «Архив расчетов», «Сравнение расчетов», справка (Windows Forms без сторонних библиотек оформления) |
 | `Model` | `Main` | Прикладной | `DataLoadService`, `VoltageRegulationService`, `CalculationArchiveService`, `ResultExportService`, `EfficiencyTableService`, протокол расчета, сущности и интерфейсы модулей инфраструктуры |
 | `Infrastructure` | `Infrastructure` | Инфраструктура | `ModelDataRepository` (SQLite, Microsoft.Data.Sqlite), `SmpSmzuCsvReader`, `SmpSmzuCsvWriter`, `CkModel` |
 | `Infrastructure.Bars` | `Infrastructure.Bars` | Инфраструктура | `RastrAdapter` — взаимодействие с ПО «Барс» через интерфейс IRastr библиотеки ASTRALib.dll |
@@ -25,8 +25,9 @@
 - ПО «Барс» с библиотекой `ASTRALib.dll`. Ссылка на библиотеку задана путем `..\..\..\..\RastrWin3\ASTRALib.dll`
   относительно каталогов проектов `Infrastructure.Bars` и `View` (как в прототипе); при другом расположении
   исправьте `HintPath` в этих проектах.
-- Библиотека Guna UI2 WinForms (NuGet `Guna.UI2.WinForms` 2.0.4.7). Для работы с формами в конструкторе
-  Visual Studio требуется лицензия Guna UI2.
+- Платные библиотеки оформления не требуются: кнопки, панели со скругленными углами, поле поиска,
+  полоса хода расчета и окна без рамки реализованы средствами Windows Forms в каталогах `View/Controls`
+  и `View` (`RoundedButton`, `RoundedPanel`, `SearchBox`, `SlimProgressBar`, `BorderlessForm`).
 - Если библиотека ASTRALib 32-разрядная, запускайте конфигурацию `x86`.
 
 ## Настройка

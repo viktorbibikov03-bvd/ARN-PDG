@@ -2,9 +2,6 @@ using System;
 using System.Collections.Generic;
 using System.Windows.Forms;
 
-using Guna.UI2.WinForms;
-using Guna.UI2.WinForms.Enums;
-
 using VrdoPdg.Model.Entities;
 using VrdoPdg.Model.Regime;
 using VrdoPdg.Model.Services;
@@ -86,10 +83,9 @@ namespace VrdoPdg.View
         /// Оформляет кнопку переключателя «До расчёта» / «После расчёта».
         /// </summary>
         /// <param name="button">Кнопка.</param>
-        private static void StyleModeButton(Guna2Button button)
+        private static void StyleModeButton(RoundedButton button)
         {
             UiStyle.ApplyFlat(button, null);
-            button.ButtonMode = ButtonMode.ToogleButton;
             button.CheckedState.FillColor = Palette.Accent;
             button.CheckedState.ForeColor = Palette.OnAccent;
         }

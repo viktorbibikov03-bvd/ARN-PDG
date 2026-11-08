@@ -4,9 +4,6 @@ using System.Collections.Generic;
 using System.Drawing;
 using System.Windows.Forms;
 
-using Guna.UI2.WinForms;
-using Guna.UI2.WinForms.Enums;
-
 using VrdoPdg.Model.Protocol;
 using VrdoPdg.View.Theme;
 
@@ -27,6 +24,12 @@ namespace VrdoPdg.View.Controls
         /// Отступ вложенного уровня, пикселей.
         /// </summary>
         private const int LevelIndent = 30;
+
+        /// <summary>
+        /// Отступ содержимого от рамки, пикселей. При радиусе скругления 14 пикселей отступ 5 пикселей
+        /// не дает прямоугольным углам заголовка и дерева перекрыть скругленную рамку.
+        /// </summary>
+        private const int FramePadding = 5;
 
         /// <summary>
         /// Интервал вывода новых записей, мс.
@@ -66,7 +69,8 @@ namespace VrdoPdg.View.Controls
         /// <summary>
         /// Переключатели меток на панели фильтров.
         /// </summary>
-        private readonly Dictionary<ProtocolTag, Guna2Button> _tagButtons = new Dictionary<ProtocolTag, Guna2Button>();
+        private readonly Dictionary<ProtocolTag, RoundedButton> _tagButtons =
+            new Dictionary<ProtocolTag, RoundedButton>();
 
         /// <summary>
         /// Таймер вывода новых записей.
@@ -76,17 +80,17 @@ namespace VrdoPdg.View.Controls
         /// <summary>
         /// Рамка панели.
         /// </summary>
-        private readonly Guna2Panel _frame;
+        private readonly RoundedPanel _frame;
 
         /// <summary>
         /// Кнопка «Развернуть всё» / «Свернуть всё».
         /// </summary>
-        private readonly Guna2Button _expandButton;
+        private readonly RoundedButton _expandButton;
 
         /// <summary>
         /// Кнопка «Все» с общим количеством записей.
         /// </summary>
-        private readonly Guna2Button _allButton;
+        private readonly RoundedButton _allButton;
 
         /// <summary>
         /// Дерево записей.
@@ -116,15 +120,14 @@ namespace VrdoPdg.View.Controls
             BackColor = Palette.Background;
             DoubleBuffered = true;
 
-            _frame = new Guna2Panel
+            _frame = new RoundedPanel
             {
                 Dock = DockStyle.Fill,
                 BorderRadius = 14,
                 BorderColor = Palette.Border,
                 BorderThickness = 1,
                 FillColor = Palette.SurfaceSunken,
-                Padding = new Padding(2),
-                UseTransparentBackground = true
+                Padding = new Padding(FramePadding)
             };
 
             _tree = new ProtocolTreeView
@@ -232,7 +235,7 @@ namespace VrdoPdg.View.Controls
         /// </summary>
         /// <param name="expandButton">Кнопка «Развернуть всё».</param>
         /// <returns>Заголовок.</returns>
-        private Panel CreateHeader(out Guna2Button expandButton)
+        private Panel CreateHeader(out RoundedButton expandButton)
         {
             Panel header = new Panel
             {
@@ -253,7 +256,7 @@ namespace VrdoPdg.View.Controls
                 Font = UiFonts.Monospace(10.5f)
             };
 
-            expandButton = new Guna2Button
+            expandButton = new RoundedButton
             {
                 Dock = DockStyle.Right,
                 Width = 170,
@@ -272,7 +275,7 @@ namespace VrdoPdg.View.Controls
         /// </summary>
         /// <param name="allButton">Кнопка «Все».</param>
         /// <returns>Панель фильтров.</returns>
-        private Panel CreateFilterPanel(out Guna2Button allButton)
+        private Panel CreateFilterPanel(out RoundedButton allButton)
         {
             FlowLayoutPanel panel = new FlowLayoutPanel
             {
@@ -284,7 +287,7 @@ namespace VrdoPdg.View.Controls
                 AutoScroll = false
             };
 
-            allButton = new Guna2Button
+            allButton = new RoundedButton
             {
                 Size = new Size(96, 34),
                 Margin = new Padding(0, 0, 10, 0),
@@ -298,11 +301,10 @@ namespace VrdoPdg.View.Controls
 
             foreach (ProtocolTag tag in ProtocolTags.All)
             {
-                Guna2Button button = new Guna2Button
+                RoundedButton button = new RoundedButton
                 {
                     Size = new Size(108, 34),
                     Margin = new Padding(0, 0, 10, 0),
-                    ButtonMode = ButtonMode.ToogleButton,
                     Checked = true,
                     Tag = tag,
                     Text = ProtocolTags.GetLabel(tag) + " 0"
@@ -321,14 +323,12 @@ namespace VrdoPdg.View.Controls
         /// </summary>
         /// <param name="button">Переключатель.</param>
         /// <param name="tag">Метка.</param>
-        private void StyleTagButton(Guna2Button button, ProtocolTag tag)
+        private void StyleTagButton(RoundedButton button, ProtocolTag tag)
         {
             Color color = ProtocolTagStyle.GetForeColor(tag);
-            button.Animated = false;
             button.BorderRadius = 8;
             button.Cursor = Cursors.Hand;
             button.Font = UiFonts.MonospaceBold(9.5f);
-            button.UseTransparentBackground = true;
             button.FillColor = Color.Transparent;
             button.ForeColor = Palette.TextMuted;
             button.BorderColor = Palette.Border;
@@ -338,7 +338,6 @@ namespace VrdoPdg.View.Controls
             button.CheckedState.ForeColor = color;
             button.CheckedState.BorderColor = color;
             button.CheckedState.Image = IconFactory.Create(IconGlyph.CheckMark, color, 14);
-            button.ImageSize = new Size(14, 14);
         }
 
         /// <summary>
@@ -476,7 +475,7 @@ namespace VrdoPdg.View.Controls
             }
 
             _allButton.Text = "Все " + _protocol.Count;
-            foreach (KeyValuePair<ProtocolTag, Guna2Button> pair in _tagButtons)
+            foreach (KeyValuePair<ProtocolTag, RoundedButton> pair in _tagButtons)
             {
                 pair.Value.Text = ProtocolTags.GetLabel(pair.Key) + " " + _protocol.GetCount(pair.Key);
                 pair.Value.Checked = _enabledTags.Contains(pair.Key);
@@ -577,7 +576,7 @@ namespace VrdoPdg.View.Controls
         /// <param name="e">Аргументы события.</param>
         private void TagButton_Click(object? sender, EventArgs e)
         {
-            Guna2Button? button = sender as Guna2Button;
+            RoundedButton? button = sender as RoundedButton;
             if (button == null || !(button.Tag is ProtocolTag))
             {
                 return;

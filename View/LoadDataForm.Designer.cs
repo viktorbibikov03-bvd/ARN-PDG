@@ -28,28 +28,18 @@ namespace VrdoPdg.View
         /// </summary>
         private void InitializeComponent()
         {
-            components = new System.ComponentModel.Container();
-            _borderlessForm = new Guna.UI2.WinForms.Guna2BorderlessForm(components);
             _titleLabel = new System.Windows.Forms.Label();
-            _closeButton = new Guna.UI2.WinForms.Guna2Button();
+            _closeButton = new VrdoPdg.View.Controls.RoundedButton();
             _megapointCard = new VrdoPdg.View.Controls.FileCard();
             _smpSmzuCard = new VrdoPdg.View.Controls.FileCard();
-            _hintPanel = new Guna.UI2.WinForms.Guna2Panel();
+            _hintPanel = new VrdoPdg.View.Controls.RoundedPanel();
             _hintIcon = new System.Windows.Forms.PictureBox();
             _hintLabel = new System.Windows.Forms.Label();
-            _cancelButton = new Guna.UI2.WinForms.Guna2Button();
-            _doneButton = new Guna.UI2.WinForms.Guna2Button();
+            _cancelButton = new VrdoPdg.View.Controls.RoundedButton();
+            _doneButton = new VrdoPdg.View.Controls.RoundedButton();
             _hintPanel.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)_hintIcon).BeginInit();
             SuspendLayout();
-            //
-            // _borderlessForm
-            //
-            _borderlessForm.BorderRadius = 18;
-            _borderlessForm.ContainerControl = this;
-            _borderlessForm.DragForm = true;
-            _borderlessForm.ResizeForm = false;
-            _borderlessForm.TransparentWhileDrag = true;
             //
             // _titleLabel
             //
@@ -165,11 +155,6 @@ namespace VrdoPdg.View
         }
 
         /// <summary>
-        /// Оформление окна без рамки.
-        /// </summary>
-        private Guna.UI2.WinForms.Guna2BorderlessForm _borderlessForm;
-
-        /// <summary>
         /// Заголовок окна.
         /// </summary>
         private System.Windows.Forms.Label _titleLabel;
@@ -177,7 +162,7 @@ namespace VrdoPdg.View
         /// <summary>
         /// Кнопка закрытия окна.
         /// </summary>
-        private Guna.UI2.WinForms.Guna2Button _closeButton;
+        private VrdoPdg.View.Controls.RoundedButton _closeButton;
 
         /// <summary>
         /// Карточка файла МТ.
@@ -192,7 +177,7 @@ namespace VrdoPdg.View
         /// <summary>
         /// Подсказка о цветовой индикации.
         /// </summary>
-        private Guna.UI2.WinForms.Guna2Panel _hintPanel;
+        private VrdoPdg.View.Controls.RoundedPanel _hintPanel;
 
         /// <summary>
         /// Значок подсказки.
@@ -207,11 +192,11 @@ namespace VrdoPdg.View
         /// <summary>
         /// Кнопка «Отмена».
         /// </summary>
-        private Guna.UI2.WinForms.Guna2Button _cancelButton;
+        private VrdoPdg.View.Controls.RoundedButton _cancelButton;
 
         /// <summary>
         /// Кнопка «Готово».
         /// </summary>
-        private Guna.UI2.WinForms.Guna2Button _doneButton;
+        private VrdoPdg.View.Controls.RoundedButton _doneButton;
     }
 }
