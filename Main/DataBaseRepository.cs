@@ -2,6 +2,7 @@
 using Model.Models;
 using System.Diagnostics;
 
+
 namespace Model
 {
     public class DataBaseRepository : IDisposable
@@ -68,7 +69,7 @@ namespace Model
             using (var connection = new SqliteConnection(_connectionString))
             {
                 connection.Open();
-
+        
                 var tables = new[] {
                     "\"Adjustable RPCDs\"",
                     "\"Generators\"",
@@ -77,7 +78,7 @@ namespace Model
                     "\"VoltageAtVSPs\"",
                     "\"EfficiencyTable\""
                 };
-
+        
                 using (var transaction = connection.BeginTransaction())
                 {
                     foreach (var table in tables)
@@ -103,7 +104,7 @@ namespace Model
                 {
                     command.ExecuteNonQuery();
                 }
-
+        
                 Debug.WriteLine("✓ Все таблицы очищены");
             }
         }
@@ -146,7 +147,9 @@ namespace Model
                         command.Parameters["@Name"].Value = rpcd.Name ?? "";
                         command.Parameters["@MinReactive"].Value = rpcd.MinReactivePower;
                         command.Parameters["@MaxReactive"].Value = rpcd.MaxReactivePower;
-                        command.Parameters["@OnOff"].Value = rpcd.OnOff ? 1 : 0;
+                        command.Parameters["@OnOff"].Value = rpcd.OnOff 
+                            ? 1 
+                            : 0;
                         command.Parameters["@Hour"].Value = rpcd.Hour;
                         command.Parameters["@Voltage"].Value = rpcd.VoltageAtNode;
                         command.ExecuteNonQuery();
@@ -297,7 +300,9 @@ namespace Model
                         command.Parameters["@Num"].Value = rpcd.ReactorNumber;
                         command.Parameters["@Name"].Value = rpcd.Name ?? "";
                         command.Parameters["@Capacity"].Value = rpcd.Capacity;
-                        command.Parameters["@OnOff"].Value = rpcd.OnOff ? 1 : 0;
+                        command.Parameters["@OnOff"].Value = rpcd.OnOff 
+                            ? 1 
+                            : 0;
                         command.Parameters["@Hour"].Value = rpcd.Hour;
                         command.ExecuteNonQuery();
                     }
@@ -321,27 +326,27 @@ namespace Model
                 Debug.WriteLine("SaveVoltageAtVSPs: список пуст");
                 return;
             }
-
+        
             using (var connection = new SqliteConnection(_connectionString))
             {
                 connection.Open();
-
+        
                 using (var transaction = connection.BeginTransaction())
                 {
                     var command = new SqliteCommand();
                     command.Connection = connection;
                     command.Transaction = transaction;
-
+        
                     command.CommandText = @"INSERT OR REPLACE INTO ""VoltageAtVSPs"" 
                         (VCP_NodeNumber, Voltage, MinVoltage, MaxVoltage, Hour)
                         VALUES (@NodeNum, @Voltage, @MinVoltage, @MaxVoltage, @Hour)";
-
+        
                     command.Parameters.Add(new SqliteParameter("@NodeNum", SqliteType.Integer));
                     command.Parameters.Add(new SqliteParameter("@Voltage", SqliteType.Real));
                     command.Parameters.Add(new SqliteParameter("@MinVoltage", SqliteType.Integer));
                     command.Parameters.Add(new SqliteParameter("@MaxVoltage", SqliteType.Integer));
                     command.Parameters.Add(new SqliteParameter("@Hour", SqliteType.Integer));
-
+        
                     foreach (var voltage in voltages)
                     {
                         command.Parameters["@NodeNum"].Value = voltage.VCP_NodeNumber;
@@ -351,19 +356,19 @@ namespace Model
                         command.Parameters["@Hour"].Value = voltage.Hour;
                         command.ExecuteNonQuery();
                     }
-
+        
                     transaction.Commit();
                 }
-
+        
                 using (var command = new SqliteCommand("PRAGMA wal_checkpoint(TRUNCATE)", connection))
                 {
                     command.ExecuteNonQuery();
                 }
             }
-
+        
             Debug.WriteLine($"✓ Сохранено VoltageAtVSPs: {voltages.Count} записей");
         }
-
+        
         public void SaveEfficiencyTables(List<EfficiencyTable> tables)
         {
             if (tables == null || tables.Count == 0)
@@ -371,27 +376,27 @@ namespace Model
                 Debug.WriteLine("SaveEfficiencyTables: список пуст");
                 return;
             }
-
+        
             using (var connection = new SqliteConnection(_connectionString))
             {
                 connection.Open();
-
+        
                 using (var transaction = connection.BeginTransaction())
                 {
                     var command = new SqliteCommand();
                     command.Connection = connection;
                     command.Transaction = transaction;
-
+        
                     command.CommandText = @"INSERT OR REPLACE INTO ""EfficiencyTable"" 
                         (VCP_NodeNumber, PriorityRPCDNumber, ControlledRPCD_NodeNumber, ReactorNumber, GeneratorNodeNumber)
                         VALUES (@VCPNode, @Priority, @ControlledNode, @Reactor, @Generator)";
-
+        
                     command.Parameters.Add(new SqliteParameter("@VCPNode", SqliteType.Integer));
                     command.Parameters.Add(new SqliteParameter("@Priority", SqliteType.Integer));
                     command.Parameters.Add(new SqliteParameter("@ControlledNode", SqliteType.Integer));
                     command.Parameters.Add(new SqliteParameter("@Reactor", SqliteType.Integer));
                     command.Parameters.Add(new SqliteParameter("@Generator", SqliteType.Integer));
-
+        
                     foreach (var table in tables)
                     {
                         command.Parameters["@VCPNode"].Value = table.VCP_NodeNumber;
@@ -401,16 +406,16 @@ namespace Model
                         command.Parameters["@Generator"].Value = table.GeneratorNodeNumber;
                         command.ExecuteNonQuery();
                     }
-
+        
                     transaction.Commit();
                 }
-
+        
                 using (var command = new SqliteCommand("PRAGMA wal_checkpoint(TRUNCATE)", connection))
                 {
                     command.ExecuteNonQuery();
                 }
             }
-
+        
             Debug.WriteLine($"✓ Сохранено EfficiencyTables: {tables.Count} записей");
         }
 
@@ -429,7 +434,9 @@ namespace Model
                         {
                             ControlledRPCD_NodeNumber = reader.GetInt32(0),
                             ReactivePower = reader.GetDouble(1),
-                            Name = reader.IsDBNull(2) ? "" : reader.GetString(2),
+                            Name = reader.IsDBNull(2) 
+                                ? "" 
+                                : reader.GetString(2),
                             MinReactivePower = reader.GetDouble(3),
                             MaxReactivePower = reader.GetDouble(4),
                             OnOff = reader.GetInt32(5) != 0,
@@ -458,7 +465,9 @@ namespace Model
                             GeneratorNodeNumber = reader.GetInt32(0),
                             BusVoltage = reader.GetDouble(1),
                             PQDiagramNumber = reader.GetInt32(2),
-                            Name = reader.IsDBNull(3) ? "" : reader.GetString(3),
+                            Name = reader.IsDBNull(3) 
+                                ? "" 
+                                : reader.GetString(3),
                             Hour = reader.GetInt32(4),
                             OnOff = reader.GetInt32(5) != 0
                         });
@@ -506,7 +515,9 @@ namespace Model
                         list.Add(new SwitchedRPCD
                         {
                             ReactorNumber = reader.GetInt32(0),
-                            Name = reader.IsDBNull(1) ? "" : reader.GetString(1),
+                            Name = reader.IsDBNull(1) 
+                                ? "" 
+                                : reader.GetString(1),
                             Capacity = reader.GetDouble(2),
                             OnOff = reader.GetInt32(3) != 0,
                             Hour = reader.GetInt32(4)
@@ -615,6 +626,81 @@ namespace Model
                 }
                 _disposed = true;
             }
+        }
+
+
+        public void UpdateVoltageAtVSP(int nodeNumber, double voltage, int hour)
+        {
+            using (var connection = new SqliteConnection(_connectionString))
+            {
+                connection.Open();
+
+                var command = new SqliteCommand();
+                command.Connection = connection;
+                command.CommandText = @"UPDATE ""VoltageAtVSPs"" 
+                    SET Voltage = @Voltage 
+                    WHERE VCP_NodeNumber = @NodeNum AND Hour = @Hour";
+
+                command.Parameters.Add(new SqliteParameter("@NodeNum", SqliteType.Integer));
+                command.Parameters.Add(new SqliteParameter("@Voltage", SqliteType.Real));
+                command.Parameters.Add(new SqliteParameter("@Hour", SqliteType.Integer));
+
+                command.Parameters["@NodeNum"].Value = nodeNumber;
+                command.Parameters["@Voltage"].Value = voltage;
+                command.Parameters["@Hour"].Value = hour;
+
+                int rowsAffected = command.ExecuteNonQuery();
+
+                if (rowsAffected == 0)
+                {
+                    Debug.WriteLine($"⚠️ Не найдена запись для обновления: Node={nodeNumber}, Hour={hour}");
+                }
+            }
+        }
+
+        public void UpdateVoltages(List<VoltageAtVSP> voltages)
+        {
+            if (voltages == null || voltages.Count == 0)
+            {
+                Debug.WriteLine("UpdateVoltages: список пуст");
+                return;
+            }
+        
+            using (var connection = new SqliteConnection(_connectionString))
+            {
+                connection.Open();
+        
+                using (var transaction = connection.BeginTransaction())
+                {
+                    var command = new SqliteCommand();
+                    command.Connection = connection;
+                    command.Transaction = transaction;
+                    command.CommandText = @"UPDATE ""VoltageAtVSPs"" 
+                SET Voltage = @Voltage 
+                WHERE VCP_NodeNumber = @NodeNum AND Hour = @Hour";
+        
+                    command.Parameters.Add(new SqliteParameter("@NodeNum", SqliteType.Integer));
+                    command.Parameters.Add(new SqliteParameter("@Voltage", SqliteType.Real));
+                    command.Parameters.Add(new SqliteParameter("@Hour", SqliteType.Integer));
+        
+                    foreach (var voltage in voltages)
+                    {
+                        command.Parameters["@NodeNum"].Value = voltage.VCP_NodeNumber;
+                        command.Parameters["@Voltage"].Value = voltage.Voltage;
+                        command.Parameters["@Hour"].Value = voltage.Hour;
+                        command.ExecuteNonQuery();
+                    }
+        
+                    transaction.Commit();
+                }
+        
+                using (var command = new SqliteCommand("PRAGMA wal_checkpoint(TRUNCATE)", connection))
+                {
+                    command.ExecuteNonQuery();
+                }
+            }
+        
+            Debug.WriteLine($"✓ Обновлено VoltageAtVSPs: {voltages.Count} записей");
         }
 
         public void Dispose()
