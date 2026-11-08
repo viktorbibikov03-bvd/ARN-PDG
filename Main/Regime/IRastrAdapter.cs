@@ -56,11 +56,12 @@ namespace VrdoPdg.Model.Regime
         SwitchedDeviceState? GetSwitchedDevice(int reactorNumber);
 
         /// <summary>
-        /// Возвращает состояние генератора.
+        /// Возвращает состояние генератора по узлу его подключения: заданное напряжение (vzd),
+        /// генерацию (pg, qg) и пределы реактивной мощности (qmin, qmax) таблицы «Узлы».
         /// </summary>
-        /// <param name="generatorNumber">Номер генератора в таблице «Генераторы УР».</param>
-        /// <returns>Состояние генератора или <c>null</c>, если генератор не найден.</returns>
-        GeneratorState? GetGenerator(int generatorNumber);
+        /// <param name="nodeNumber">Номер узла подключения генератора в таблице «Узлы».</param>
+        /// <returns>Состояние генератора или <c>null</c>, если узел не найден.</returns>
+        GeneratorState? GetGenerator(int nodeNumber);
 
         /// <summary>
         /// Возвращает точки PQ-диаграммы.

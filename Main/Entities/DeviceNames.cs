@@ -112,7 +112,8 @@ namespace VrdoPdg.Model.Entities
         }
 
         /// <summary>
-        /// Возвращает подпись номера СКРМ в МТ: «узел», «реактор» или «генератор».
+        /// Возвращает подпись номера СКРМ в МТ: «узел» для управляемых СКРМ и генераторов,
+        /// «реактор» для коммутируемых СКРМ.
         /// </summary>
         /// <param name="type">Тип СКРМ.</param>
         /// <returns>Подпись номера.</returns>
@@ -120,12 +121,10 @@ namespace VrdoPdg.Model.Entities
         {
             switch (type)
             {
-                case DeviceType.Controlled:
-                    return "узел";
                 case DeviceType.Switched:
                     return "реактор";
                 default:
-                    return "генератор";
+                    return "узел";
             }
         }
     }
