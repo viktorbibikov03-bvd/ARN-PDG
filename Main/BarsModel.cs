@@ -3,6 +3,7 @@ using Model.Models;
 using System.Data;
 using System.Diagnostics;
 
+
 namespace Model
 {
     public class BarsModel
