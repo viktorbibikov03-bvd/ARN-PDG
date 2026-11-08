@@ -74,6 +74,10 @@ namespace VrdoPdg.View.Controls
                 BorderThickness = 1
             };
 
+            // Рамка добавляется до вложенных элементов: привязка кнопки к правому краю
+            // рассчитывается от ширины рамки, а не от ширины панели по умолчанию.
+            Controls.Add(_frame);
+
             _iconBox = new RoundedPanel
             {
                 Location = new Point(16, 24),
@@ -91,16 +95,20 @@ namespace VrdoPdg.View.Controls
             _titleLabel = CreateLabel(new Point(78, 14), UiFonts.Semibold(11.5f), Palette.Text);
             _extensionLabel = CreateLabel(new Point(200, 16), UiFonts.Monospace(10f), Palette.TextSecondary);
             _nameLabel = CreateLabel(new Point(78, 40), UiFonts.Monospace(9.5f), Palette.TextSecondary);
+            _nameLabel.AutoSize = false;
+            _nameLabel.AutoEllipsis = true;
+            _nameLabel.Size = new Size(230, 18);
+            _nameLabel.Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right;
             _statusLabel = CreateLabel(new Point(78, 62), UiFonts.Regular(9f), Palette.TextSecondary);
             _statusLabel.AutoSize = false;
             _statusLabel.AutoEllipsis = true;
-            _statusLabel.Size = new Size(240, 20);
+            _statusLabel.Size = new Size(376, 20);
             _statusLabel.Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right;
 
             _chooseButton = new RoundedButton
             {
                 Size = new Size(140, 36),
-                Location = new Point(316, 30),
+                Location = new Point(316, 20),
                 Anchor = AnchorStyles.Top | AnchorStyles.Right,
                 Text = "Выбрать файл"
             };
@@ -113,7 +121,6 @@ namespace VrdoPdg.View.Controls
             _frame.Controls.Add(_extensionLabel);
             _frame.Controls.Add(_titleLabel);
             _frame.Controls.Add(_iconBox);
-            Controls.Add(_frame);
             UpdateView();
         }
 
