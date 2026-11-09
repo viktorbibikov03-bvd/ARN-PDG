@@ -37,11 +37,6 @@ namespace VrdoPdg.Tests.Fakes
         public List<VoltageBounds> Schedule { get; } = new List<VoltageBounds>();
 
         /// <summary>
-        /// PQ-диаграммы генераторов.
-        /// </summary>
-        public Dictionary<int, PQDiagram> Diagrams { get; } = new Dictionary<int, PQDiagram>();
-
-        /// <summary>
         /// Сохраненные напряжения в узлах.
         /// </summary>
         public List<NodeVoltage> SavedVoltages { get; } = new List<NodeVoltage>();
@@ -117,18 +112,6 @@ namespace VrdoPdg.Tests.Fakes
         {
             Schedule.Clear();
             Schedule.AddRange(bounds);
-        }
-
-        /// <inheritdoc/>
-        public IReadOnlyDictionary<int, PQDiagram> GetPQDiagrams()
-        {
-            return Diagrams.ToDictionary(pair => pair.Key, pair => pair.Value);
-        }
-
-        /// <inheritdoc/>
-        public void SavePQDiagram(int deviceId, IReadOnlyList<PQPoint> points)
-        {
-            Diagrams[deviceId] = new PQDiagram(points);
         }
 
         /// <inheritdoc/>

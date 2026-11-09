@@ -25,11 +25,6 @@ namespace VrdoPdg.Model.Services
         private readonly HashSet<(int DeviceId, int Hour)> _fixedDeviceHours;
 
         /// <summary>
-        /// PQ-диаграммы генераторов по коду СКРМ.
-        /// </summary>
-        private readonly IReadOnlyDictionary<int, PQDiagram> _pqDiagrams;
-
-        /// <summary>
         /// Номера узлов подключения генераторов по коду СКРМ.
         /// </summary>
         private readonly IReadOnlyDictionary<int, int> _generatorNodes;
@@ -45,7 +40,6 @@ namespace VrdoPdg.Model.Services
         /// <param name="devices">Справочник СКРМ.</param>
         /// <param name="schedule">Графики напряжений в КП.</param>
         /// <param name="initialRegime">Исходный режим по часам.</param>
-        /// <param name="pqDiagrams">PQ-диаграммы генераторов по коду СКРМ.</param>
         /// <param name="generatorNodes">Номера узлов подключения генераторов по коду СКРМ.</param>
         /// <param name="fixedDeviceHours">Часы, в которых состояние СКРМ задано в файле smp_smzu.csv.</param>
         /// <param name="loadedAt">Дата и время загрузки.</param>
@@ -58,7 +52,6 @@ namespace VrdoPdg.Model.Services
             IReadOnlyList<Device> devices,
             VoltageSchedule schedule,
             RegimeSnapshot initialRegime,
-            IReadOnlyDictionary<int, PQDiagram> pqDiagrams,
             IReadOnlyDictionary<int, int> generatorNodes,
             IEnumerable<(int DeviceId, int Hour)> fixedDeviceHours,
             DateTime loadedAt)
@@ -73,7 +66,6 @@ namespace VrdoPdg.Model.Services
             InitialRegime = initialRegime;
             LoadedAt = loadedAt;
             _devices = devices.ToDictionary(device => device.Id);
-            _pqDiagrams = pqDiagrams;
             _generatorNodes = generatorNodes;
             _fixedDeviceHours = new HashSet<(int DeviceId, int Hour)>(fixedDeviceHours);
         }
@@ -150,19 +142,6 @@ namespace VrdoPdg.Model.Services
         public bool IsFixed(int deviceId, int hour)
         {
             return _fixedDeviceHours.Contains((deviceId, hour));
-        }
-
-        /// <summary>
-        /// Возвращает PQ-диаграмму генератора.
-        /// </summary>
-        /// <param name="deviceId">Код СКРМ генератора.</param>
-        /// <returns>PQ-диаграмма или пустая диаграмма, если она не задана.</returns>
-        public PQDiagram GetPQDiagram(int deviceId)
-        {
-            PQDiagram? diagram;
-            return _pqDiagrams.TryGetValue(deviceId, out diagram)
-                ? diagram
-                : PQDiagram.Empty;
         }
 
         /// <summary>

@@ -75,7 +75,7 @@ namespace VrdoPdg.Model.Entities
         public double? SetVoltage { get; }
 
         /// <summary>
-        /// Активная мощность генератора для определения пределов по PQ-диаграмме, МВт.
+        /// Активная мощность генератора, МВт.
         /// </summary>
         public double? ActivePower { get; }
 

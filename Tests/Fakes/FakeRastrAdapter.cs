@@ -158,14 +158,8 @@ namespace VrdoPdg.Tests.Fakes
             return Generators.TryGetValue(generatorNumber, out generator)
                 ? new GeneratorState(generator.IsOn, generator.NodeNumber, generator.ActivePower,
                     generator.ReactivePower, generator.SetVoltage, generator.MinReactivePower,
-                    generator.MaxReactivePower, 0)
+                    generator.MaxReactivePower)
                 : null;
-        }
-
-        /// <inheritdoc/>
-        public IReadOnlyList<PQPoint> GetPQDiagram(int diagramNumber)
-        {
-            return new PQPoint[0];
         }
 
         /// <inheritdoc/>

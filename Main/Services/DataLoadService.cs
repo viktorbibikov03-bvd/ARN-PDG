@@ -128,7 +128,6 @@ namespace VrdoPdg.Model.Services
                     reference.Devices,
                     schedule,
                     megapoint.Regime,
-                    megapoint.PQDiagrams,
                     megapoint.GeneratorNodes,
                     fixedDeviceHours,
                     DateTime.Now);
@@ -184,7 +183,7 @@ namespace VrdoPdg.Model.Services
         }
 
         /// <summary>
-        /// Считывает из БД справочные данные: энергосистемы, КП, СКРМ и PQ-диаграммы.
+        /// Считывает из БД справочные данные: энергосистемы, КП и СКРМ.
         /// </summary>
         /// <param name="group">Запись протокола о загрузке.</param>
         /// <returns>Справочные данные.</returns>
@@ -195,8 +194,7 @@ namespace VrdoPdg.Model.Services
                 ReferenceData reference = new ReferenceData(
                     _repository.GetPowerSystems(),
                     _repository.GetControlPoints(),
-                    _repository.GetDevices(),
-                    _repository.GetPQDiagrams());
+                    _repository.GetDevices());
                 if (reference.ControlPoints.Count == 0)
                 {
                     _protocol.Add(
@@ -262,15 +260,8 @@ namespace VrdoPdg.Model.Services
                 _rastrAdapter.Open(path);
 
                 RegimeSnapshot regime = new RegimeSnapshot();
-                Dictionary<int, PQDiagram> diagrams = new Dictionary<int, PQDiagram>();
-                foreach (KeyValuePair<int, PQDiagram> pair in reference.PQDiagrams)
-                {
-                    diagrams[pair.Key] = pair.Value;
-                }
-
                 Dictionary<int, int> generatorNodes = new Dictionary<int, int>();
-                List<int> updatedDiagrams = new List<int>();
-                DeviceModeContext context = new DeviceModeContext(fixedDeviceHours, diagrams);
+                DeviceModeContext context = new DeviceModeContext(fixedDeviceHours);
                 for (int hour = 1; hour <= RegimeSnapshot.HourCount; hour++)
                 {
                     if (!_rastrAdapter.SelectHour(hour))
@@ -284,7 +275,7 @@ namespace VrdoPdg.Model.Services
 
                     if (hour == 1)
                     {
-                        CheckMegapointObjects(reference, diagrams, generatorNodes, updatedDiagrams, group);
+                        CheckMegapointObjects(reference, generatorNodes, group);
                     }
 
                     RegimeReader.ReadHour(
@@ -303,7 +294,7 @@ namespace VrdoPdg.Model.Services
                         + "; значений напряжения: " + regime.Voltages.Count
                         + "; режимов СКРМ: " + regime.Modes.Count,
                     group);
-                return new MegapointData(regime, diagrams, generatorNodes, updatedDiagrams);
+                return new MegapointData(regime, generatorNodes);
             }
             catch (Exception exception) when (!(exception is VrdoException))
             {
@@ -312,19 +303,14 @@ namespace VrdoPdg.Model.Services
         }
 
         /// <summary>
-        /// Проверяет наличие узлов КП и СКРМ в МТ, считывает узлы подключения
-        /// и PQ-диаграммы генераторов.
+        /// Проверяет наличие узлов КП и СКРМ в МТ и считывает узлы подключения генераторов.
         /// </summary>
         /// <param name="reference">Справочные данные.</param>
-        /// <param name="diagrams">PQ-диаграммы генераторов по коду СКРМ.</param>
         /// <param name="generatorNodes">Узлы подключения генераторов по коду СКРМ.</param>
-        /// <param name="updatedDiagrams">Коды генераторов, PQ-диаграммы которых считаны из МТ.</param>
         /// <param name="group">Запись протокола о загрузке.</param>
         private void CheckMegapointObjects(
             ReferenceData reference,
-            Dictionary<int, PQDiagram> diagrams,
             Dictionary<int, int> generatorNodes,
-            List<int> updatedDiagrams,
             ProtocolEntry group)
         {
             foreach (ControlPoint controlPoint in reference.ControlPoints)
@@ -363,7 +349,7 @@ namespace VrdoPdg.Model.Services
                         isFound = _rastrAdapter.GetSwitchedDevice(device.Number) != null;
                         break;
                     default:
-                        isFound = ReadGenerator(device, diagrams, generatorNodes, updatedDiagrams);
+                        isFound = ReadGenerator(device, generatorNodes);
                         break;
                 }
 
@@ -375,18 +361,12 @@ namespace VrdoPdg.Model.Services
         }
 
         /// <summary>
-        /// Считывает узел подключения и PQ-диаграмму генератора.
+        /// Считывает узел подключения генератора.
         /// </summary>
         /// <param name="device">СКРМ генератора.</param>
-        /// <param name="diagrams">PQ-диаграммы генераторов по коду СКРМ.</param>
         /// <param name="generatorNodes">Узлы подключения генераторов по коду СКРМ.</param>
-        /// <param name="updatedDiagrams">Коды генераторов, PQ-диаграммы которых считаны из МТ.</param>
         /// <returns><c>true</c>, если генератор найден в МТ.</returns>
-        private bool ReadGenerator(
-            Device device,
-            Dictionary<int, PQDiagram> diagrams,
-            Dictionary<int, int> generatorNodes,
-            List<int> updatedDiagrams)
+        private bool ReadGenerator(Device device, Dictionary<int, int> generatorNodes)
         {
             GeneratorState? generator = _rastrAdapter.GetGenerator(device.Number);
             if (generator == null)
@@ -395,16 +375,6 @@ namespace VrdoPdg.Model.Services
             }
 
             generatorNodes[device.Id] = generator.NodeNumber;
-            if (generator.PQDiagramNumber > 0)
-            {
-                IReadOnlyList<PQPoint> points = _rastrAdapter.GetPQDiagram(generator.PQDiagramNumber);
-                if (points.Count > 0)
-                {
-                    diagrams[device.Id] = new PQDiagram(points);
-                    updatedDiagrams.Add(device.Id);
-                }
-            }
-
             return true;
         }
 
@@ -485,19 +455,13 @@ namespace VrdoPdg.Model.Services
         {
             try
             {
-                foreach (int deviceId in megapoint.UpdatedDiagrams)
-                {
-                    _repository.SavePQDiagram(deviceId, megapoint.PQDiagrams[deviceId].Points);
-                }
-
                 IReadOnlyList<NodeVoltage> voltages = megapoint.Regime.Voltages;
                 IReadOnlyList<DeviceMode> modes = megapoint.Regime.Modes;
                 _repository.SaveRegime(voltages, modes);
                 _protocol.Add(
                     ProtocolTag.Info,
                     "Данные МТ сохранены в БД",
-                    "напряжений: " + voltages.Count + "; режимов СКРМ: " + modes.Count
-                        + "; PQ-диаграмм: " + megapoint.UpdatedDiagrams.Count,
+                    "напряжений: " + voltages.Count + "; режимов СКРМ: " + modes.Count,
                     group);
             }
             catch (Exception exception)
@@ -517,17 +481,14 @@ namespace VrdoPdg.Model.Services
             /// <param name="powerSystems">Энергосистемы.</param>
             /// <param name="controlPoints">КП.</param>
             /// <param name="devices">СКРМ.</param>
-            /// <param name="pqDiagrams">PQ-диаграммы генераторов.</param>
             public ReferenceData(
                 IReadOnlyList<PowerSystem> powerSystems,
                 IReadOnlyList<ControlPoint> controlPoints,
-                IReadOnlyList<Device> devices,
-                IReadOnlyDictionary<int, PQDiagram> pqDiagrams)
+                IReadOnlyList<Device> devices)
             {
                 PowerSystems = powerSystems;
                 ControlPoints = controlPoints;
                 Devices = devices;
-                PQDiagrams = pqDiagrams;
             }
 
             /// <summary>
@@ -544,11 +505,6 @@ namespace VrdoPdg.Model.Services
             /// СКРМ.
             /// </summary>
             public IReadOnlyList<Device> Devices { get; }
-
-            /// <summary>
-            /// PQ-диаграммы генераторов, сохраненные в БД.
-            /// </summary>
-            public IReadOnlyDictionary<int, PQDiagram> PQDiagrams { get; }
         }
 
         /// <summary>
@@ -560,19 +516,11 @@ namespace VrdoPdg.Model.Services
             /// Создает данные МТ.
             /// </summary>
             /// <param name="regime">Режим по часам.</param>
-            /// <param name="pqDiagrams">PQ-диаграммы генераторов.</param>
             /// <param name="generatorNodes">Узлы подключения генераторов.</param>
-            /// <param name="updatedDiagrams">Коды генераторов, PQ-диаграммы которых считаны из МТ.</param>
-            public MegapointData(
-                RegimeSnapshot regime,
-                IReadOnlyDictionary<int, PQDiagram> pqDiagrams,
-                IReadOnlyDictionary<int, int> generatorNodes,
-                IReadOnlyList<int> updatedDiagrams)
+            public MegapointData(RegimeSnapshot regime, IReadOnlyDictionary<int, int> generatorNodes)
             {
                 Regime = regime;
-                PQDiagrams = pqDiagrams;
                 GeneratorNodes = generatorNodes;
-                UpdatedDiagrams = updatedDiagrams;
             }
 
             /// <summary>
@@ -581,19 +529,9 @@ namespace VrdoPdg.Model.Services
             public RegimeSnapshot Regime { get; }
 
             /// <summary>
-            /// PQ-диаграммы генераторов по коду СКРМ.
-            /// </summary>
-            public IReadOnlyDictionary<int, PQDiagram> PQDiagrams { get; }
-
-            /// <summary>
             /// Узлы подключения генераторов по коду СКРМ.
             /// </summary>
             public IReadOnlyDictionary<int, int> GeneratorNodes { get; }
-
-            /// <summary>
-            /// Коды генераторов, PQ-диаграммы которых считаны из МТ.
-            /// </summary>
-            public IReadOnlyList<int> UpdatedDiagrams { get; }
         }
     }
 }

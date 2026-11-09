@@ -62,19 +62,6 @@ namespace VrdoPdg.Model.Storage
         void SaveVoltageSchedule(IReadOnlyList<VoltageBounds> bounds);
 
         /// <summary>
-        /// Возвращает PQ-диаграммы генераторов.
-        /// </summary>
-        /// <returns>PQ-диаграммы по коду СКРМ.</returns>
-        IReadOnlyDictionary<int, PQDiagram> GetPQDiagrams();
-
-        /// <summary>
-        /// Сохраняет PQ-диаграмму генератора, заменяя ранее сохраненную.
-        /// </summary>
-        /// <param name="deviceId">Код СКРМ генератора.</param>
-        /// <param name="points">Точки PQ-диаграммы.</param>
-        void SavePQDiagram(int deviceId, IReadOnlyList<PQPoint> points);
-
-        /// <summary>
         /// Сохраняет данные МТ последней загрузки: почасовые напряжения в узлах
         /// и режимы СКРМ. Ранее сохраненные данные удаляются.
         /// </summary>

@@ -65,13 +65,6 @@ namespace VrdoPdg.Model.Regime
         GeneratorState? GetGenerator(int generatorNumber);
 
         /// <summary>
-        /// Возвращает точки PQ-диаграммы.
-        /// </summary>
-        /// <param name="diagramNumber">Номер PQ-диаграммы.</param>
-        /// <returns>Точки PQ-диаграммы; пустой список, если диаграмма не найдена.</returns>
-        IReadOnlyList<PQPoint> GetPQDiagram(int diagramNumber);
-
-        /// <summary>
         /// Фиксирует загрузку управляемого СКРМ по реактивной мощности, задавая
         /// одинаковые верхний и нижний пределы реактивной мощности узла.
         /// </summary>

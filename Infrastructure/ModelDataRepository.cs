@@ -41,7 +41,7 @@ namespace VrdoPdg.Infrastructure
         private static readonly string[] _requiredTables =
         {
             "Power_system", "Control_point", "Node", "Device", "Controlled_device", "Switched_device",
-            "Generator", "PQ_point", "Efficiency_table", "Voltage_schedule", "Node_voltage", "Device_mode"
+            "Generator", "Efficiency_table", "Voltage_schedule", "Node_voltage", "Device_mode"
         };
 
         /// <summary>
@@ -351,81 +351,6 @@ namespace VrdoPdg.Infrastructure
                     high.Value = item.UpperBound;
                     received.Value = item.ReceivedAt.ToString(DateTimeFormat, CultureInfo.InvariantCulture);
                     command.ExecuteNonQuery();
-                }
-
-                transaction.Commit();
-            }
-        }
-
-        /// <inheritdoc/>
-        public IReadOnlyDictionary<int, PQDiagram> GetPQDiagrams()
-        {
-            Dictionary<int, List<PQPoint>> points = new Dictionary<int, List<PQPoint>>();
-            using (SqliteConnection connection = OpenConnection())
-            using (SqliteCommand command = connection.CreateCommand())
-            {
-                command.CommandText = "SELECT id_dev, p_pq, q_min_pq, q_max_pq FROM PQ_point "
-                    + "ORDER BY id_dev, num_point";
-                using (SqliteDataReader reader = command.ExecuteReader())
-                {
-                    while (reader.Read())
-                    {
-                        int deviceId = reader.GetInt32(0);
-                        List<PQPoint>? list;
-                        if (!points.TryGetValue(deviceId, out list))
-                        {
-                            list = new List<PQPoint>();
-                            points[deviceId] = list;
-                        }
-
-                        list.Add(new PQPoint(reader.GetDouble(1), reader.GetDouble(2), reader.GetDouble(3)));
-                    }
-                }
-            }
-
-            return points.ToDictionary(pair => pair.Key, pair => new PQDiagram(pair.Value));
-        }
-
-        /// <inheritdoc/>
-        public void SavePQDiagram(int deviceId, IReadOnlyList<PQPoint> points)
-        {
-            if (points == null)
-            {
-                throw new ArgumentNullException(nameof(points));
-            }
-
-            using (SqliteConnection connection = OpenConnection())
-            using (SqliteTransaction transaction = connection.BeginTransaction())
-            {
-                using (SqliteCommand delete = CreateCommand(
-                    connection,
-                    transaction,
-                    "DELETE FROM PQ_point WHERE id_dev = $dev"))
-                {
-                    delete.Parameters.AddWithValue("$dev", deviceId);
-                    delete.ExecuteNonQuery();
-                }
-
-                using (SqliteCommand insert = CreateCommand(
-                    connection,
-                    transaction,
-                    "INSERT INTO PQ_point (id_dev, num_point, p_pq, q_min_pq, q_max_pq) "
-                        + "VALUES ($dev, $number, $p, $qmin, $qmax)"))
-                {
-                    SqliteParameter dev = insert.Parameters.Add("$dev", SqliteType.Integer);
-                    SqliteParameter number = insert.Parameters.Add("$number", SqliteType.Integer);
-                    SqliteParameter p = insert.Parameters.Add("$p", SqliteType.Real);
-                    SqliteParameter qmin = insert.Parameters.Add("$qmin", SqliteType.Real);
-                    SqliteParameter qmax = insert.Parameters.Add("$qmax", SqliteType.Real);
-                    for (int index = 0; index < points.Count; index++)
-                    {
-                        dev.Value = deviceId;
-                        number.Value = index + 1;
-                        p.Value = points[index].ActivePower;
-                        qmin.Value = points[index].MinReactivePower;
-                        qmax.Value = points[index].MaxReactivePower;
-                        insert.ExecuteNonQuery();
-                    }
                 }
 
                 transaction.Commit();

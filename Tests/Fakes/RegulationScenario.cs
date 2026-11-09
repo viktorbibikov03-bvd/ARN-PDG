@@ -164,10 +164,8 @@ namespace VrdoPdg.Tests.Fakes
         /// <returns>Исходные данные сеанса.</returns>
         public SessionData CreateSession()
         {
-            Dictionary<int, PQDiagram> diagrams = new Dictionary<int, PQDiagram>();
             DeviceModeContext context = new DeviceModeContext(
-                new HashSet<(int DeviceId, int Hour)>(FixedDeviceHours),
-                diagrams);
+                new HashSet<(int DeviceId, int Hour)>(FixedDeviceHours));
             RegimeSnapshot initial = new RegimeSnapshot();
             for (int hour = 1; hour <= RegimeSnapshot.HourCount; hour++)
             {
@@ -196,7 +194,6 @@ namespace VrdoPdg.Tests.Fakes
                 Repository.Devices,
                 new VoltageSchedule(bounds),
                 initial,
-                diagrams,
                 new Dictionary<int, int> { { GeneratorId, GeneratorNode } },
                 FixedDeviceHours,
                 DateTime.Now);

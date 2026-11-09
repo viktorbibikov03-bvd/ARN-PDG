@@ -17,7 +17,7 @@ namespace VrdoPdg.Model.Services
         /// <param name="hour">Час суток (1–24).</param>
         /// <param name="controlPoints">КП, напряжения в узлах которых считываются.</param>
         /// <param name="devices">СКРМ, режимы которых считываются.</param>
-        /// <param name="session">Исходные данные: PQ-диаграммы и признаки заданных состояний.</param>
+        /// <param name="session">Исходные данные: признаки состояний, заданных в файле smp_smzu.csv.</param>
         /// <param name="snapshot">Снимок, в который записываются значения.</param>
         public static void ReadHour(
             IRastrAdapter rastrAdapter,
@@ -55,7 +55,7 @@ namespace VrdoPdg.Model.Services
         /// <param name="rastrAdapter">Модуль взаимодействия с ПО «Барс».</param>
         /// <param name="device">СКРМ.</param>
         /// <param name="hour">Час суток (1–24).</param>
-        /// <param name="session">Исходные данные: PQ-диаграммы и признаки заданных состояний.</param>
+        /// <param name="session">Исходные данные: признаки состояний, заданных в файле smp_smzu.csv.</param>
         /// <returns>Режим СКРМ или <c>null</c>, если СКРМ не найдено в МТ.</returns>
         public static DeviceMode? ReadMode(
             IRastrAdapter rastrAdapter,

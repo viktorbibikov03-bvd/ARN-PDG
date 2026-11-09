@@ -16,7 +16,6 @@ namespace VrdoPdg.Model.Regime
         /// <param name="setVoltage">Заданное напряжение узла (vzd), кВ.</param>
         /// <param name="minReactivePower">Минимальная генерация Q узла (qmin), Мвар.</param>
         /// <param name="maxReactivePower">Максимальная генерация Q узла (qmax), Мвар.</param>
-        /// <param name="pqDiagramNumber">Номер PQ-диаграммы (0 — не задана).</param>
         public GeneratorState(
             bool isOn,
             int nodeNumber,
@@ -24,8 +23,7 @@ namespace VrdoPdg.Model.Regime
             double reactivePower,
             double setVoltage,
             double minReactivePower,
-            double maxReactivePower,
-            int pqDiagramNumber)
+            double maxReactivePower)
         {
             IsOn = isOn;
             NodeNumber = nodeNumber;
@@ -34,7 +32,6 @@ namespace VrdoPdg.Model.Regime
             SetVoltage = setVoltage;
             MinReactivePower = minReactivePower;
             MaxReactivePower = maxReactivePower;
-            PQDiagramNumber = pqDiagramNumber;
         }
 
         /// <summary>
@@ -63,18 +60,13 @@ namespace VrdoPdg.Model.Regime
         public double SetVoltage { get; }
 
         /// <summary>
-        /// Нижний предел реактивной мощности из таблицы генераторов, Мвар.
+        /// Минимальная генерация Q узла подключения (qmin), Мвар.
         /// </summary>
         public double MinReactivePower { get; }
 
         /// <summary>
-        /// Верхний предел реактивной мощности из таблицы генераторов, Мвар.
+        /// Максимальная генерация Q узла подключения (qmax), Мвар.
         /// </summary>
         public double MaxReactivePower { get; }
-
-        /// <summary>
-        /// Номер PQ-диаграммы генератора (0 — диаграмма не задана).
-        /// </summary>
-        public int PQDiagramNumber { get; }
     }
 }

@@ -221,27 +221,6 @@ namespace VrdoPdg.Tests
         }
 
         /// <summary>
-        /// PQ-диаграмма генератора сохраняется и считывается по коду СКРМ.
-        /// </summary>
-        [Test]
-        public void SavePQDiagram_GeneratorPoints_RoundTrips()
-        {
-            ModelDataRepository repository = OpenWorkingCopy();
-            Device? generator = repository.GetDevices().FirstOrDefault(device => device.Type == DeviceType.Generator);
-            if (generator == null)
-            {
-                Assert.Ignore("В рабочей БД нет генераторов");
-            }
-
-            repository.SavePQDiagram(generator!.Id, new[] { new PQPoint(0, -100, 150), new PQPoint(200, -60, 120) });
-
-            PQDiagram diagram = repository.GetPQDiagrams()[generator.Id];
-
-            Assert.That(diagram.Points, Has.Count.EqualTo(2));
-            Assert.That(diagram.GetLimits(100).Max, Is.EqualTo(135).Within(1e-9));
-        }
-
-        /// <summary>
         /// Копирует рабочую БД во временный каталог и открывает копию. Без переменной среды
         /// с путем к рабочей БД тест пропускается.
         /// </summary>

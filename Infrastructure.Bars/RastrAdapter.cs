@@ -39,11 +39,6 @@ namespace VrdoPdg.Infrastructure.Bars
         private const string GeneratorTableName = "Generator";
 
         /// <summary>
-        /// Таблица «График» с PQ-диаграммами генераторов.
-        /// </summary>
-        private const string PQDiagramTableName = "graphik2";
-
-        /// <summary>
         /// Изменения параметров МТ после выбора часа; каждое изменение — набор ячеек.
         /// </summary>
         private readonly Stack<List<CellValue>> _changes = new Stack<List<CellValue>>();
@@ -179,34 +174,7 @@ namespace VrdoPdg.Infrastructure.Bars
                 nodes.ReadDouble("qg", nodeRow),
                 nodes.ReadDouble("vzd", nodeRow),
                 nodes.ReadDouble("qmin", nodeRow),
-                nodes.ReadDouble("qmax", nodeRow),
-                _generators.ReadInteger("NumPQ", row));
-        }
-
-        /// <inheritdoc/>
-        public IReadOnlyList<PQPoint> GetPQDiagram(int diagramNumber)
-        {
-            RastrTable? diagrams = RastrTable.TryOpen(GetRastr(), PQDiagramTableName, "Num");
-            if (diagrams == null)
-            {
-                return new PQPoint[0];
-            }
-
-            List<PQPoint> points = new List<PQPoint>();
-            for (int row = 0; row < diagrams.Count; row++)
-            {
-                if (diagrams.ReadInteger("Num", row) == diagramNumber)
-                {
-                    points.Add(new PQPoint(
-                        diagrams.ReadDouble("P", row),
-                        diagrams.ReadDouble("Qmin", row),
-                        diagrams.ReadDouble("Qmax", row)));
-                }
-            }
-
-            return points
-                .OrderBy(point => point.ActivePower)
-                .ToList();
+                nodes.ReadDouble("qmax", nodeRow));
         }
 
         /// <inheritdoc/>
