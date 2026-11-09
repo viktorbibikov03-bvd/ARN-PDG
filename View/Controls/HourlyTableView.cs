@@ -1,21 +1,25 @@
 using System;
 using System.Collections.Generic;
 using System.Drawing;
-using System.Linq;
 using System.Windows.Forms;
 
-using VrdoPdg.Model.Entities;
+using VrdoPdg.View.Layout;
 using VrdoPdg.View.Theme;
 
 namespace VrdoPdg.View.Controls
 {
     /// <summary>
-    /// Таблица по часам с переключателем энергосистем («ОЭС Сибири», «ЕЭС Казахстана»,
-    /// «Внешние ЭС») и легендой цветовой индикации. Используется формами
-    /// «Напряжение по часам» и «Сравнение расчетов».
+    /// Таблицы по часам по схеме файла «Анализ.xlsx»: переключатель энергосистем (листы «U-500»),
+    /// блоки КП выбранной энергосистемы один под другим и легенда цветовой индикации.
+    /// Используется формами «Напряжение по часам» и «Сравнение расчетов».
     /// </summary>
     internal sealed class HourlyTableView : UserControl
     {
+        /// <summary>
+        /// Расстояние между блоками КП, пикселей.
+        /// </summary>
+        private const int BlockSpacing = 16;
+
         /// <summary>
         /// Панель переключателя энергосистем.
         /// </summary>
@@ -27,9 +31,9 @@ namespace VrdoPdg.View.Controls
         private readonly FlowLayoutPanel _legendPanel;
 
         /// <summary>
-        /// Таблица по часам.
+        /// Панель блоков КП с вертикальной прокруткой.
         /// </summary>
-        private readonly HourlyGrid _grid;
+        private readonly StableScrollPanel _blocksPanel;
 
         /// <summary>
         /// Сообщение об отсутствии КП в энергосистеме.
@@ -42,17 +46,17 @@ namespace VrdoPdg.View.Controls
         private readonly List<RoundedButton> _powerSystemButtons = new List<RoundedButton>();
 
         /// <summary>
-        /// Данные таблицы.
+        /// Данные таблиц.
         /// </summary>
         private HourlyTableModel? _model;
 
         /// <summary>
-        /// Код выбранной энергосистемы.
+        /// Индекс выбранной энергосистемы.
         /// </summary>
-        private int? _powerSystemId;
+        private int _powerSystemIndex;
 
         /// <summary>
-        /// Создает таблицу по часам.
+        /// Создает таблицы по часам.
         /// </summary>
         public HourlyTableView()
         {
@@ -95,9 +99,11 @@ namespace VrdoPdg.View.Controls
             toolbar.Controls.Add(_legendPanel);
             toolbar.Controls.Add(switchFrame);
 
-            _grid = new HourlyGrid
+            _blocksPanel = new StableScrollPanel
             {
-                Dock = DockStyle.Fill
+                Dock = DockStyle.Fill,
+                AutoScroll = true,
+                BackColor = Palette.Background
             };
 
             _emptyLabel = new Label
@@ -111,31 +117,39 @@ namespace VrdoPdg.View.Controls
                 Visible = false
             };
 
-            Controls.Add(_grid);
+            Controls.Add(_blocksPanel);
             Controls.Add(_emptyLabel);
             Controls.Add(toolbar);
         }
 
         /// <summary>
-        /// Выводит данные в таблицу.
+        /// Выводит данные в таблицы.
         /// </summary>
-        /// <param name="model">Данные таблицы.</param>
+        /// <param name="model">Данные таблиц.</param>
         /// <param name="runCaptions">Подписи сравниваемых расчетов для легенды; <c>null</c> — предпросмотр.</param>
         public void Display(HourlyTableModel model, IReadOnlyList<string>? runCaptions)
         {
-            _model = model;
+            _model = model ?? throw new ArgumentNullException(nameof(model));
             BuildPowerSystemButtons(model.PowerSystems);
             BuildLegend(runCaptions);
+            int index = _powerSystemIndex < model.PowerSystems.Count
+                ? _powerSystemIndex
+                : 0;
+            SelectPowerSystem(index);
+        }
 
-            int? selected = _powerSystemId;
-            if (!selected.HasValue || model.PowerSystems.All(item => item.Id != selected.Value))
+        /// <summary>
+        /// Освобождает ресурсы таблиц блоков.
+        /// </summary>
+        /// <param name="disposing">Признак освобождения управляемых ресурсов.</param>
+        protected override void Dispose(bool disposing)
+        {
+            if (disposing)
             {
-                selected = model.PowerSystems.Count > 0
-                    ? model.PowerSystems[0].Id
-                    : (int?)null;
+                ClearBlocks();
             }
 
-            SelectPowerSystem(selected);
+            base.Dispose(disposing);
         }
 
         /// <summary>
@@ -162,23 +176,28 @@ namespace VrdoPdg.View.Controls
         /// <summary>
         /// Создает переключатель энергосистем.
         /// </summary>
-        /// <param name="powerSystems">Энергосистемы.</param>
-        private void BuildPowerSystemButtons(IReadOnlyList<PowerSystem> powerSystems)
+        /// <param name="powerSystems">Энергосистемы схемы таблиц.</param>
+        private void BuildPowerSystemButtons(IReadOnlyList<HourlyLayoutPowerSystem> powerSystems)
         {
             _powerSystemPanel.Controls.Clear();
+            foreach (RoundedButton button in _powerSystemButtons)
+            {
+                button.Dispose();
+            }
+
             _powerSystemButtons.Clear();
-            foreach (PowerSystem powerSystem in powerSystems)
+            for (int index = 0; index < powerSystems.Count; index++)
             {
                 RoundedButton button = new RoundedButton
                 {
-                    Text = powerSystem.Name,
-                    Tag = powerSystem.Id,
+                    Text = powerSystems[index].Name,
+                    Tag = index,
                     Height = 36,
                     Margin = new Padding(0, 0, 4, 0)
                 };
                 UiStyle.ApplyFlat(button, null);
                 button.Font = UiFonts.Semibold(10f);
-                button.Width = TextRenderer.MeasureText(powerSystem.Name, button.Font).Width + 32;
+                button.Width = TextRenderer.MeasureText(button.Text, button.Font).Width + 32;
                 button.CheckedState.FillColor = Palette.Accent;
                 button.CheckedState.ForeColor = Palette.OnAccent;
                 button.Click += PowerSystemButton_Click;
@@ -210,25 +229,64 @@ namespace VrdoPdg.View.Controls
         }
 
         /// <summary>
-        /// Выбирает энергосистему и выводит ее КП.
+        /// Выбирает энергосистему и выводит ее блоки КП один под другим.
         /// </summary>
-        /// <param name="powerSystemId">Код энергосистемы.</param>
-        private void SelectPowerSystem(int? powerSystemId)
+        /// <param name="index">Индекс энергосистемы.</param>
+        private void SelectPowerSystem(int index)
         {
-            _powerSystemId = powerSystemId;
+            _powerSystemIndex = index;
             foreach (RoundedButton button in _powerSystemButtons)
             {
-                button.Checked = powerSystemId.HasValue && (int)button.Tag! == powerSystemId.Value;
+                button.Checked = (int)button.Tag! == index;
             }
 
-            if (_model == null || !powerSystemId.HasValue)
+            _blocksPanel.SuspendLayout();
+            ClearBlocks();
+            IReadOnlyList<HourlyLayoutBlock> blocks = _model != null && index < _model.PowerSystems.Count
+                ? _model.PowerSystems[index].Blocks
+                : new HourlyLayoutBlock[0];
+
+            // Элементы с привязкой к верху размещаются в обратном порядке добавления.
+            for (int blockIndex = blocks.Count - 1; blockIndex >= 0; blockIndex--)
             {
-                _emptyLabel.Visible = true;
-                return;
+                _blocksPanel.Controls.Add(new Panel
+                {
+                    Dock = DockStyle.Top,
+                    Height = BlockSpacing,
+                    BackColor = Palette.Background
+                });
+
+                HourlyGrid grid = new HourlyGrid
+                {
+                    Dock = DockStyle.Top
+                };
+                grid.Bind(_model!, blocks[blockIndex]);
+                grid.Height = grid.PreferredHeight;
+                grid.MouseWheel += Grid_MouseWheel;
+                _blocksPanel.Controls.Add(grid);
             }
 
-            _grid.Bind(_model, powerSystemId.Value);
-            _emptyLabel.Visible = _grid.IsEmpty;
+            _blocksPanel.ResumeLayout(true);
+            _blocksPanel.AutoScrollPosition = Point.Empty;
+            _emptyLabel.Visible = blocks.Count == 0;
+        }
+
+        /// <summary>
+        /// Удаляет таблицы блоков КП и освобождает их ресурсы.
+        /// </summary>
+        private void ClearBlocks()
+        {
+            List<Control> controls = new List<Control>();
+            foreach (Control control in _blocksPanel.Controls)
+            {
+                controls.Add(control);
+            }
+
+            _blocksPanel.Controls.Clear();
+            foreach (Control control in controls)
+            {
+                control.Dispose();
+            }
         }
 
         /// <summary>
@@ -239,9 +297,25 @@ namespace VrdoPdg.View.Controls
         private void PowerSystemButton_Click(object? sender, EventArgs e)
         {
             RoundedButton? button = sender as RoundedButton;
-            if (button?.Tag is int powerSystemId)
+            if (button?.Tag is int index)
             {
-                SelectPowerSystem(powerSystemId);
+                SelectPowerSystem(index);
+            }
+        }
+
+        /// <summary>
+        /// Прокручивает список блоков колесом мыши над таблицей: в таблице видны все 24 часа,
+        /// поэтому прокрутка по вертикали передается панели блоков.
+        /// </summary>
+        /// <param name="sender">Таблица блока.</param>
+        /// <param name="e">Аргументы события.</param>
+        private void Grid_MouseWheel(object? sender, MouseEventArgs e)
+        {
+            Point position = _blocksPanel.AutoScrollPosition;
+            _blocksPanel.AutoScrollPosition = new Point(-position.X, Math.Max(0, -position.Y - e.Delta));
+            if (e is HandledMouseEventArgs handled)
+            {
+                handled.Handled = true;
             }
         }
     }

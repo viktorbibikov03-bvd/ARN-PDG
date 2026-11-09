@@ -6,7 +6,7 @@ using VrdoPdg.Model.Regime;
 namespace VrdoPdg.Model.Services
 {
     /// <summary>
-    /// Чтение напряжений в узлах КП и режимов СКРМ текущего часа МТ.
+    /// Чтение напряжений в узлах КП, режимов СКРМ и значений наблюдаемых объектов текущего часа МТ.
     /// </summary>
     internal static class RegimeReader
     {
@@ -18,6 +18,7 @@ namespace VrdoPdg.Model.Services
         /// <param name="controlPoints">КП, напряжения в узлах которых считываются.</param>
         /// <param name="devices">СКРМ, режимы которых считываются.</param>
         /// <param name="session">Исходные данные: признаки состояний, заданных в файле smp_smzu.csv.</param>
+        /// <param name="observedObjects">Наблюдаемые объекты для форм просмотра режима.</param>
         /// <param name="snapshot">Снимок, в который записываются значения.</param>
         public static void ReadHour(
             IRastrAdapter rastrAdapter,
@@ -25,6 +26,7 @@ namespace VrdoPdg.Model.Services
             IEnumerable<ControlPoint> controlPoints,
             IEnumerable<Device> devices,
             IDeviceModeContext session,
+            ObservedObjects observedObjects,
             RegimeSnapshot snapshot)
         {
             foreach (ControlPoint controlPoint in controlPoints)
@@ -45,6 +47,50 @@ namespace VrdoPdg.Model.Services
                 if (mode != null)
                 {
                     snapshot.SetMode(mode);
+                }
+            }
+
+            ReadObservedObjects(rastrAdapter, hour, observedObjects, snapshot);
+        }
+
+        /// <summary>
+        /// Считывает значения наблюдаемых узлов (vras, vzd, qmin) и состояния наблюдаемых реакторов
+        /// для форм «Напряжение по часам» и «Сравнение расчетов». Объекты, не найденные в МТ, пропускаются.
+        /// </summary>
+        /// <param name="rastrAdapter">Модуль взаимодействия с ПО «Барс».</param>
+        /// <param name="hour">Час суток (1–24).</param>
+        /// <param name="observedObjects">Наблюдаемые объекты.</param>
+        /// <param name="snapshot">Снимок режима.</param>
+        private static void ReadObservedObjects(
+            IRastrAdapter rastrAdapter,
+            int hour,
+            ObservedObjects observedObjects,
+            RegimeSnapshot snapshot)
+        {
+            foreach (int nodeNumber in observedObjects.NodeNumbers)
+            {
+                ControlledDeviceState? node = rastrAdapter.GetControlledDevice(nodeNumber);
+                if (node == null)
+                {
+                    continue;
+                }
+
+                double? voltage = rastrAdapter.GetNodeVoltage(nodeNumber);
+                snapshot.SetObservedNode(new ObservedNodeState(
+                    nodeNumber,
+                    hour,
+                    voltage.HasValue,
+                    voltage ?? 0,
+                    node.SetVoltage,
+                    node.MinReactivePower));
+            }
+
+            foreach (int reactorNumber in observedObjects.ReactorNumbers)
+            {
+                SwitchedDeviceState? reactor = rastrAdapter.GetSwitchedDevice(reactorNumber);
+                if (reactor != null)
+                {
+                    snapshot.SetObservedReactor(new ObservedReactorState(reactorNumber, hour, reactor.IsOn));
                 }
             }
         }

@@ -1,12 +1,10 @@
 using System;
-using System.Collections.Generic;
 using System.Drawing;
 using System.IO;
 using System.Threading;
 using System.Windows.Forms;
 
 using VrdoPdg.Model;
-using VrdoPdg.Model.Entities;
 using VrdoPdg.Model.Services;
 using VrdoPdg.View.Theme;
 
@@ -461,9 +459,7 @@ namespace VrdoPdg.View
 
             try
             {
-                IReadOnlyDictionary<int, IReadOnlyList<EfficiencyItem>> tables = _lastResult?.EfficiencyTables
-                    ?? _services.EfficiencyTable.GetActiveTables(session.Devices);
-                _previewForm = new HourlyVoltageForm(session, _lastResult, tables);
+                _previewForm = new HourlyVoltageForm(session, _lastResult, _services.HourlyLayout);
                 _previewForm.Show(this);
             }
             catch (Exception exception)
@@ -486,7 +482,7 @@ namespace VrdoPdg.View
                 return;
             }
 
-            _archiveForm = new ArchiveForm(_services.Archive);
+            _archiveForm = new ArchiveForm(_services.Archive, _services.HourlyLayout);
             _archiveForm.Show(this);
         }
 

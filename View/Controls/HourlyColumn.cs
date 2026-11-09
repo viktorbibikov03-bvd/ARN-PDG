@@ -1,52 +1,83 @@
-using VrdoPdg.Model.Entities;
+using VrdoPdg.View.Layout;
 
 namespace VrdoPdg.View.Controls
 {
     /// <summary>
-    /// Описание столбца таблицы по часам.
+    /// Столбец таблицы по часам: столбец «Час» или столбец значения КП из схемы таблиц.
     /// </summary>
     internal sealed class HourlyColumn
     {
         /// <summary>
-        /// Создает описание столбца.
+        /// Создает столбец.
         /// </summary>
-        /// <param name="kind">Вид столбца.</param>
-        /// <param name="group">Группа столбцов КП.</param>
-        /// <param name="nodeNumber">Номер узла для столбца напряжения.</param>
-        /// <param name="device">СКРМ для столбца СКРМ.</param>
-        public HourlyColumn(HourlyColumnKind kind, HourlyGroup? group, int nodeNumber, Device? device)
+        /// <param name="controlPoint">КП; <c>null</c> для столбца «Час».</param>
+        /// <param name="group">Раздел КП; <c>null</c> для столбца «Час».</param>
+        /// <param name="source">Столбец схемы таблиц; <c>null</c> для столбца «Час».</param>
+        public HourlyColumn(
+            HourlyLayoutControlPoint? controlPoint,
+            HourlyLayoutGroup? group,
+            HourlyLayoutColumn? source)
         {
-            Kind = kind;
+            ControlPoint = controlPoint;
             Group = group;
-            NodeNumber = nodeNumber;
-            Device = device;
+            Source = source;
         }
 
         /// <summary>
-        /// Вид столбца.
+        /// КП; <c>null</c> для столбца «Час».
         /// </summary>
-        public HourlyColumnKind Kind { get; }
+        public HourlyLayoutControlPoint? ControlPoint { get; }
 
         /// <summary>
-        /// Группа столбцов КП; не задана для столбца часа.
+        /// Раздел КП; <c>null</c> для столбца «Час».
         /// </summary>
-        public HourlyGroup? Group { get; }
+        public HourlyLayoutGroup? Group { get; }
 
         /// <summary>
-        /// Номер узла для столбца напряжения.
+        /// Столбец схемы таблиц; <c>null</c> для столбца «Час».
         /// </summary>
-        public int NodeNumber { get; }
+        public HourlyLayoutColumn? Source { get; }
 
         /// <summary>
-        /// СКРМ для столбца СКРМ.
+        /// Признак столбца «Час».
         /// </summary>
-        public Device? Device { get; }
+        public bool IsHour => Source == null;
 
         /// <summary>
-        /// Номер, выводимый в нижней строке заголовка.
+        /// Номер в нижней строке заголовка. Для столбца загрузки управляемого СКРМ номер не выводится:
+        /// он относится к столбцу заданного напряжения слева, как в файле «Анализ.xlsx».
         /// </summary>
-        public string NumberText => Kind == HourlyColumnKind.Voltage
-            ? NodeNumber.ToString()
-            : Device?.Number.ToString() ?? string.Empty;
+        public string NumberText => Source == null || Source.Kind == HourlyLayoutColumnKind.ReactivePower
+            ? string.Empty
+            : Source.Number.ToString();
+
+        /// <summary>
+        /// Подсказка к столбцу: КП, раздел и объект МТ.
+        /// </summary>
+        public string Description
+        {
+            get
+            {
+                if (Source == null || ControlPoint == null)
+                {
+                    return string.Empty;
+                }
+
+                string prefix = ControlPoint.Name + " · " + Group?.Caption + " · ";
+                switch (Source.Kind)
+                {
+                    case HourlyLayoutColumnKind.BusVoltage:
+                        return prefix + "напряжение узла " + Source.Number + " (vras)";
+                    case HourlyLayoutColumnKind.SetVoltage:
+                        return prefix + "заданное напряжение узла " + Source.Number + " (vzd)";
+                    case HourlyLayoutColumnKind.ReactivePower:
+                        return prefix + "загрузка узла " + Source.Number + " (qmin), Мвар";
+                    case HourlyLayoutColumnKind.Reactor:
+                        return prefix + "реактор " + Source.Number;
+                    default:
+                        return prefix + "заданное напряжение генератора, узел " + Source.Number + " (vzd)";
+                }
+            }
+        }
     }
 }

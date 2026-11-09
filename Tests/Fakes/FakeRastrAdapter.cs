@@ -136,9 +136,15 @@ namespace VrdoPdg.Tests.Fakes
         public ControlledDeviceState? GetControlledDevice(int nodeNumber)
         {
             FakeControlledDevice? device;
-            return ControlledDevices.TryGetValue(nodeNumber, out device)
-                ? new ControlledDeviceState(device.IsOn, device.ReactivePower, device.MinReactivePower,
-                    device.MaxReactivePower, device.SetVoltage)
+            if (ControlledDevices.TryGetValue(nodeNumber, out device))
+            {
+                return new ControlledDeviceState(device.IsOn, device.ReactivePower, device.MinReactivePower,
+                    device.MaxReactivePower, device.SetVoltage);
+            }
+
+            // Как в МТ: значения строки узла без управляемого СКРМ — нулевая генерация Q.
+            return BaseVoltages.ContainsKey(nodeNumber)
+                ? new ControlledDeviceState(true, 0, 0, 0, 0)
                 : null;
         }
 

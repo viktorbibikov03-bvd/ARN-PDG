@@ -28,6 +28,18 @@ namespace VrdoPdg.Model.Regime
             new Dictionary<(int DeviceId, int Hour), DeviceMode>();
 
         /// <summary>
+        /// Значения наблюдаемых узлов по номеру узла и часу.
+        /// </summary>
+        private readonly Dictionary<(int NodeNumber, int Hour), ObservedNodeState> _observedNodes =
+            new Dictionary<(int NodeNumber, int Hour), ObservedNodeState>();
+
+        /// <summary>
+        /// Состояния наблюдаемых реакторов по номеру реактора и часу.
+        /// </summary>
+        private readonly Dictionary<(int ReactorNumber, int Hour), ObservedReactorState> _observedReactors =
+            new Dictionary<(int ReactorNumber, int Hour), ObservedReactorState>();
+
+        /// <summary>
         /// Напряжения в узлах, упорядоченные по номеру узла и часу.
         /// </summary>
         public IReadOnlyList<NodeVoltage> Voltages => _voltages.Values
@@ -90,6 +102,52 @@ namespace VrdoPdg.Model.Regime
         }
 
         /// <summary>
+        /// Сохраняет значения наблюдаемого узла.
+        /// </summary>
+        /// <param name="state">Значения узла.</param>
+        public void SetObservedNode(ObservedNodeState state)
+        {
+            _observedNodes[(state.NodeNumber, state.Hour)] = state;
+        }
+
+        /// <summary>
+        /// Сохраняет состояние наблюдаемого реактора.
+        /// </summary>
+        /// <param name="state">Состояние реактора.</param>
+        public void SetObservedReactor(ObservedReactorState state)
+        {
+            _observedReactors[(state.ReactorNumber, state.Hour)] = state;
+        }
+
+        /// <summary>
+        /// Возвращает значения наблюдаемого узла.
+        /// </summary>
+        /// <param name="nodeNumber">Номер узла (ny).</param>
+        /// <param name="hour">Час суток (1–24).</param>
+        /// <returns>Значения узла или <c>null</c>, если узел не найден в МТ.</returns>
+        public ObservedNodeState? GetObservedNode(int nodeNumber, int hour)
+        {
+            ObservedNodeState? state;
+            return _observedNodes.TryGetValue((nodeNumber, hour), out state)
+                ? state
+                : null;
+        }
+
+        /// <summary>
+        /// Возвращает состояние наблюдаемого реактора.
+        /// </summary>
+        /// <param name="reactorNumber">Номер реактора (Id).</param>
+        /// <param name="hour">Час суток (1–24).</param>
+        /// <returns>Состояние реактора или <c>null</c>, если реактор не найден в МТ.</returns>
+        public ObservedReactorState? GetObservedReactor(int reactorNumber, int hour)
+        {
+            ObservedReactorState? state;
+            return _observedReactors.TryGetValue((reactorNumber, hour), out state)
+                ? state
+                : null;
+        }
+
+        /// <summary>
         /// Копирует значения заданного часа из другого снимка.
         /// </summary>
         /// <param name="source">Снимок-источник.</param>
@@ -104,6 +162,16 @@ namespace VrdoPdg.Model.Regime
             foreach (DeviceMode mode in source._modes.Values.Where(item => item.Hour == hour))
             {
                 SetMode(mode);
+            }
+
+            foreach (ObservedNodeState state in source._observedNodes.Values.Where(item => item.Hour == hour))
+            {
+                SetObservedNode(state);
+            }
+
+            foreach (ObservedReactorState state in source._observedReactors.Values.Where(item => item.Hour == hour))
+            {
+                SetObservedReactor(state);
             }
         }
     }

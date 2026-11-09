@@ -143,6 +143,29 @@ namespace VrdoPdg.Tests
         }
 
         /// <summary>
+        /// Значения наблюдаемых объектов форм просмотра считываются после ввода режима:
+        /// включенный реактор и напряжение основного узла КП.
+        /// </summary>
+        [Test]
+        public void Run_ObservedObjects_ReadAfterRegulation()
+        {
+            RegulationScenario scenario = new RegulationScenario();
+            scenario.SetVoltage(1, 533);
+
+            CalculationResult result = scenario.Run();
+
+            Assert.That(result.After.GetMode(RegulationScenario.ReactorId, 1)!.IsOn, Is.True);
+            Assert.That(result.After.GetObservedReactor(RegulationScenario.ReactorNumber, 1)!.IsOn, Is.True);
+            Assert.That(result.Before.GetObservedReactor(RegulationScenario.ReactorNumber, 1)!.IsOn, Is.False);
+            Assert.That(
+                result.After.GetObservedNode(RegulationScenario.MainNode, 1)!.Voltage,
+                Is.EqualTo(result.After.GetVoltage(RegulationScenario.MainNode, 1)!.Value).Within(Tolerance));
+            Assert.That(
+                result.After.GetObservedNode(RegulationScenario.MainNode, 2)!.Voltage,
+                Is.EqualTo(result.Before.GetObservedNode(RegulationScenario.MainNode, 2)!.Voltage).Within(Tolerance));
+        }
+
+        /// <summary>
         /// Напряжение ниже нижней границы: управляемое СКРМ загружается до Qmax,
         /// включенный реактор отключается.
         /// </summary>

@@ -5,6 +5,7 @@ using System.Linq;
 using System.Windows.Forms;
 
 using VrdoPdg.Model.Services;
+using VrdoPdg.View.Layout;
 using VrdoPdg.View.Theme;
 
 namespace VrdoPdg.View
@@ -30,6 +31,11 @@ namespace VrdoPdg.View
         private readonly List<int> _selection = new List<int>();
 
         /// <summary>
+        /// Схема таблиц по часам для сравнения расчетов.
+        /// </summary>
+        private readonly HourlyLayout _layout;
+
+        /// <summary>
         /// Расчеты архива в порядке строк списка.
         /// </summary>
         private IReadOnlyList<CalculationResult> _results = new CalculationResult[0];
@@ -38,10 +44,12 @@ namespace VrdoPdg.View
         /// Создает форму «Архив расчетов».
         /// </summary>
         /// <param name="archive">Сеанс и архив расчетов.</param>
-        public ArchiveForm(CalculationArchiveService archive)
+        /// <param name="layout">Схема таблиц по часам для сравнения расчетов.</param>
+        public ArchiveForm(CalculationArchiveService archive, HourlyLayout layout)
         {
             InitializeComponent();
             _archive = archive ?? throw new ArgumentNullException(nameof(archive));
+            _layout = layout ?? throw new ArgumentNullException(nameof(layout));
 
             UiStyle.ApplyOutlined(_backButton, IconGlyph.Back);
             UiStyle.ApplyFlat(_resetButton, null);
@@ -181,7 +189,7 @@ namespace VrdoPdg.View
                 .Where(result => _selection.Contains(result.Number))
                 .OrderBy(result => result.Number)
                 .ToList();
-            using (ComparisonForm form = new ComparisonForm(selected[0], selected[1]))
+            using (ComparisonForm form = new ComparisonForm(selected[0], selected[1], _layout))
             {
                 form.ShowDialog(this);
             }

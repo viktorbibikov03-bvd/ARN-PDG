@@ -20,6 +20,11 @@ namespace VrdoPdg.View
         public string DatabasePath { get; set; } = "VrdoPdg.db";
 
         /// <summary>
+        /// Путь к файлу схемы таблиц по часам (относительный путь — от каталога программы).
+        /// </summary>
+        public string HourlyLayoutPath { get; set; } = "hourly-layout.json";
+
+        /// <summary>
         /// Каталог результатов ПО Барс-МДП (D:\BarsMDP\Results).
         /// </summary>
         public string ResultsDirectory { get; set; } = @"D:\BarsMDP\Results";
@@ -79,6 +84,17 @@ namespace VrdoPdg.View
             return Path.IsPathRooted(DatabasePath)
                 ? DatabasePath
                 : Path.Combine(AppContext.BaseDirectory, DatabasePath);
+        }
+
+        /// <summary>
+        /// Возвращает полный путь к файлу схемы таблиц по часам.
+        /// </summary>
+        /// <returns>Полный путь.</returns>
+        public string GetHourlyLayoutPath()
+        {
+            return Path.IsPathRooted(HourlyLayoutPath)
+                ? HourlyLayoutPath
+                : Path.Combine(AppContext.BaseDirectory, HourlyLayoutPath);
         }
 
         /// <summary>

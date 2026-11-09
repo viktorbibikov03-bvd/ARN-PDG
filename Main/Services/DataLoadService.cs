@@ -69,6 +69,11 @@ namespace VrdoPdg.Model.Services
         private readonly CalculationProtocol _protocol;
 
         /// <summary>
+        /// Объекты МТ, значения которых считываются для форм просмотра режима.
+        /// </summary>
+        private readonly ObservedObjects _observedObjects;
+
+        /// <summary>
         /// Создает сервис загрузки данных.
         /// </summary>
         /// <param name="rastrAdapter">Модуль взаимодействия с ПО «Барс».</param>
@@ -77,13 +82,15 @@ namespace VrdoPdg.Model.Services
         /// <param name="smpSmzuReader">Модуль чтения файла smp_smzu.csv.</param>
         /// <param name="archiveService">Сеанс и архив расчетов.</param>
         /// <param name="protocol">Протокол расчета.</param>
+        /// <param name="observedObjects">Объекты МТ, значения которых считываются для форм просмотра режима.</param>
         public DataLoadService(
             IRastrAdapter rastrAdapter,
             IModelDataRepository repository,
             ICkModel ckModel,
             ISmpSmzuCsvReader smpSmzuReader,
             CalculationArchiveService archiveService,
-            CalculationProtocol protocol)
+            CalculationProtocol protocol,
+            ObservedObjects observedObjects)
         {
             _rastrAdapter = rastrAdapter ?? throw new ArgumentNullException(nameof(rastrAdapter));
             _repository = repository ?? throw new ArgumentNullException(nameof(repository));
@@ -91,6 +98,7 @@ namespace VrdoPdg.Model.Services
             _smpSmzuReader = smpSmzuReader ?? throw new ArgumentNullException(nameof(smpSmzuReader));
             _archiveService = archiveService ?? throw new ArgumentNullException(nameof(archiveService));
             _protocol = protocol ?? throw new ArgumentNullException(nameof(protocol));
+            _observedObjects = observedObjects ?? throw new ArgumentNullException(nameof(observedObjects));
         }
 
         /// <summary>
@@ -284,6 +292,7 @@ namespace VrdoPdg.Model.Services
                         reference.ControlPoints,
                         reference.Devices,
                         context,
+                        _observedObjects,
                         regime);
                 }
 

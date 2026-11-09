@@ -6,7 +6,9 @@ using VrdoPdg.Infrastructure;
 using VrdoPdg.Infrastructure.Bars;
 using VrdoPdg.Model;
 using VrdoPdg.Model.Protocol;
+using VrdoPdg.Model.Regime;
 using VrdoPdg.Model.Services;
+using VrdoPdg.View.Layout;
 using VrdoPdg.View.Threading;
 
 namespace VrdoPdg.View
@@ -52,6 +54,8 @@ namespace VrdoPdg.View
                 return;
             }
 
+            HourlyLayout hourlyLayout = LoadHourlyLayout(settings.GetHourlyLayoutPath());
+            ObservedObjects observedObjects = hourlyLayout.GetObservedObjects();
             using (StaWorker worker = new StaWorker())
             {
                 RastrAdapter rastrAdapter = new RastrAdapter();
@@ -70,16 +74,44 @@ namespace VrdoPdg.View
                             new CkModel(settings.LowerVoltageBound, settings.UpperVoltageBound),
                             new SmpSmzuCsvReader(),
                             archive,
-                            protocol),
-                        new VoltageRegulationService(rastrAdapter, repository, archive, protocol),
+                            protocol,
+                            observedObjects),
+                        new VoltageRegulationService(rastrAdapter, repository, archive, protocol, observedObjects),
                         new ResultExportService(new SmpSmzuCsvWriter(settings.GetCsvDecimalSeparator()), protocol),
-                        new EfficiencyTableService(repository, protocol));
+                        new EfficiencyTableService(repository, protocol),
+                        hourlyLayout);
                     Application.Run(new MainForm(services));
                 }
                 finally
                 {
                     worker.Run(rastrAdapter.Dispose).Wait(_shutdownTimeout);
                 }
+            }
+        }
+
+        /// <summary>
+        /// Загружает схему таблиц по часам. Если файл не найден или заполнен неправильно,
+        /// выводится предупреждение и таблицы форм просмотра режима остаются пустыми.
+        /// </summary>
+        /// <param name="path">Путь к файлу схемы таблиц.</param>
+        /// <returns>Схема таблиц.</returns>
+        private static HourlyLayout LoadHourlyLayout(string path)
+        {
+            try
+            {
+                return HourlyLayout.Load(path);
+            }
+            catch (InvalidDataException exception)
+            {
+                MessageBox.Show(
+                    "Не удалось загрузить схему таблиц по часам " + path
+                        + Environment.NewLine + exception.Message
+                        + Environment.NewLine + Environment.NewLine
+                        + "Таблицы форм «Напряжение по часам» и «Сравнение расчётов» будут пустыми.",
+                    "АС «ВРДО ПДГ»",
+                    MessageBoxButtons.OK,
+                    MessageBoxIcon.Warning);
+                return HourlyLayout.Empty;
             }
         }
     }

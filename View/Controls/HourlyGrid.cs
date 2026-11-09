@@ -5,25 +5,26 @@ using System.Windows.Forms;
 
 using VrdoPdg.Model;
 using VrdoPdg.Model.Entities;
+using VrdoPdg.Model.Regime;
+using VrdoPdg.View.Layout;
 using VrdoPdg.View.Theme;
 
 namespace VrdoPdg.View.Controls
 {
     /// <summary>
-    /// Таблица почасовых значений в привычной технологу форме (файл Анализ.xlsx):
-    /// строки — часы суток, группы столбцов — КП с напряжениями на шинах (U сш) и СКРМ.
-    /// Заголовок состоит из трех строк: наименование КП, «U сш» / «СКРМ», номера узлов и реакторов.
-    /// В режиме сравнения в каждой ячейке выводятся два значения: сверху — первого расчета, снизу — второго.
+    /// Таблица одного блока КП по часам суток, как блок листа «U-500» файла «Анализ.xlsx»: строки — часы,
+    /// заголовок из трех строк — наименования КП, разделы («U сш», «СКРМ», «U ген») и номера узлов
+    /// или реакторов. В режиме сравнения в ячейке выводятся значения двух расчетов.
     /// </summary>
     internal sealed class HourlyGrid : DataGridView
     {
         /// <summary>
-        /// Высота одной строки заголовка, пикселей.
+        /// Высота строки заголовка, пикселей.
         /// </summary>
         private const int BandHeight = 24;
 
         /// <summary>
-        /// Ширина столбца часа, пикселей.
+        /// Ширина столбца «Час», пикселей.
         /// </summary>
         private const int HourColumnWidth = 54;
 
@@ -38,32 +39,32 @@ namespace VrdoPdg.View.Controls
         private const int SingleRowHeight = 28;
 
         /// <summary>
-        /// Высота строки с двумя значениями, пикселей.
+        /// Высота строки с двумя значениями сравниваемых расчетов, пикселей.
         /// </summary>
         private const int DoubleRowHeight = 42;
 
         /// <summary>
-        /// Цвет текста напряжения выше верхней границы графика.
+        /// Цвет напряжения выше верхней границы графика.
         /// </summary>
         private static readonly Color _aboveText = Color.FromArgb(156, 203, 255);
 
         /// <summary>
-        /// Цвет текста напряжения ниже нижней границы графика.
+        /// Цвет напряжения ниже нижней границы графика.
         /// </summary>
         private static readonly Color _belowText = Color.FromArgb(255, 154, 162);
 
         /// <summary>
-        /// Цвет фона нечетных строк.
+        /// Фон четных строк.
         /// </summary>
         private static readonly Color _alternateBack = Color.FromArgb(21, 21, 21);
 
         /// <summary>
-        /// Диапазоны столбцов групп КП.
+        /// Диапазоны столбцов КП.
         /// </summary>
         private readonly List<GroupRange> _ranges = new List<GroupRange>();
 
         /// <summary>
-        /// Смещения столбцов относительно правой границы столбца часа без учета прокрутки.
+        /// Смещения столбцов значений от правой границы столбца «Час».
         /// </summary>
         private readonly List<int> _offsets = new List<int>();
 
@@ -89,52 +90,60 @@ namespace VrdoPdg.View.Controls
             MultiSelect = false;
             ShowCellToolTips = true;
             ColumnHeadersHeight = BandHeight * 3;
+            ScrollBars = ScrollBars.Horizontal;
             StandardTab = true;
         }
 
         /// <summary>
-        /// Признак таблицы без групп КП.
+        /// Признак таблицы без столбцов КП.
         /// </summary>
         public bool IsEmpty => _ranges.Count == 0;
 
         /// <summary>
-        /// Выводит в таблицу КП энергосистемы.
+        /// Высота таблицы, при которой видны все 24 часа и полоса горизонтальной прокрутки.
         /// </summary>
-        /// <param name="model">Данные таблицы.</param>
-        /// <param name="powerSystemId">Код энергосистемы.</param>
-        public void Bind(HourlyTableModel model, int powerSystemId)
+        public int PreferredHeight => ColumnHeadersHeight + (RowCount * RowTemplate.Height)
+            + SystemInformation.HorizontalScrollBarHeight + 2;
+
+        /// <summary>
+        /// Выводит в таблицу блок КП.
+        /// </summary>
+        /// <param name="model">Данные таблиц.</param>
+        /// <param name="block">Блок КП схемы таблиц.</param>
+        public void Bind(HourlyTableModel model, HourlyLayoutBlock block)
         {
             _model = model;
             _ranges.Clear();
             _offsets.Clear();
             Columns.Clear();
 
-            AddColumn(new HourlyColumn(HourlyColumnKind.Hour, null, 0, null), HourColumnWidth, "ЧАС", true);
+            AddColumn(new HourlyColumn(null, null, null), HourColumnWidth, "ЧАС", true);
             int offset = 0;
             _offsets.Add(0);
-            foreach (HourlyGroup group in model.GetGroups(powerSystemId))
+            foreach (HourlyLayoutControlPoint controlPoint in block.ControlPoints)
             {
                 int first = Columns.Count;
-                foreach (int nodeNumber in group.NodeNumbers)
+                List<SectionRange> sections = new List<SectionRange>();
+                foreach (HourlyLayoutGroup group in controlPoint.Groups)
                 {
-                    AddColumn(new HourlyColumn(HourlyColumnKind.Voltage, group, nodeNumber, null), ValueColumnWidth,
-                        nodeNumber.ToString(), false);
-                    _offsets.Add(offset);
-                    offset += ValueColumnWidth;
-                }
+                    int sectionFirst = Columns.Count;
+                    foreach (HourlyLayoutColumn source in group.Columns)
+                    {
+                        HourlyColumn column = new HourlyColumn(controlPoint, group, source);
+                        AddColumn(column, ValueColumnWidth, column.NumberText, false);
+                        _offsets.Add(offset);
+                        offset += ValueColumnWidth;
+                    }
 
-                int firstDevice = Columns.Count;
-                foreach (Device device in group.Devices)
-                {
-                    AddColumn(new HourlyColumn(HourlyColumnKind.Device, group, 0, device), ValueColumnWidth,
-                        device.Number.ToString(), false);
-                    _offsets.Add(offset);
-                    offset += ValueColumnWidth;
+                    if (Columns.Count > sectionFirst)
+                    {
+                        sections.Add(new SectionRange(group.Caption, sectionFirst, Columns.Count - 1));
+                    }
                 }
 
                 if (Columns.Count > first)
                 {
-                    _ranges.Add(new GroupRange(group, first, firstDevice, Columns.Count - 1));
+                    _ranges.Add(new GroupRange(controlPoint, first, Columns.Count - 1, sections));
                 }
             }
 
@@ -178,7 +187,7 @@ namespace VrdoPdg.View.Controls
         }
 
         /// <summary>
-        /// Дорисовывает объединенные строки заголовка: наименования КП и подписи «U сш» / «СКРМ».
+        /// Дорисовывает объединенные строки заголовка: наименования КП и подписи разделов.
         /// </summary>
         /// <param name="e">Аргументы события.</param>
         protected override void OnPaint(PaintEventArgs e)
@@ -196,7 +205,7 @@ namespace VrdoPdg.View.Controls
             foreach (GroupRange range in _ranges)
             {
                 int left = GetColumnLeft(range.First);
-                int right = GetColumnLeft(range.Last) + Columns[range.Last].Width;
+                int right = GetColumnRight(range.Last);
                 if (right <= frozenWidth || left >= ClientSize.Width)
                 {
                     continue;
@@ -205,22 +214,19 @@ namespace VrdoPdg.View.Controls
                 Rectangle title = new Rectangle(left, 0, right - left, BandHeight);
                 FillBand(graphics, title);
                 Rectangle visibleTitle = Rectangle.Intersect(title, area);
-                TextRenderer.DrawText(graphics, range.Group.ControlPoint.Name, UiFonts.Semibold(9.5f), visibleTitle,
+                TextRenderer.DrawText(graphics, range.ControlPoint.Name, UiFonts.Semibold(9.5f), visibleTitle,
                     Palette.Text, TextFormatFlags.HorizontalCenter | TextFormatFlags.VerticalCenter
-                    | TextFormatFlags.EndEllipsis | TextFormatFlags.SingleLine);
+                    | TextFormatFlags.EndEllipsis | TextFormatFlags.SingleLine | TextFormatFlags.NoPrefix);
 
-                if (range.FirstDevice > range.First)
+                foreach (SectionRange section in range.Sections)
                 {
-                    int voltageRight = GetColumnLeft(range.FirstDevice - 1) + Columns[range.FirstDevice - 1].Width;
-                    DrawSection(graphics, new Rectangle(left, BandHeight, voltageRight - left, BandHeight), area,
-                        "U сш", Palette.Blue);
-                }
-
-                if (range.FirstDevice <= range.Last)
-                {
-                    int deviceLeft = GetColumnLeft(range.FirstDevice);
-                    DrawSection(graphics, new Rectangle(deviceLeft, BandHeight, right - deviceLeft, BandHeight), area,
-                        "СКРМ", Palette.Purple);
+                    int sectionLeft = GetColumnLeft(section.First);
+                    Rectangle bounds = new Rectangle(
+                        sectionLeft,
+                        BandHeight,
+                        GetColumnRight(section.Last) - sectionLeft,
+                        BandHeight);
+                    DrawSection(graphics, bounds, area, section.Caption, GetSectionColor(section.Caption));
                 }
 
                 using (Pen pen = new Pen(Palette.Border))
@@ -244,26 +250,16 @@ namespace VrdoPdg.View.Controls
         }
 
         /// <summary>
-        /// Выводит подсказку с наименованием КП, узла или СКРМ.
+        /// Выводит подсказку с КП, разделом и объектом МТ.
         /// </summary>
         /// <param name="e">Аргументы события.</param>
         protected override void OnCellToolTipTextNeeded(DataGridViewCellToolTipTextNeededEventArgs e)
         {
             base.OnCellToolTipTextNeeded(e);
-            if (e.ColumnIndex < 0)
+            if (e.ColumnIndex >= 0 && Columns[e.ColumnIndex].Tag is HourlyColumn column && !column.IsHour)
             {
-                return;
+                e.ToolTipText = column.Description;
             }
-
-            HourlyColumn? column = Columns[e.ColumnIndex].Tag as HourlyColumn;
-            if (column?.Group == null)
-            {
-                return;
-            }
-
-            e.ToolTipText = column.Kind == HourlyColumnKind.Voltage
-                ? column.Group.ControlPoint.Name + " · узел " + column.NodeNumber
-                : column.Device + " · " + column.Device?.TypeName;
         }
 
         /// <summary>
@@ -280,7 +276,7 @@ namespace VrdoPdg.View.Controls
         }
 
         /// <summary>
-        /// Рисует подпись раздела группы («U сш» или «СКРМ»).
+        /// Рисует подпись раздела КП.
         /// </summary>
         /// <param name="graphics">Поверхность рисования.</param>
         /// <param name="bounds">Область раздела.</param>
@@ -294,7 +290,28 @@ namespace VrdoPdg.View.Controls
             if (visible.Width > 0)
             {
                 TextRenderer.DrawText(graphics, text, UiFonts.Regular(9f), visible, color,
-                    TextFormatFlags.HorizontalCenter | TextFormatFlags.VerticalCenter | TextFormatFlags.SingleLine);
+                    TextFormatFlags.HorizontalCenter | TextFormatFlags.VerticalCenter | TextFormatFlags.SingleLine
+                    | TextFormatFlags.NoPrefix);
+            }
+        }
+
+        /// <summary>
+        /// Возвращает цвет подписи раздела: «U сш» — синий, «СКРМ» — фиолетовый, «U ген» — желтый.
+        /// </summary>
+        /// <param name="caption">Подпись раздела.</param>
+        /// <returns>Цвет подписи.</returns>
+        private static Color GetSectionColor(string caption)
+        {
+            switch (caption)
+            {
+                case "U сш":
+                    return Palette.Blue;
+                case "СКРМ":
+                    return Palette.Purple;
+                case "U ген":
+                    return Palette.Warning;
+                default:
+                    return Palette.TextSecondary;
             }
         }
 
@@ -333,10 +350,20 @@ namespace VrdoPdg.View.Controls
         }
 
         /// <summary>
-        /// Проверяет, начинает ли столбец группу КП.
+        /// Возвращает правую границу столбца с учетом прокрутки.
         /// </summary>
         /// <param name="columnIndex">Индекс столбца.</param>
-        /// <returns><c>true</c>, если столбец первый в группе.</returns>
+        /// <returns>Координата правой границы.</returns>
+        private int GetColumnRight(int columnIndex)
+        {
+            return GetColumnLeft(columnIndex) + Columns[columnIndex].Width;
+        }
+
+        /// <summary>
+        /// Проверяет, начинает ли столбец КП.
+        /// </summary>
+        /// <param name="columnIndex">Индекс столбца.</param>
+        /// <returns><c>true</c>, если столбец первый в КП.</returns>
         private bool IsGroupStart(int columnIndex)
         {
             foreach (GroupRange range in _ranges)
@@ -351,7 +378,7 @@ namespace VrdoPdg.View.Controls
         }
 
         /// <summary>
-        /// Рисует ячейку заголовка: «ЧАС» или номер узла, реактора, генератора в нижней строке.
+        /// Рисует ячейку заголовка: «ЧАС» или номер узла, реактора в нижней строке.
         /// </summary>
         /// <param name="graphics">Поверхность рисования.</param>
         /// <param name="bounds">Границы ячейки.</param>
@@ -360,7 +387,7 @@ namespace VrdoPdg.View.Controls
         private void PaintHeaderCell(Graphics graphics, Rectangle bounds, HourlyColumn column, int columnIndex)
         {
             FillBand(graphics, bounds);
-            if (column.Kind == HourlyColumnKind.Hour)
+            if (column.IsHour)
             {
                 TextRenderer.DrawText(graphics, "ЧАС", UiFonts.Monospace(9f), bounds, Palette.TextSecondary,
                     TextFormatFlags.HorizontalCenter | TextFormatFlags.VerticalCenter);
@@ -372,18 +399,7 @@ namespace VrdoPdg.View.Controls
                     Palette.TextSecondary, TextFormatFlags.HorizontalCenter | TextFormatFlags.VerticalCenter);
             }
 
-            using (Pen pen = new Pen(Palette.Border))
-            {
-                graphics.DrawLine(pen, bounds.Left, bounds.Bottom - 1, bounds.Right, bounds.Bottom - 1);
-                if (column.Kind == HourlyColumnKind.Hour)
-                {
-                    graphics.DrawLine(pen, bounds.Right - 1, bounds.Top, bounds.Right - 1, bounds.Bottom);
-                }
-                else if (IsGroupStart(columnIndex))
-                {
-                    graphics.DrawLine(pen, bounds.Left, bounds.Top, bounds.Left, bounds.Bottom);
-                }
-            }
+            DrawCellLines(graphics, bounds, column, columnIndex);
         }
 
         /// <summary>
@@ -404,7 +420,7 @@ namespace VrdoPdg.View.Controls
 
             TextFormatFlags flags = TextFormatFlags.HorizontalCenter | TextFormatFlags.VerticalCenter
                 | TextFormatFlags.SingleLine | TextFormatFlags.NoPrefix;
-            if (column.Kind == HourlyColumnKind.Hour)
+            if (column.IsHour)
             {
                 TextRenderer.DrawText(graphics, hour.ToString(), UiFonts.Monospace(9.5f), bounds,
                     Palette.TextSecondary, flags);
@@ -416,12 +432,12 @@ namespace VrdoPdg.View.Controls
                 string? firstText = null;
                 for (int index = 0; index < count; index++)
                 {
-                    int top = bounds.Top + index * partHeight;
+                    int top = bounds.Top + (index * partHeight);
                     int height = index == count - 1
                         ? bounds.Bottom - top
                         : partHeight;
                     Rectangle part = new Rectangle(bounds.Left, top, bounds.Width, height);
-                    CellText value = GetCellText(column, model.Sources[index], hour, count > 1 ? index : -1);
+                    CellText value = GetCellText(column.Source!, model.Sources[index], hour, count > 1 ? index : -1);
                     if (value.BackColor.HasValue)
                     {
                         using (SolidBrush brush = new SolidBrush(value.BackColor.Value))
@@ -442,10 +458,22 @@ namespace VrdoPdg.View.Controls
                 }
             }
 
+            DrawCellLines(graphics, bounds, column, columnIndex);
+        }
+
+        /// <summary>
+        /// Рисует нижнюю линию ячейки и вертикальные линии на границе столбца «Час» и в начале КП.
+        /// </summary>
+        /// <param name="graphics">Поверхность рисования.</param>
+        /// <param name="bounds">Границы ячейки.</param>
+        /// <param name="column">Описание столбца.</param>
+        /// <param name="columnIndex">Индекс столбца.</param>
+        private void DrawCellLines(Graphics graphics, Rectangle bounds, HourlyColumn column, int columnIndex)
+        {
             using (Pen pen = new Pen(Palette.Border))
             {
                 graphics.DrawLine(pen, bounds.Left, bounds.Bottom - 1, bounds.Right, bounds.Bottom - 1);
-                if (column.Kind == HourlyColumnKind.Hour)
+                if (column.IsHour)
                 {
                     graphics.DrawLine(pen, bounds.Right - 1, bounds.Top, bounds.Right - 1, bounds.Bottom);
                 }
@@ -457,104 +485,167 @@ namespace VrdoPdg.View.Controls
         }
 
         /// <summary>
-        /// Формирует текст и цвета значения ячейки.
+        /// Формирует текст и цвета значения ячейки по виду столбца.
         /// </summary>
-        /// <param name="column">Описание столбца.</param>
+        /// <param name="column">Столбец схемы таблиц.</param>
         /// <param name="source">Источник значений.</param>
         /// <param name="hour">Час суток.</param>
         /// <param name="runIndex">Индекс сравниваемого расчета; -1 — предпросмотр.</param>
         /// <returns>Текст и цвета.</returns>
-        private CellText GetCellText(HourlyColumn column, HourlyValueSource source, int hour, int runIndex)
+        private CellText GetCellText(HourlyLayoutColumn column, HourlyValueSource source, int hour, int runIndex)
         {
             Color numberColor = runIndex < 0
                 ? Palette.Text
                 : runIndex == 0
                     ? Palette.FirstRun
                     : Palette.SecondRun;
-            if (column.Kind == HourlyColumnKind.Voltage)
+            RegimeSnapshot regime = source.Regime;
+            if (column.Kind == HourlyLayoutColumnKind.Reactor)
             {
-                double? voltage = source.Regime.GetVoltage(column.NodeNumber, hour);
-                if (!voltage.HasValue)
+                ObservedReactorState? reactor = regime.GetObservedReactor(column.Number, hour);
+                if (reactor == null)
                 {
-                    return new CellText("—", Palette.TextMuted, null);
+                    return CellText.Missing;
                 }
 
-                string text = ValueFormat.ShortVoltage(voltage.Value);
-                VoltageBounds? bounds = column.Group == null
-                    ? null
-                    : source.Schedule.GetBounds(column.Group.ControlPoint.Id, hour);
-                if (bounds != null && bounds.IsAbove(voltage.Value))
-                {
-                    return new CellText(text, _aboveText, Palette.BlueDark);
-                }
-
-                if (bounds != null && bounds.IsBelow(voltage.Value))
-                {
-                    return new CellText(text, _belowText, Palette.RedDark);
-                }
-
-                return new CellText(text, numberColor, null);
-            }
-
-            Device? device = column.Device;
-            DeviceMode? mode = device == null
-                ? null
-                : source.Regime.GetMode(device.Id, hour);
-            if (device == null || mode == null)
-            {
-                return new CellText("—", Palette.TextMuted, null);
-            }
-
-            if (device.Type == DeviceType.Switched || !mode.IsOn || !mode.ReactivePower.HasValue)
-            {
-                return mode.IsOn
+                return reactor.IsOn
                     ? new CellText("Вкл", Palette.Accent, null)
-                    : new CellText("Откл", Palette.TextMuted, null);
+                    : CellText.Off;
             }
 
-            Color powerColor = runIndex < 0
-                ? Palette.Purple
-                : numberColor;
-            return new CellText(ValueFormat.ShortPower(mode.ReactivePower.Value), powerColor, null);
+            ObservedNodeState? node = regime.GetObservedNode(column.Number, hour);
+            if (node == null)
+            {
+                return CellText.Missing;
+            }
+
+            switch (column.Kind)
+            {
+                case HourlyLayoutColumnKind.BusVoltage:
+                    return GetBusVoltageText(node, source, hour, numberColor);
+                case HourlyLayoutColumnKind.SetVoltage:
+                    return new CellText(ValueFormat.ShortVoltage(node.SetVoltage), numberColor, null);
+                case HourlyLayoutColumnKind.ReactivePower:
+                    Color powerColor = runIndex < 0
+                        ? Palette.Purple
+                        : numberColor;
+                    return new CellText(ValueFormat.ShortPower(node.MinReactivePower), powerColor, null);
+                default:
+                    return node.IsOn && node.Voltage != 0
+                        ? new CellText(ValueFormat.Voltage(node.SetVoltage), numberColor, null)
+                        : CellText.Off;
+            }
         }
 
         /// <summary>
-        /// Диапазон столбцов группы КП.
+        /// Формирует значение напряжения на шинах с выделением выхода за границы графика.
+        /// </summary>
+        /// <param name="node">Значения узла.</param>
+        /// <param name="source">Источник значений.</param>
+        /// <param name="hour">Час суток.</param>
+        /// <param name="numberColor">Цвет значения в границах графика.</param>
+        /// <returns>Текст и цвета.</returns>
+        private CellText GetBusVoltageText(
+            ObservedNodeState node,
+            HourlyValueSource source,
+            int hour,
+            Color numberColor)
+        {
+            if (!node.IsOn || node.Voltage == 0)
+            {
+                return CellText.Off;
+            }
+
+            string text = ValueFormat.ShortVoltage(node.Voltage);
+            VoltageBounds bounds = _model!.GetBounds(source, node.NodeNumber, hour);
+            if (bounds.IsAbove(node.Voltage))
+            {
+                return new CellText(text, _aboveText, Palette.BlueDark);
+            }
+
+            if (bounds.IsBelow(node.Voltage))
+            {
+                return new CellText(text, _belowText, Palette.RedDark);
+            }
+
+            return new CellText(text, numberColor, null);
+        }
+
+        /// <summary>
+        /// Диапазон столбцов КП.
         /// </summary>
         private sealed class GroupRange
         {
             /// <summary>
             /// Создает диапазон столбцов.
             /// </summary>
-            /// <param name="group">Группа КП.</param>
-            /// <param name="first">Индекс первого столбца группы.</param>
-            /// <param name="firstDevice">Индекс первого столбца СКРМ.</param>
-            /// <param name="last">Индекс последнего столбца группы.</param>
-            public GroupRange(HourlyGroup group, int first, int firstDevice, int last)
+            /// <param name="controlPoint">КП.</param>
+            /// <param name="first">Индекс первого столбца КП.</param>
+            /// <param name="last">Индекс последнего столбца КП.</param>
+            /// <param name="sections">Диапазоны разделов КП.</param>
+            public GroupRange(
+                HourlyLayoutControlPoint controlPoint,
+                int first,
+                int last,
+                IReadOnlyList<SectionRange> sections)
             {
-                Group = group;
+                ControlPoint = controlPoint;
                 First = first;
-                FirstDevice = firstDevice;
                 Last = last;
+                Sections = sections;
             }
 
             /// <summary>
-            /// Группа КП.
+            /// КП.
             /// </summary>
-            public HourlyGroup Group { get; }
+            public HourlyLayoutControlPoint ControlPoint { get; }
 
             /// <summary>
-            /// Индекс первого столбца группы.
+            /// Индекс первого столбца КП.
             /// </summary>
             public int First { get; }
 
             /// <summary>
-            /// Индекс первого столбца СКРМ.
+            /// Индекс последнего столбца КП.
             /// </summary>
-            public int FirstDevice { get; }
+            public int Last { get; }
 
             /// <summary>
-            /// Индекс последнего столбца группы.
+            /// Диапазоны разделов КП.
+            /// </summary>
+            public IReadOnlyList<SectionRange> Sections { get; }
+        }
+
+        /// <summary>
+        /// Диапазон столбцов раздела КП.
+        /// </summary>
+        private sealed class SectionRange
+        {
+            /// <summary>
+            /// Создает диапазон столбцов раздела.
+            /// </summary>
+            /// <param name="caption">Подпись раздела.</param>
+            /// <param name="first">Индекс первого столбца раздела.</param>
+            /// <param name="last">Индекс последнего столбца раздела.</param>
+            public SectionRange(string caption, int first, int last)
+            {
+                Caption = caption;
+                First = first;
+                Last = last;
+            }
+
+            /// <summary>
+            /// Подпись раздела.
+            /// </summary>
+            public string Caption { get; }
+
+            /// <summary>
+            /// Индекс первого столбца раздела.
+            /// </summary>
+            public int First { get; }
+
+            /// <summary>
+            /// Индекс последнего столбца раздела.
             /// </summary>
             public int Last { get; }
         }
@@ -576,6 +667,16 @@ namespace VrdoPdg.View.Controls
                 ForeColor = foreColor;
                 BackColor = backColor;
             }
+
+            /// <summary>
+            /// Значение объекта, не найденного в МТ.
+            /// </summary>
+            public static CellText Missing => new CellText("—", Palette.TextMuted, null);
+
+            /// <summary>
+            /// Значение отключенного узла или реактора.
+            /// </summary>
+            public static CellText Off => new CellText("Откл", Palette.TextMuted, null);
 
             /// <summary>
             /// Текст.

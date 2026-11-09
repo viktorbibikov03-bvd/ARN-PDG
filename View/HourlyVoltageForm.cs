@@ -1,11 +1,10 @@
 using System;
-using System.Collections.Generic;
 using System.Windows.Forms;
 
-using VrdoPdg.Model.Entities;
 using VrdoPdg.Model.Regime;
 using VrdoPdg.Model.Services;
 using VrdoPdg.View.Controls;
+using VrdoPdg.View.Layout;
 using VrdoPdg.View.Theme;
 
 namespace VrdoPdg.View
@@ -22,9 +21,9 @@ namespace VrdoPdg.View
         private readonly SessionData _session;
 
         /// <summary>
-        /// Таблицы эффективности, определяющие состав столбцов СКРМ.
+        /// Схема таблиц по часам.
         /// </summary>
-        private IReadOnlyDictionary<int, IReadOnlyList<EfficiencyItem>> _tables;
+        private readonly HourlyLayout _layout;
 
         /// <summary>
         /// Последний завершенный расчет.
@@ -41,16 +40,13 @@ namespace VrdoPdg.View
         /// </summary>
         /// <param name="session">Исходные данные сеанса.</param>
         /// <param name="result">Последний завершенный расчет или <c>null</c>.</param>
-        /// <param name="tables">Таблицы эффективности, определяющие состав столбцов СКРМ.</param>
-        public HourlyVoltageForm(
-            SessionData session,
-            CalculationResult? result,
-            IReadOnlyDictionary<int, IReadOnlyList<EfficiencyItem>> tables)
+        /// <param name="layout">Схема таблиц по часам.</param>
+        public HourlyVoltageForm(SessionData session, CalculationResult? result, HourlyLayout layout)
         {
             InitializeComponent();
             _session = session ?? throw new ArgumentNullException(nameof(session));
             _result = result;
-            _tables = tables ?? throw new ArgumentNullException(nameof(tables));
+            _layout = layout ?? throw new ArgumentNullException(nameof(layout));
 
             UiStyle.ApplyOutlined(_backButton, IconGlyph.Back);
             StyleModeButton(_beforeButton);
@@ -65,7 +61,6 @@ namespace VrdoPdg.View
         public void SetResult(CalculationResult result)
         {
             _result = result;
-            _tables = result.EfficiencyTables;
             ShowData();
         }
 
@@ -103,11 +98,7 @@ namespace VrdoPdg.View
             RegimeSnapshot regime = _isAfter && _result != null
                 ? _result.After
                 : _session.InitialRegime;
-            HourlyTableModel model = HourlyTableModel.CreatePreview(
-                _session,
-                new HourlyValueSource(regime, _session.Schedule),
-                _tables);
-            _tableView.Display(model, null);
+            _tableView.Display(HourlyTableModel.CreatePreview(_layout, _session, regime), null);
 
             _beforeButton.Checked = !_isAfter;
             _afterButton.Checked = _isAfter;

@@ -5,6 +5,7 @@ using System.Windows.Forms;
 
 using VrdoPdg.Model.Services;
 using VrdoPdg.View.Controls;
+using VrdoPdg.View.Layout;
 using VrdoPdg.View.Theme;
 
 namespace VrdoPdg.View
@@ -20,7 +21,8 @@ namespace VrdoPdg.View
         /// </summary>
         /// <param name="first">Расчет с меньшим номером.</param>
         /// <param name="second">Второй расчет.</param>
-        public ComparisonForm(CalculationResult first, CalculationResult second)
+        /// <param name="layout">Схема таблиц по часам.</param>
+        public ComparisonForm(CalculationResult first, CalculationResult second, HourlyLayout layout)
         {
             InitializeComponent();
             if (first == null)
@@ -38,7 +40,7 @@ namespace VrdoPdg.View
                 + first.StartedAt.ToString("dd.MM HH:mm") + ") и расчёт №" + second.Number + " ("
                 + second.StartedAt.ToString("dd.MM HH:mm") + ")";
             _tableView.Display(
-                HourlyTableModel.CreateComparison(first, second),
+                HourlyTableModel.CreateComparison(layout, first, second),
                 new[] { "расчёт №" + first.Number, "расчёт №" + second.Number });
         }
 

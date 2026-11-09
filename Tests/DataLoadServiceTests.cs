@@ -8,6 +8,7 @@ using VrdoPdg.Infrastructure;
 using VrdoPdg.Model;
 using VrdoPdg.Model.Entities;
 using VrdoPdg.Model.Protocol;
+using VrdoPdg.Model.Regime;
 using VrdoPdg.Model.Services;
 using VrdoPdg.Tests.Fakes;
 
@@ -63,6 +64,14 @@ namespace VrdoPdg.Tests
             Assert.That(session.IsFixed(RegulationScenario.ReactorId, 7), Is.True);
             Assert.That(session.Schedule.GetBounds(RegulationScenario.ControlPointId, 24)!.UpperBound, Is.EqualTo(525));
             Assert.That(session.InitialRegime.GetVoltage(RegulationScenario.MainNode, 12), Is.EqualTo(515));
+            ObservedNodeState mainNode = session.InitialRegime.GetObservedNode(RegulationScenario.MainNode, 12)!;
+            Assert.That(mainNode.IsOn, Is.True);
+            Assert.That(mainNode.Voltage, Is.EqualTo(515));
+            Assert.That(
+                session.InitialRegime.GetObservedNode(RegulationScenario.ControlledNode, 1)!.MinReactivePower,
+                Is.EqualTo(-100));
+            Assert.That(session.InitialRegime.GetObservedNode(RegulationScenario.MissingNode, 1), Is.Null);
+            Assert.That(session.InitialRegime.GetObservedReactor(RegulationScenario.ReactorNumber, 1)!.IsOn, Is.False);
             Assert.That(
                 session.GetGeneratorNode(RegulationScenario.GeneratorId),
                 Is.EqualTo(RegulationScenario.GeneratorNode));
@@ -129,7 +138,8 @@ namespace VrdoPdg.Tests
                 new UnavailableCkModel(),
                 new SmpSmzuCsvReader(),
                 scenario.Archive,
-                scenario.Protocol);
+                scenario.Protocol,
+                RegulationScenario.Observed);
 
             SessionData session = service.Load(megapointPath, smpSmzuPath);
 
@@ -151,7 +161,8 @@ namespace VrdoPdg.Tests
                 new CkModel(),
                 new SmpSmzuCsvReader(),
                 scenario.Archive,
-                scenario.Protocol);
+                scenario.Protocol,
+                RegulationScenario.Observed);
         }
 
         /// <summary>

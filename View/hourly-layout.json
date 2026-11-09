@@ -1,0 +1,2025 @@
+{
+  "lowerVoltageBound": 500,
+  "upperVoltageBound": 525,
+  "powerSystems": [
+    {
+      "name": "ОЭС Сибири",
+      "blocks": [
+        {
+          "controlPoints": [
+            {
+              "name": "Таврич.",
+              "groups": [
+                {
+                  "caption": "U сш",
+                  "columns": [
+                    { "kind": "BusVoltage", "number": 783 },
+                    { "kind": "BusVoltage", "number": 6274 }
+                  ]
+                },
+                {
+                  "caption": "СКРМ",
+                  "columns": [
+                    { "kind": "SetVoltage", "number": 6279 },
+                    { "kind": "ReactivePower", "number": 6279 },
+                    { "kind": "Reactor", "number": 1 }
+                  ]
+                }
+              ]
+            },
+            {
+              "name": "Иртышская",
+              "groups": [
+                {
+                  "caption": "U сш",
+                  "columns": [
+                    { "kind": "BusVoltage", "number": 6280 },
+                    { "kind": "BusVoltage", "number": 6281 }
+                  ]
+                },
+                {
+                  "caption": "СКРМ",
+                  "columns": [
+                    { "kind": "Reactor", "number": 2 }
+                  ]
+                }
+              ]
+            },
+            {
+              "name": "Восход",
+              "groups": [
+                {
+                  "caption": "U сш",
+                  "columns": [
+                    { "kind": "BusVoltage", "number": 738 },
+                    { "kind": "BusVoltage", "number": 739 }
+                  ]
+                },
+                {
+                  "caption": "СКРМ",
+                  "columns": [
+                    { "kind": "SetVoltage", "number": 735 },
+                    { "kind": "ReactivePower", "number": 735 },
+                    { "kind": "Reactor", "number": 3 },
+                    { "kind": "Reactor", "number": 4 }
+                  ]
+                }
+              ]
+            },
+            {
+              "name": "Барабинская",
+              "groups": [
+                {
+                  "caption": "U сш",
+                  "columns": [
+                    { "kind": "BusVoltage", "number": 6272 },
+                    { "kind": "BusVoltage", "number": 6271 }
+                  ]
+                },
+                {
+                  "caption": "СКРМ",
+                  "columns": [
+                    { "kind": "SetVoltage", "number": 6273 },
+                    { "kind": "ReactivePower", "number": 6273 },
+                    { "kind": "Reactor", "number": 5 }
+                  ]
+                }
+              ]
+            },
+            {
+              "name": "Заря",
+              "groups": [
+                {
+                  "caption": "U сш",
+                  "columns": [
+                    { "kind": "BusVoltage", "number": 6210 },
+                    { "kind": "BusVoltage", "number": 6211 }
+                  ]
+                },
+                {
+                  "caption": "СКРМ",
+                  "columns": [
+                    { "kind": "SetVoltage", "number": 633 },
+                    { "kind": "ReactivePower", "number": 633 },
+                    { "kind": "Reactor", "number": 6 }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "controlPoints": [
+            {
+              "name": "Рубцовская",
+              "groups": [
+                {
+                  "caption": "U сш",
+                  "columns": [
+                    { "kind": "BusVoltage", "number": 6267 },
+                    { "kind": "BusVoltage", "number": 6268 }
+                  ]
+                },
+                {
+                  "caption": "СКРМ",
+                  "columns": [
+                    { "kind": "Reactor", "number": 7 },
+                    { "kind": "Reactor", "number": 8 }
+                  ]
+                }
+              ]
+            },
+            {
+              "name": "Барнаульская",
+              "groups": [
+                {
+                  "caption": "U сш",
+                  "columns": [
+                    { "kind": "BusVoltage", "number": 563 },
+                    { "kind": "BusVoltage", "number": 564 }
+                  ]
+                },
+                {
+                  "caption": "СКРМ",
+                  "columns": [
+                    { "kind": "Reactor", "number": 10 },
+                    { "kind": "Reactor", "number": 11 },
+                    { "kind": "Reactor", "number": 9 }
+                  ]
+                }
+              ]
+            },
+            {
+              "name": "Алтай",
+              "groups": [
+                {
+                  "caption": "U сш",
+                  "columns": [
+                    { "kind": "BusVoltage", "number": 559 },
+                    { "kind": "BusVoltage", "number": 558 }
+                  ]
+                },
+                {
+                  "caption": "СКРМ",
+                  "columns": [
+                    { "kind": "Reactor", "number": 12 },
+                    { "kind": "Reactor", "number": 13 },
+                    { "kind": "Reactor", "number": 14 },
+                    { "kind": "Reactor", "number": 15 }
+                  ]
+                }
+              ]
+            },
+            {
+              "name": "Ново-Анжерская",
+              "groups": [
+                {
+                  "caption": "U сш",
+                  "columns": [
+                    { "kind": "BusVoltage", "number": 210 },
+                    { "kind": "BusVoltage", "number": 2200 }
+                  ]
+                },
+                {
+                  "caption": "СКРМ",
+                  "columns": [
+                    { "kind": "Reactor", "number": 16 },
+                    { "kind": "Reactor", "number": 17 }
+                  ]
+                }
+              ]
+            },
+            {
+              "name": "Томская",
+              "groups": [
+                {
+                  "caption": "U сш",
+                  "columns": [
+                    { "kind": "BusVoltage", "number": 469 },
+                    { "kind": "BusVoltage", "number": 6315 }
+                  ]
+                },
+                {
+                  "caption": "СКРМ",
+                  "columns": [
+                    { "kind": "SetVoltage", "number": 6318 },
+                    { "kind": "ReactivePower", "number": 6318 },
+                    { "kind": "Reactor", "number": 18 }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "controlPoints": [
+            {
+              "name": "Белоская ГРЭС",
+              "groups": [
+                {
+                  "caption": "U сш",
+                  "columns": [
+                    { "kind": "BusVoltage", "number": 6312 },
+                    { "kind": "BusVoltage", "number": 294 }
+                  ]
+                }
+              ]
+            },
+            {
+              "name": "Кузбасская",
+              "groups": [
+                {
+                  "caption": "U сш",
+                  "columns": [
+                    { "kind": "BusVoltage", "number": 6314 },
+                    { "kind": "BusVoltage", "number": 382 }
+                  ]
+                }
+              ]
+            },
+            {
+              "name": "Новокузнецкая",
+              "groups": [
+                {
+                  "caption": "U сш",
+                  "columns": [
+                    { "kind": "BusVoltage", "number": 6233 },
+                    { "kind": "BusVoltage", "number": 6234 }
+                  ]
+                },
+                {
+                  "caption": "СКРМ",
+                  "columns": [
+                    { "kind": "Reactor", "number": 19 },
+                    { "kind": "Reactor", "number": 20 }
+                  ]
+                }
+              ]
+            },
+            {
+              "name": "СШГЭС",
+              "groups": [
+                {
+                  "caption": "U сш",
+                  "columns": [
+                    { "kind": "BusVoltage", "number": 1068 },
+                    { "kind": "BusVoltage", "number": 6283 },
+                    { "kind": "BusVoltage", "number": 6284 },
+                    { "kind": "BusVoltage", "number": 6285 }
+                  ]
+                },
+                {
+                  "caption": "СКРМ",
+                  "columns": [
+                    { "kind": "Reactor", "number": 21 },
+                    { "kind": "Reactor", "number": 22 }
+                  ]
+                },
+                {
+                  "caption": "U ген",
+                  "columns": [
+                    { "kind": "GeneratorVoltage", "number": 6297 },
+                    { "kind": "GeneratorVoltage", "number": 6298 },
+                    { "kind": "GeneratorVoltage", "number": 6300 },
+                    { "kind": "GeneratorVoltage", "number": 6301 },
+                    { "kind": "GeneratorVoltage", "number": 6303 },
+                    { "kind": "GeneratorVoltage", "number": 6304 },
+                    { "kind": "GeneratorVoltage", "number": 6306 },
+                    { "kind": "GeneratorVoltage", "number": 6307 },
+                    { "kind": "GeneratorVoltage", "number": 6309 },
+                    { "kind": "GeneratorVoltage", "number": 6310 }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "controlPoints": [
+            {
+              "name": "Итатская",
+              "groups": [
+                {
+                  "caption": "U сш",
+                  "columns": [
+                    { "kind": "BusVoltage", "number": 6117 },
+                    { "kind": "BusVoltage", "number": 6118 },
+                    { "kind": "BusVoltage", "number": 6115 },
+                    { "kind": "BusVoltage", "number": 6116 }
+                  ]
+                },
+                {
+                  "caption": "СКРМ",
+                  "columns": [
+                    { "kind": "Reactor", "number": 26 },
+                    { "kind": "Reactor", "number": 27 },
+                    { "kind": "Reactor", "number": 25 },
+                    { "kind": "Reactor", "number": 24 },
+                    { "kind": "Reactor", "number": 23 }
+                  ]
+                }
+              ]
+            },
+            {
+              "name": "Абаканская",
+              "groups": [
+                {
+                  "caption": "U сш",
+                  "columns": [
+                    { "kind": "BusVoltage", "number": 6141 },
+                    { "kind": "BusVoltage", "number": 6140 }
+                  ]
+                },
+                {
+                  "caption": "СКРМ",
+                  "columns": [
+                    { "kind": "Reactor", "number": 28 }
+                  ]
+                }
+              ]
+            },
+            {
+              "name": "Означенное",
+              "groups": [
+                {
+                  "caption": "U сш",
+                  "columns": [
+                    { "kind": "BusVoltage", "number": 6323 },
+                    { "kind": "BusVoltage", "number": 6319 }
+                  ]
+                },
+                {
+                  "caption": "СКРМ",
+                  "columns": [
+                    { "kind": "Reactor", "number": 161 },
+                    { "kind": "Reactor", "number": 162 },
+                    { "kind": "Reactor", "number": 163 },
+                    { "kind": "Reactor", "number": 164 }
+                  ]
+                }
+              ]
+            },
+            {
+              "name": "Алюминиевая",
+              "groups": [
+                {
+                  "caption": "U сш",
+                  "columns": [
+                    { "kind": "BusVoltage", "number": 6328 },
+                    { "kind": "BusVoltage", "number": 6324 }
+                  ]
+                },
+                {
+                  "caption": "СКРМ",
+                  "columns": [
+                    { "kind": "Reactor", "number": 159 },
+                    { "kind": "Reactor", "number": 160 }
+                  ]
+                }
+              ]
+            },
+            {
+              "name": "Назаровская ГРЭС",
+              "groups": [
+                {
+                  "caption": "U сш",
+                  "columns": [
+                    { "kind": "BusVoltage", "number": 40 },
+                    { "kind": "BusVoltage", "number": 41 }
+                  ]
+                },
+                {
+                  "caption": "U ген",
+                  "columns": [
+                    { "kind": "GeneratorVoltage", "number": 3 }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "controlPoints": [
+            {
+              "name": "Красноярская ГЭС",
+              "groups": [
+                {
+                  "caption": "U сш",
+                  "columns": [
+                    { "kind": "BusVoltage", "number": 6163 },
+                    { "kind": "BusVoltage", "number": 6164 }
+                  ]
+                },
+                {
+                  "caption": "U ген",
+                  "columns": [
+                    { "kind": "GeneratorVoltage", "number": 24 },
+                    { "kind": "GeneratorVoltage", "number": 6178 },
+                    { "kind": "GeneratorVoltage", "number": 6177 },
+                    { "kind": "GeneratorVoltage", "number": 6176 }
+                  ]
+                },
+                {
+                  "caption": "U сш",
+                  "columns": [
+                    { "kind": "BusVoltage", "number": 25 },
+                    { "kind": "BusVoltage", "number": 6162 }
+                  ]
+                },
+                {
+                  "caption": "U ген",
+                  "columns": [
+                    { "kind": "GeneratorVoltage", "number": 6173 },
+                    { "kind": "GeneratorVoltage", "number": 6174 }
+                  ]
+                }
+              ]
+            },
+            {
+              "name": "Енисей",
+              "groups": [
+                {
+                  "caption": "U сш",
+                  "columns": [
+                    { "kind": "BusVoltage", "number": 2020 },
+                    { "kind": "BusVoltage", "number": 6157 }
+                  ]
+                }
+              ]
+            },
+            {
+              "name": "Красноярская",
+              "groups": [
+                {
+                  "caption": "U сш",
+                  "columns": [
+                    { "kind": "BusVoltage", "number": 23 }
+                  ]
+                }
+              ]
+            },
+            {
+              "name": "Камала-1",
+              "groups": [
+                {
+                  "caption": "U сш",
+                  "columns": [
+                    { "kind": "BusVoltage", "number": 14 },
+                    { "kind": "BusVoltage", "number": 6148 },
+                    { "kind": "BusVoltage", "number": 6151 },
+                    { "kind": "BusVoltage", "number": 6152 }
+                  ]
+                },
+                {
+                  "caption": "СКРМ",
+                  "columns": [
+                    { "kind": "SetVoltage", "number": 6155 },
+                    { "kind": "ReactivePower", "number": 6155 }
+                  ]
+                }
+              ]
+            },
+            {
+              "name": "Тайшет",
+              "groups": [
+                {
+                  "caption": "U сш",
+                  "columns": [
+                    { "kind": "BusVoltage", "number": 6221 },
+                    { "kind": "BusVoltage", "number": 6220 },
+                    { "kind": "BusVoltage", "number": 6223 },
+                    { "kind": "BusVoltage", "number": 6222 }
+                  ]
+                },
+                {
+                  "caption": "СКРМ",
+                  "columns": [
+                    { "kind": "SetVoltage", "number": 6227 },
+                    { "kind": "ReactivePower", "number": 6227 },
+                    { "kind": "Reactor", "number": 29 }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "controlPoints": [
+            {
+              "name": "Ангара",
+              "groups": [
+                {
+                  "caption": "U сш",
+                  "columns": [
+                    { "kind": "BusVoltage", "number": 2003 },
+                    { "kind": "BusVoltage", "number": 8000 }
+                  ]
+                },
+                {
+                  "caption": "СКРМ",
+                  "columns": [
+                    { "kind": "SetVoltage", "number": 8003 },
+                    { "kind": "ReactivePower", "number": 8003 }
+                  ]
+                }
+              ]
+            },
+            {
+              "name": "Богучанская ГЭС",
+              "groups": [
+                {
+                  "caption": "U сш",
+                  "columns": [
+                    { "kind": "BusVoltage", "number": 2001 }
+                  ]
+                },
+                {
+                  "caption": "СКРМ",
+                  "columns": [
+                    { "kind": "Reactor", "number": 30 },
+                    { "kind": "Reactor", "number": 31 },
+                    { "kind": "Reactor", "number": 32 }
+                  ]
+                }
+              ]
+            },
+            {
+              "name": "Озерная",
+              "groups": [
+                {
+                  "caption": "U сш",
+                  "columns": [
+                    { "kind": "BusVoltage", "number": 802 },
+                    { "kind": "BusVoltage", "number": 2802 }
+                  ]
+                },
+                {
+                  "caption": "СКРМ",
+                  "columns": [
+                    { "kind": "SetVoltage", "number": 2810 },
+                    { "kind": "ReactivePower", "number": 2810 },
+                    { "kind": "SetVoltage", "number": 2807 },
+                    { "kind": "ReactivePower", "number": 2807 }
+                  ]
+                }
+              ]
+            },
+            {
+              "name": "БПП",
+              "groups": [
+                {
+                  "caption": "U сш",
+                  "columns": [
+                    { "kind": "BusVoltage", "number": 801 },
+                    { "kind": "BusVoltage", "number": 2800 },
+                    { "kind": "BusVoltage", "number": 6140 }
+                  ]
+                },
+                {
+                  "caption": "СКРМ",
+                  "columns": [
+                    { "kind": "Reactor", "number": 34 },
+                    { "kind": "Reactor", "number": 33 }
+                  ]
+                }
+              ]
+            },
+            {
+              "name": "Братская ГЭС",
+              "groups": [
+                {
+                  "caption": "U сш",
+                  "columns": [
+                    { "kind": "BusVoltage", "number": 6187 },
+                    { "kind": "BusVoltage", "number": 805 }
+                  ]
+                },
+                {
+                  "caption": "U ген",
+                  "columns": [
+                    { "kind": "GeneratorVoltage", "number": 825 },
+                    { "kind": "GeneratorVoltage", "number": 6180 },
+                    { "kind": "GeneratorVoltage", "number": 6181 },
+                    { "kind": "GeneratorVoltage", "number": 6182 },
+                    { "kind": "GeneratorVoltage", "number": 6183 },
+                    { "kind": "GeneratorVoltage", "number": 6184 },
+                    { "kind": "GeneratorVoltage", "number": 6185 },
+                    { "kind": "GeneratorVoltage", "number": 6186 }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "controlPoints": [
+            {
+              "name": "Усть-Илимская ГЭС",
+              "groups": [
+                {
+                  "caption": "U сш",
+                  "columns": [
+                    { "kind": "BusVoltage", "number": 6001 },
+                    { "kind": "BusVoltage", "number": 6000 },
+                    { "kind": "BusVoltage", "number": 6004 },
+                    { "kind": "BusVoltage", "number": 6003 }
+                  ]
+                },
+                {
+                  "caption": "СКРМ",
+                  "columns": [
+                    { "kind": "Reactor", "number": 35 },
+                    { "kind": "Reactor", "number": 279 }
+                  ]
+                }
+              ]
+            },
+            {
+              "name": "Усть_Кут",
+              "groups": [
+                {
+                  "caption": "U сш",
+                  "columns": [
+                    { "kind": "BusVoltage", "number": 6100 },
+                    { "kind": "BusVoltage", "number": 6099 }
+                  ]
+                },
+                {
+                  "caption": "СКРМ",
+                  "columns": [
+                    { "kind": "SetVoltage", "number": 6103 },
+                    { "kind": "ReactivePower", "number": 6103 },
+                    { "kind": "Reactor", "number": 36 },
+                    { "kind": "Reactor", "number": 272 },
+                    { "kind": "Reactor", "number": 285 },
+                    { "kind": "Reactor", "number": 278 }
+                  ]
+                }
+              ]
+            },
+            {
+              "name": "Тулун",
+              "groups": [
+                {
+                  "caption": "U сш",
+                  "columns": [
+                    { "kind": "BusVoltage", "number": 2172 },
+                    { "kind": "BusVoltage", "number": 135 }
+                  ]
+                },
+                {
+                  "caption": "СКРМ",
+                  "columns": [
+                    { "kind": "Reactor", "number": 38 },
+                    { "kind": "Reactor", "number": 37 }
+                  ]
+                }
+              ]
+            },
+            {
+              "name": "Ново-Зиминская",
+              "groups": [
+                {
+                  "caption": "U сш",
+                  "columns": [
+                    { "kind": "BusVoltage", "number": 6329 },
+                    { "kind": "BusVoltage", "number": 6330 }
+                  ]
+                }
+              ]
+            },
+            {
+              "name": "УПК Тыреть",
+              "groups": [
+                {
+                  "caption": "U сш",
+                  "columns": [
+                    { "kind": "BusVoltage", "number": 136 },
+                    { "kind": "BusVoltage", "number": 6022 },
+                    { "kind": "BusVoltage", "number": 6023 },
+                    { "kind": "BusVoltage", "number": 134 }
+                  ]
+                }
+              ]
+            },
+            {
+              "name": "Ключи",
+              "groups": [
+                {
+                  "caption": "U сш",
+                  "columns": [
+                    { "kind": "BusVoltage", "number": 110 }
+                  ]
+                },
+                {
+                  "caption": "СКРМ",
+                  "columns": [
+                    { "kind": "Reactor", "number": 39 }
+                  ]
+                }
+              ]
+            },
+            {
+              "name": "Иркутская",
+              "groups": [
+                {
+                  "caption": "U сш",
+                  "columns": [
+                    { "kind": "BusVoltage", "number": 133 }
+                  ]
+                }
+              ]
+            },
+            {
+              "name": "Нижнеангарская",
+              "groups": [
+                {
+                  "caption": "U сш",
+                  "columns": [
+                    { "kind": "BusVoltage", "number": 947 },
+                    { "kind": "BusVoltage", "number": 983 }
+                  ]
+                },
+                {
+                  "caption": "СКРМ",
+                  "columns": [
+                    { "kind": "Reactor", "number": 273 },
+                    { "kind": "Reactor", "number": 274 },
+                    { "kind": "Reactor", "number": 275 }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "ЕЭС Казахстана",
+      "blocks": [
+        {
+          "controlPoints": [
+            {
+              "name": "ЕЭК",
+              "groups": [
+                {
+                  "caption": "U сш",
+                  "columns": [
+                    { "kind": "BusVoltage", "number": 3060 },
+                    { "kind": "BusVoltage", "number": 3031 }
+                  ]
+                },
+                {
+                  "caption": "U ген",
+                  "columns": [
+                    { "kind": "GeneratorVoltage", "number": 3030 },
+                    { "kind": "GeneratorVoltage", "number": 3073 },
+                    { "kind": "GeneratorVoltage", "number": 3074 },
+                    { "kind": "GeneratorVoltage", "number": 3075 }
+                  ]
+                },
+                {
+                  "caption": "СКРМ",
+                  "columns": [
+                    { "kind": "SetVoltage", "number": 3063 },
+                    { "kind": "ReactivePower", "number": 3063 },
+                    { "kind": "Reactor", "number": 40 }
+                  ]
+                }
+              ]
+            },
+            {
+              "name": "Усть-Кам",
+              "groups": [
+                {
+                  "caption": "U сш",
+                  "columns": [
+                    { "kind": "BusVoltage", "number": 1240 }
+                  ]
+                }
+              ]
+            },
+            {
+              "name": "Семей",
+              "groups": [
+                {
+                  "caption": "U сш",
+                  "columns": [
+                    { "kind": "BusVoltage", "number": 3058 }
+                  ]
+                },
+                {
+                  "caption": "СКРМ",
+                  "columns": [
+                    { "kind": "SetVoltage", "number": 3087 },
+                    { "kind": "ReactivePower", "number": 3087 },
+                    { "kind": "Reactor", "number": 42 },
+                    { "kind": "Reactor", "number": 41 }
+                  ]
+                }
+              ]
+            },
+            {
+              "name": "Актогай",
+              "groups": [
+                {
+                  "caption": "U сш",
+                  "columns": [
+                    { "kind": "BusVoltage", "number": 3340 }
+                  ]
+                },
+                {
+                  "caption": "СКРМ",
+                  "columns": [
+                    { "kind": "SetVoltage", "number": 3340 },
+                    { "kind": "ReactivePower", "number": 3340 },
+                    { "kind": "Reactor", "number": 43 }
+                  ]
+                }
+              ]
+            },
+            {
+              "name": "Талдыкорган",
+              "groups": [
+                {
+                  "caption": "U сш",
+                  "columns": [
+                    { "kind": "BusVoltage", "number": 3341 },
+                    { "kind": "SetVoltage", "number": 3341 }
+                  ]
+                },
+                {
+                  "caption": "СКРМ",
+                  "columns": [
+                    { "kind": "Reactor", "number": 67 }
+                  ]
+                }
+              ]
+            },
+            {
+              "name": "Алма",
+              "groups": [
+                {
+                  "caption": "U сш",
+                  "columns": [
+                    { "kind": "BusVoltage", "number": 3342 },
+                    { "kind": "SetVoltage", "number": 3342 }
+                  ]
+                },
+                {
+                  "caption": "СКРМ",
+                  "columns": [
+                    { "kind": "Reactor", "number": 69 }
+                  ]
+                }
+              ]
+            },
+            {
+              "name": "Алматы",
+              "groups": [
+                {
+                  "caption": "U сш",
+                  "columns": [
+                    { "kind": "BusVoltage", "number": 3343 },
+                    { "kind": "SetVoltage", "number": 3343 }
+                  ]
+                },
+                {
+                  "caption": "СКРМ",
+                  "columns": [
+                    { "kind": "Reactor", "number": 68 }
+                  ]
+                }
+              ]
+            },
+            {
+              "name": "Шу",
+              "groups": [
+                {
+                  "caption": "U сш",
+                  "columns": [
+                    { "kind": "BusVoltage", "number": 3344 }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "controlPoints": [
+            {
+              "name": "Экибастузская ГРЭС-1",
+              "groups": [
+                {
+                  "caption": "U сш",
+                  "columns": [
+                    { "kind": "BusVoltage", "number": 3101 },
+                    { "kind": "BusVoltage", "number": 3102 }
+                  ]
+                },
+                {
+                  "caption": "U ген",
+                  "columns": [
+                    { "kind": "GeneratorVoltage", "number": 3051 },
+                    { "kind": "GeneratorVoltage", "number": 3117 }
+                  ]
+                },
+                {
+                  "caption": "СКРМ",
+                  "columns": [
+                    { "kind": "Reactor", "number": 44 }
+                  ]
+                },
+                {
+                  "caption": "U сш",
+                  "columns": [
+                    { "kind": "BusVoltage", "number": 3103 },
+                    { "kind": "BusVoltage", "number": 3104 }
+                  ]
+                },
+                {
+                  "caption": "U ген",
+                  "columns": [
+                    { "kind": "GeneratorVoltage", "number": 3118 },
+                    { "kind": "GeneratorVoltage", "number": 3119 },
+                    { "kind": "GeneratorVoltage", "number": 3120 },
+                    { "kind": "GeneratorVoltage", "number": 3121 }
+                  ]
+                },
+                {
+                  "caption": "СКРМ",
+                  "columns": [
+                    { "kind": "Reactor", "number": 45 },
+                    { "kind": "Reactor", "number": 46 }
+                  ]
+                }
+              ]
+            },
+            {
+              "name": "Агадырь",
+              "groups": [
+                {
+                  "caption": "U сш",
+                  "columns": [
+                    { "kind": "BusVoltage", "number": 3330 },
+                    { "kind": "SetVoltage", "number": 3330 }
+                  ]
+                },
+                {
+                  "caption": "СКРМ",
+                  "columns": [
+                    { "kind": "Reactor", "number": 61 },
+                    { "kind": "Reactor", "number": 62 },
+                    { "kind": "Reactor", "number": 64 }
+                  ]
+                }
+              ]
+            },
+            {
+              "name": "Нура",
+              "groups": [
+                {
+                  "caption": "U сш",
+                  "columns": [
+                    { "kind": "BusVoltage", "number": 3325 },
+                    { "kind": "BusVoltage", "number": 3310 },
+                    { "kind": "SetVoltage", "number": 3310 }
+                  ]
+                },
+                {
+                  "caption": "СКРМ",
+                  "columns": [
+                    { "kind": "Reactor", "number": 66 }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "controlPoints": [
+            {
+              "name": "Экибастузская",
+              "groups": [
+                {
+                  "caption": "U сш",
+                  "columns": [
+                    { "kind": "BusVoltage", "number": 3076 },
+                    { "kind": "BusVoltage", "number": 3077 }
+                  ]
+                },
+                {
+                  "caption": "СКРМ",
+                  "columns": [
+                    { "kind": "Reactor", "number": 52 },
+                    { "kind": "Reactor", "number": 51 },
+                    { "kind": "Reactor", "number": 50 },
+                    { "kind": "Reactor", "number": 49 },
+                    { "kind": "Reactor", "number": 48 },
+                    { "kind": "Reactor", "number": 47 }
+                  ]
+                }
+              ]
+            },
+            {
+              "name": "Кокшетауская",
+              "groups": [
+                {
+                  "caption": "U сш",
+                  "columns": [
+                    { "kind": "BusVoltage", "number": 3175 }
+                  ]
+                },
+                {
+                  "caption": "СКРМ",
+                  "columns": [
+                    { "kind": "Reactor", "number": 56 },
+                    { "kind": "Reactor", "number": 55 },
+                    { "kind": "Reactor", "number": 57 },
+                    { "kind": "Reactor", "number": 58 },
+                    { "kind": "Reactor", "number": 54 },
+                    { "kind": "Reactor", "number": 53 }
+                  ]
+                }
+              ]
+            },
+            {
+              "name": "Аврора",
+              "groups": [
+                {
+                  "caption": "U сш",
+                  "columns": [
+                    { "kind": "BusVoltage", "number": 3147 }
+                  ]
+                },
+                {
+                  "caption": "СКРМ",
+                  "columns": [
+                    { "kind": "Reactor", "number": 59 },
+                    { "kind": "Reactor", "number": 60 }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "controlPoints": [
+            {
+              "name": "ЦГПП",
+              "groups": [
+                {
+                  "caption": "U сш",
+                  "columns": [
+                    { "kind": "BusVoltage", "number": 3129 }
+                  ]
+                },
+                {
+                  "caption": "СКРМ",
+                  "columns": [
+                    { "kind": "Reactor", "number": 71 },
+                    { "kind": "Reactor", "number": 70 }
+                  ]
+                }
+              ]
+            },
+            {
+              "name": "Есиль",
+              "groups": [
+                {
+                  "caption": "U сш",
+                  "columns": [
+                    { "kind": "BusVoltage", "number": 3580 }
+                  ]
+                },
+                {
+                  "caption": "СКРМ",
+                  "columns": [
+                    { "kind": "Reactor", "number": 72 },
+                    { "kind": "Reactor", "number": 73 },
+                    { "kind": "Reactor", "number": 74 }
+                  ]
+                }
+              ]
+            },
+            {
+              "name": "Сокол",
+              "groups": [
+                {
+                  "caption": "U сш",
+                  "columns": [
+                    { "kind": "BusVoltage", "number": 3576 },
+                    { "kind": "BusVoltage", "number": 3579 }
+                  ]
+                },
+                {
+                  "caption": "СКРМ",
+                  "columns": [
+                    { "kind": "Reactor", "number": 75 },
+                    { "kind": "Reactor", "number": 76 }
+                  ]
+                }
+              ]
+            },
+            {
+              "name": "Житикара",
+              "groups": [
+                {
+                  "caption": "U сш",
+                  "columns": [
+                    { "kind": "BusVoltage", "number": 3560 }
+                  ]
+                }
+              ]
+            },
+            {
+              "name": "Ульке",
+              "groups": [
+                {
+                  "caption": "U сш",
+                  "columns": [
+                    { "kind": "BusVoltage", "number": 3559 }
+                  ]
+                },
+                {
+                  "caption": "СКРМ",
+                  "columns": [
+                    { "kind": "Reactor", "number": 270 }
+                  ]
+                }
+              ]
+            },
+            {
+              "name": "Костанай",
+              "groups": [
+                {
+                  "caption": "U сш",
+                  "columns": [
+                    { "kind": "BusVoltage", "number": 3590 }
+                  ]
+                },
+                {
+                  "caption": "СКРМ",
+                  "columns": [
+                    { "kind": "Reactor", "number": 79 }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Внешние ЭС",
+      "blocks": [
+        {
+          "controlPoints": [
+            {
+              "name": "Курган",
+              "groups": [
+                {
+                  "caption": "U сш",
+                  "columns": [
+                    { "kind": "BusVoltage", "number": 4001 }
+                  ]
+                },
+                {
+                  "caption": "СКРМ",
+                  "columns": [
+                    { "kind": "Reactor", "number": 80 },
+                    { "kind": "Reactor", "number": 81 }
+                  ]
+                }
+              ]
+            },
+            {
+              "name": "Витязь",
+              "groups": [
+                {
+                  "caption": "U сш",
+                  "columns": [
+                    { "kind": "BusVoltage", "number": 4002 }
+                  ]
+                },
+                {
+                  "caption": "СКРМ",
+                  "columns": [
+                    { "kind": "Reactor", "number": 82 },
+                    { "kind": "Reactor", "number": 83 }
+                  ]
+                }
+              ]
+            },
+            {
+              "name": "Беркут",
+              "groups": [
+                {
+                  "caption": "U сш",
+                  "columns": [
+                    { "kind": "BusVoltage", "number": 4010 }
+                  ]
+                }
+              ]
+            },
+            {
+              "name": "Тюмень",
+              "groups": [
+                {
+                  "caption": "U сш",
+                  "columns": [
+                    { "kind": "BusVoltage", "number": 4011 }
+                  ]
+                },
+                {
+                  "caption": "СКРМ",
+                  "columns": [
+                    { "kind": "Reactor", "number": 85 },
+                    { "kind": "Reactor", "number": 86 },
+                    { "kind": "Reactor", "number": 87 }
+                  ]
+                }
+              ]
+            },
+            {
+              "name": "Тобол",
+              "groups": [
+                {
+                  "caption": "U сш",
+                  "columns": [
+                    { "kind": "BusVoltage", "number": 4012 },
+                    { "kind": "BusVoltage", "number": 4013 }
+                  ]
+                },
+                {
+                  "caption": "СКРМ",
+                  "columns": [
+                    { "kind": "Reactor", "number": 88 },
+                    { "kind": "Reactor", "number": 89 }
+                  ]
+                }
+              ]
+            },
+            {
+              "name": "Рефтинская ГРЭС",
+              "groups": [
+                {
+                  "caption": "U сш",
+                  "columns": [
+                    { "kind": "BusVoltage", "number": 4020 }
+                  ]
+                },
+                {
+                  "caption": "СКРМ",
+                  "columns": [
+                    { "kind": "Reactor", "number": 90 }
+                  ]
+                }
+              ]
+            },
+            {
+              "name": "Исеть",
+              "groups": [
+                {
+                  "caption": "U сш",
+                  "columns": [
+                    { "kind": "BusVoltage", "number": 4022 },
+                    { "kind": "SetVoltage", "number": 4022 }
+                  ]
+                },
+                {
+                  "caption": "СКРМ",
+                  "columns": [
+                    { "kind": "Reactor", "number": 91 }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "controlPoints": [
+            {
+              "name": "Козырево",
+              "groups": [
+                {
+                  "caption": "U сш",
+                  "columns": [
+                    { "kind": "BusVoltage", "number": 4030 }
+                  ]
+                },
+                {
+                  "caption": "СКРМ",
+                  "columns": [
+                    { "kind": "Reactor", "number": 92 }
+                  ]
+                }
+              ]
+            },
+            {
+              "name": "Шагол",
+              "groups": [
+                {
+                  "caption": "U сш",
+                  "columns": [
+                    { "kind": "BusVoltage", "number": 4031 }
+                  ]
+                }
+              ]
+            },
+            {
+              "name": "Челябинская",
+              "groups": [
+                {
+                  "caption": "U сш",
+                  "columns": [
+                    { "kind": "BusVoltage", "number": 4032 },
+                    { "kind": "SetVoltage", "number": 4032 }
+                  ]
+                },
+                {
+                  "caption": "СКРМ",
+                  "columns": [
+                    { "kind": "Reactor", "number": 93 }
+                  ]
+                }
+              ]
+            },
+            {
+              "name": "Троицкая ГРЭС",
+              "groups": [
+                {
+                  "caption": "U сш",
+                  "columns": [
+                    { "kind": "BusVoltage", "number": 4033 }
+                  ]
+                }
+              ]
+            },
+            {
+              "name": "Магнитогорская",
+              "groups": [
+                {
+                  "caption": "U сш",
+                  "columns": [
+                    { "kind": "BusVoltage", "number": 4035 }
+                  ]
+                }
+              ]
+            },
+            {
+              "name": "Южноуральской ГРЭС-2",
+              "groups": [
+                {
+                  "caption": "U сш",
+                  "columns": [
+                    { "kind": "BusVoltage", "number": 4038 },
+                    { "kind": "BusVoltage", "number": 4250 },
+                    { "kind": "SetVoltage", "number": 4250 }
+                  ]
+                },
+                {
+                  "caption": "СКРМ",
+                  "columns": [
+                    { "kind": "Reactor", "number": 94 }
+                  ]
+                }
+              ]
+            },
+            {
+              "name": "Южная",
+              "groups": [
+                {
+                  "caption": "U сш",
+                  "columns": [
+                    { "kind": "BusVoltage", "number": 4039 }
+                  ]
+                }
+              ]
+            },
+            {
+              "name": "Ириклинской ГРЭС",
+              "groups": [
+                {
+                  "caption": "U сш",
+                  "columns": [
+                    { "kind": "BusVoltage", "number": 4040 },
+                    { "kind": "BusVoltage", "number": 4041 },
+                    { "kind": "SetVoltage", "number": 4041 }
+                  ]
+                },
+                {
+                  "caption": "СКРМ",
+                  "columns": [
+                    { "kind": "Reactor", "number": 95 }
+                  ]
+                }
+              ]
+            },
+            {
+              "name": "Газовая",
+              "groups": [
+                {
+                  "caption": "U сш",
+                  "columns": [
+                    { "kind": "BusVoltage", "number": 4042 }
+                  ]
+                },
+                {
+                  "caption": "СКРМ",
+                  "columns": [
+                    { "kind": "Reactor", "number": 96 },
+                    { "kind": "Reactor", "number": 97 }
+                  ]
+                }
+              ]
+            },
+            {
+              "name": "Красноармейсякая",
+              "groups": [
+                {
+                  "caption": "U сш",
+                  "columns": [
+                    { "kind": "BusVoltage", "number": 4043 },
+                    { "kind": "SetVoltage", "number": 4043 }
+                  ]
+                },
+                {
+                  "caption": "СКРМ",
+                  "columns": [
+                    { "kind": "Reactor", "number": 98 }
+                  ]
+                }
+              ]
+            },
+            {
+              "name": "Тагил",
+              "groups": [
+                {
+                  "caption": "U сш",
+                  "columns": [
+                    { "kind": "BusVoltage", "number": 4044 },
+                    { "kind": "SetVoltage", "number": 4044 }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "controlPoints": [
+            {
+              "name": "Преображенская",
+              "groups": [
+                {
+                  "caption": "U сш",
+                  "columns": [
+                    { "kind": "BusVoltage", "number": 4045 }
+                  ]
+                }
+              ]
+            },
+            {
+              "name": "Луговая",
+              "groups": [
+                {
+                  "caption": "U сш",
+                  "columns": [
+                    { "kind": "BusVoltage", "number": 4050 },
+                    { "kind": "SetVoltage", "number": 4050 }
+                  ]
+                },
+                {
+                  "caption": "СКРМ",
+                  "columns": [
+                    { "kind": "Reactor", "number": 99 },
+                    { "kind": "Reactor", "number": 100 }
+                  ]
+                }
+              ]
+            },
+            {
+              "name": "Демьянская",
+              "groups": [
+                {
+                  "caption": "U сш",
+                  "columns": [
+                    { "kind": "BusVoltage", "number": 4051 }
+                  ]
+                },
+                {
+                  "caption": "СКРМ",
+                  "columns": [
+                    { "kind": "Reactor", "number": 101 },
+                    { "kind": "Reactor", "number": 102 }
+                  ]
+                }
+              ]
+            },
+            {
+              "name": "Иртыш",
+              "groups": [
+                {
+                  "caption": "U сш",
+                  "columns": [
+                    { "kind": "BusVoltage", "number": 4052 },
+                    { "kind": "SetVoltage", "number": 4052 }
+                  ]
+                },
+                {
+                  "caption": "СКРМ",
+                  "columns": [
+                    { "kind": "Reactor", "number": 103 }
+                  ]
+                }
+              ]
+            },
+            {
+              "name": "Няганская ГРЭС",
+              "groups": [
+                {
+                  "caption": "U сш",
+                  "columns": [
+                    { "kind": "BusVoltage", "number": 4053 },
+                    { "kind": "SetVoltage", "number": 4053 }
+                  ]
+                },
+                {
+                  "caption": "СКРМ",
+                  "columns": [
+                    { "kind": "Reactor", "number": 104 }
+                  ]
+                }
+              ]
+            },
+            {
+              "name": "Ильково",
+              "groups": [
+                {
+                  "caption": "U сш",
+                  "columns": [
+                    { "kind": "BusVoltage", "number": 4054 }
+                  ]
+                },
+                {
+                  "caption": "СКРМ",
+                  "columns": [
+                    { "kind": "Reactor", "number": 105 },
+                    { "kind": "Reactor", "number": 106 },
+                    { "kind": "Reactor", "number": 107 }
+                  ]
+                }
+              ]
+            },
+            {
+              "name": "Пересвет",
+              "groups": [
+                {
+                  "caption": "U сш",
+                  "columns": [
+                    { "kind": "BusVoltage", "number": 4056 }
+                  ]
+                },
+                {
+                  "caption": "СКРМ",
+                  "columns": [
+                    { "kind": "Reactor", "number": 108 }
+                  ]
+                }
+              ]
+            },
+            {
+              "name": "Нелым",
+              "groups": [
+                {
+                  "caption": "U сш",
+                  "columns": [
+                    { "kind": "BusVoltage", "number": 4057 }
+                  ]
+                },
+                {
+                  "caption": "СКРМ",
+                  "columns": [
+                    { "kind": "Reactor", "number": 109 },
+                    { "kind": "Reactor", "number": 110 }
+                  ]
+                }
+              ]
+            },
+            {
+              "name": "Пыть-Ях",
+              "groups": [
+                {
+                  "caption": "U сш",
+                  "columns": [
+                    { "kind": "BusVoltage", "number": 4058 }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "controlPoints": [
+            {
+              "name": "Магистральная",
+              "groups": [
+                {
+                  "caption": "U сш",
+                  "columns": [
+                    { "kind": "BusVoltage", "number": 4059 }
+                  ]
+                }
+              ]
+            },
+            {
+              "name": "Сомкинская",
+              "groups": [
+                {
+                  "caption": "U сш",
+                  "columns": [
+                    { "kind": "BusVoltage", "number": 4060 }
+                  ]
+                }
+              ]
+            },
+            {
+              "name": "Сургутская ГРЭС-1",
+              "groups": [
+                {
+                  "caption": "U сш",
+                  "columns": [
+                    { "kind": "BusVoltage", "number": 4061 },
+                    { "kind": "SetVoltage", "number": 4061 }
+                  ]
+                },
+                {
+                  "caption": "СКРМ",
+                  "columns": [
+                    { "kind": "Reactor", "number": 111 },
+                    { "kind": "Reactor", "number": 112 }
+                  ]
+                }
+              ]
+            },
+            {
+              "name": "Сургутская ГРЭС-2",
+              "groups": [
+                {
+                  "caption": "U сш",
+                  "columns": [
+                    { "kind": "BusVoltage", "number": 4062 }
+                  ]
+                },
+                {
+                  "caption": "СКРМ",
+                  "columns": [
+                    { "kind": "Reactor", "number": 113 },
+                    { "kind": "Reactor", "number": 114 },
+                    { "kind": "Reactor", "number": 115 }
+                  ]
+                },
+                {
+                  "caption": "U сш",
+                  "columns": [
+                    { "kind": "BusVoltage", "number": 4092 }
+                  ]
+                },
+                {
+                  "caption": "СКРМ",
+                  "columns": [
+                    { "kind": "Reactor", "number": 116 },
+                    { "kind": "Reactor", "number": 117 }
+                  ]
+                }
+              ]
+            },
+            {
+              "name": "Кириловская",
+              "groups": [
+                {
+                  "caption": "U сш",
+                  "columns": [
+                    { "kind": "BusVoltage", "number": 4063 }
+                  ]
+                }
+              ]
+            },
+            {
+              "name": "Трачуковская",
+              "groups": [
+                {
+                  "caption": "U сш",
+                  "columns": [
+                    { "kind": "BusVoltage", "number": 4064 }
+                  ]
+                }
+              ]
+            },
+            {
+              "name": "Кустовая",
+              "groups": [
+                {
+                  "caption": "U сш",
+                  "columns": [
+                    { "kind": "BusVoltage", "number": 4065 }
+                  ]
+                }
+              ]
+            },
+            {
+              "name": "Белозерная",
+              "groups": [
+                {
+                  "caption": "U сш",
+                  "columns": [
+                    { "kind": "BusVoltage", "number": 4066 }
+                  ]
+                }
+              ]
+            },
+            {
+              "name": "Сибирская",
+              "groups": [
+                {
+                  "caption": "U сш",
+                  "columns": [
+                    { "kind": "BusVoltage", "number": 4067 }
+                  ]
+                }
+              ]
+            },
+            {
+              "name": "Нижневартовской ГРЭС",
+              "groups": [
+                {
+                  "caption": "U сш",
+                  "columns": [
+                    { "kind": "BusVoltage", "number": 4069 }
+                  ]
+                },
+                {
+                  "caption": "СКРМ",
+                  "columns": [
+                    { "kind": "Reactor", "number": 120 }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "controlPoints": [
+            {
+              "name": "Холмогорская",
+              "groups": [
+                {
+                  "caption": "U сш",
+                  "columns": [
+                    { "kind": "BusVoltage", "number": 4072 }
+                  ]
+                }
+              ]
+            },
+            {
+              "name": "Муравленская",
+              "groups": [
+                {
+                  "caption": "U сш",
+                  "columns": [
+                    { "kind": "BusVoltage", "number": 4073 }
+                  ]
+                },
+                {
+                  "caption": "СКРМ",
+                  "columns": [
+                    { "kind": "Reactor", "number": 121 }
+                  ]
+                }
+              ]
+            },
+            {
+              "name": "Тарко-Сале",
+              "groups": [
+                {
+                  "caption": "U сш",
+                  "columns": [
+                    { "kind": "BusVoltage", "number": 4075 }
+                  ]
+                },
+                {
+                  "caption": "СКРМ",
+                  "columns": [
+                    { "kind": "Reactor", "number": 122 }
+                  ]
+                }
+              ]
+            },
+            {
+              "name": "Святогор",
+              "groups": [
+                {
+                  "caption": "U сш",
+                  "columns": [
+                    { "kind": "BusVoltage", "number": 4096 }
+                  ]
+                }
+              ]
+            },
+            {
+              "name": "Курчатовская",
+              "groups": [
+                {
+                  "caption": "U сш",
+                  "columns": [
+                    { "kind": "BusVoltage", "number": 4097 },
+                    { "kind": "SetVoltage", "number": 4097 }
+                  ]
+                },
+                {
+                  "caption": "СКРМ",
+                  "columns": [
+                    { "kind": "Reactor", "number": 123 }
+                  ]
+                }
+              ]
+            },
+            {
+              "name": "Емелино",
+              "groups": [
+                {
+                  "caption": "U сш",
+                  "columns": [
+                    { "kind": "BusVoltage", "number": 4099 },
+                    { "kind": "SetVoltage", "number": 4099 }
+                  ]
+                }
+              ]
+            },
+            {
+              "name": "Кармановская ГРЭС",
+              "groups": [
+                {
+                  "caption": "U сш",
+                  "columns": [
+                    { "kind": "BusVoltage", "number": 4100 },
+                    { "kind": "SetVoltage", "number": 4100 }
+                  ]
+                }
+              ]
+            },
+            {
+              "name": "Буйская",
+              "groups": [
+                {
+                  "caption": "U сш",
+                  "columns": [
+                    { "kind": "BusVoltage", "number": 4101 },
+                    { "kind": "SetVoltage", "number": 4101 }
+                  ]
+                }
+              ]
+            },
+            {
+              "name": "Калино",
+              "groups": [
+                {
+                  "caption": "U сш",
+                  "columns": [
+                    { "kind": "BusVoltage", "number": 4102 },
+                    { "kind": "SetVoltage", "number": 4102 }
+                  ]
+                }
+              ]
+            },
+            {
+              "name": "Уфимская",
+              "groups": [
+                {
+                  "caption": "U сш",
+                  "columns": [
+                    { "kind": "BusVoltage", "number": 4103 }
+                  ]
+                }
+              ]
+            },
+            {
+              "name": "Златоуст",
+              "groups": [
+                {
+                  "caption": "U сш",
+                  "columns": [
+                    { "kind": "BusVoltage", "number": 4104 }
+                  ]
+                }
+              ]
+            },
+            {
+              "name": "Приваловская",
+              "groups": [
+                {
+                  "caption": "U сш",
+                  "columns": [
+                    { "kind": "BusVoltage", "number": 4105 }
+                  ]
+                }
+              ]
+            },
+            {
+              "name": "Кропачево",
+              "groups": [
+                {
+                  "caption": "U сш",
+                  "columns": [
+                    { "kind": "BusVoltage", "number": 4106 }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "controlPoints": [
+            {
+              "name": "Бекетово",
+              "groups": [
+                {
+                  "caption": "U сш",
+                  "columns": [
+                    { "kind": "BusVoltage", "number": 4107 }
+                  ]
+                }
+              ]
+            },
+            {
+              "name": "Бугульма",
+              "groups": [
+                {
+                  "caption": "U сш",
+                  "columns": [
+                    { "kind": "BusVoltage", "number": 4108 }
+                  ]
+                }
+              ]
+            },
+            {
+              "name": "Смеловская",
+              "groups": [
+                {
+                  "caption": "U сш",
+                  "columns": [
+                    { "kind": "BusVoltage", "number": 4109 }
+                  ]
+                }
+              ]
+            },
+            {
+              "name": "Азот",
+              "groups": [
+                {
+                  "caption": "U сш",
+                  "columns": [
+                    { "kind": "BusVoltage", "number": 4110 }
+                  ]
+                }
+              ]
+            },
+            {
+              "name": "Жигулой ГЭС",
+              "groups": [
+                {
+                  "caption": "U сш",
+                  "columns": [
+                    { "kind": "BusVoltage", "number": 4111 }
+                  ]
+                }
+              ]
+            },
+            {
+              "name": "Куйбышевская",
+              "groups": [
+                {
+                  "caption": "U сш",
+                  "columns": [
+                    { "kind": "BusVoltage", "number": 4112 }
+                  ]
+                }
+              ]
+            },
+            {
+              "name": "Воткинская ГЭС",
+              "groups": [
+                {
+                  "caption": "U сш",
+                  "columns": [
+                    { "kind": "BusVoltage", "number": 4155 }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

@@ -1,138 +1,89 @@
+using System;
 using System.Collections.Generic;
-using System.Linq;
 
 using VrdoPdg.Model.Entities;
+using VrdoPdg.Model.Regime;
 using VrdoPdg.Model.Services;
+using VrdoPdg.View.Layout;
 
 namespace VrdoPdg.View.Controls
 {
     /// <summary>
-    /// Данные таблицы по часам: энергосистемы, группы столбцов по КП
-    /// и один (предпросмотр) или два (сравнение) источника значений.
+    /// Данные таблиц по часам: схема таблиц из файла «Анализ.xlsx» и источники значений —
+    /// один для предпросмотра или два для сравнения расчетов.
     /// </summary>
     internal sealed class HourlyTableModel
     {
         /// <summary>
-        /// Группы столбцов по КП.
+        /// Создает данные таблиц.
         /// </summary>
-        private readonly IReadOnlyList<HourlyGroup> _groups;
-
-        /// <summary>
-        /// Создает данные таблицы.
-        /// </summary>
-        /// <param name="powerSystems">Энергосистемы.</param>
-        /// <param name="groups">Группы столбцов по КП.</param>
+        /// <param name="layout">Схема таблиц.</param>
         /// <param name="sources">Источники значений.</param>
-        public HourlyTableModel(
-            IReadOnlyList<PowerSystem> powerSystems,
-            IReadOnlyList<HourlyGroup> groups,
-            IReadOnlyList<HourlyValueSource> sources)
+        public HourlyTableModel(HourlyLayout layout, IReadOnlyList<HourlyValueSource> sources)
         {
-            PowerSystems = powerSystems;
-            _groups = groups;
-            Sources = sources;
+            Layout = layout ?? throw new ArgumentNullException(nameof(layout));
+            Sources = sources ?? throw new ArgumentNullException(nameof(sources));
         }
 
         /// <summary>
-        /// Энергосистемы (вкладки таблицы).
+        /// Схема таблиц.
         /// </summary>
-        public IReadOnlyList<PowerSystem> PowerSystems { get; }
+        public HourlyLayout Layout { get; }
 
         /// <summary>
-        /// Источники значений: один для предпросмотра, два для сравнения расчетов.
+        /// Источники значений.
         /// </summary>
         public IReadOnlyList<HourlyValueSource> Sources { get; }
 
         /// <summary>
-        /// Создает данные для формы «Напряжение по часам».
+        /// Энергосистемы схемы таблиц.
         /// </summary>
+        public IReadOnlyList<HourlyLayoutPowerSystem> PowerSystems => Layout.PowerSystems;
+
+        /// <summary>
+        /// Создает данные предпросмотра режима до или после расчета.
+        /// </summary>
+        /// <param name="layout">Схема таблиц.</param>
         /// <param name="session">Исходные данные сеанса.</param>
-        /// <param name="source">Источник значений: режим до или после расчета.</param>
-        /// <param name="tables">Таблицы эффективности по коду КП.</param>
-        /// <returns>Данные таблицы.</returns>
-        public static HourlyTableModel CreatePreview(
-            SessionData session,
-            HourlyValueSource source,
-            IReadOnlyDictionary<int, IReadOnlyList<EfficiencyItem>> tables)
+        /// <param name="regime">Режим по часам.</param>
+        /// <returns>Данные таблиц.</returns>
+        public static HourlyTableModel CreatePreview(HourlyLayout layout, SessionData session, RegimeSnapshot regime)
         {
-            List<HourlyGroup> groups = session.ControlPoints
-                .Select(controlPoint => CreateGroup(controlPoint, GetItems(tables, controlPoint.Id)))
-                .ToList();
-            return new HourlyTableModel(session.PowerSystems, groups, new[] { source });
+            return new HourlyTableModel(layout, new[] { new HourlyValueSource(regime, session) });
         }
 
         /// <summary>
-        /// Создает данные для формы «Сравнение расчетов».
+        /// Создает данные сравнения режимов после двух расчетов.
         /// </summary>
-        /// <param name="first">Расчет с меньшим номером (верхнее значение).</param>
-        /// <param name="second">Второй расчет (нижнее значение).</param>
-        /// <returns>Данные таблицы.</returns>
-        public static HourlyTableModel CreateComparison(CalculationResult first, CalculationResult second)
+        /// <param name="layout">Схема таблиц.</param>
+        /// <param name="first">Первый расчет.</param>
+        /// <param name="second">Второй расчет.</param>
+        /// <returns>Данные таблиц.</returns>
+        public static HourlyTableModel CreateComparison(
+            HourlyLayout layout,
+            CalculationResult first,
+            CalculationResult second)
         {
-            List<HourlyGroup> groups = first.Session.ControlPoints
-                .Select(controlPoint => CreateGroup(
-                    controlPoint,
-                    first.GetEfficiencyTable(controlPoint.Id).Concat(second.GetEfficiencyTable(controlPoint.Id))))
-                .ToList();
             HourlyValueSource[] sources =
             {
-                new HourlyValueSource(first.After, first.Session.Schedule),
-                new HourlyValueSource(second.After, second.Session.Schedule)
+                new HourlyValueSource(first.After, first.Session),
+                new HourlyValueSource(second.After, second.Session)
             };
-            return new HourlyTableModel(first.Session.PowerSystems, groups, sources);
+            return new HourlyTableModel(layout, sources);
         }
 
         /// <summary>
-        /// Возвращает группы столбцов КП энергосистемы.
+        /// Возвращает границы напряжения на шинах: график КП БД, в который входит узел,
+        /// или границы схемы таблиц для остальных узлов.
         /// </summary>
-        /// <param name="powerSystemId">Код энергосистемы.</param>
-        /// <returns>Группы столбцов.</returns>
-        public IReadOnlyList<HourlyGroup> GetGroups(int powerSystemId)
+        /// <param name="source">Источник значений.</param>
+        /// <param name="nodeNumber">Номер узла.</param>
+        /// <param name="hour">Час суток (1–24).</param>
+        /// <returns>Границы напряжения.</returns>
+        public VoltageBounds GetBounds(HourlyValueSource source, int nodeNumber, int hour)
         {
-            return _groups
-                .Where(group => group.ControlPoint.PowerSystemId == powerSystemId)
-                .ToList();
-        }
-
-        /// <summary>
-        /// Возвращает таблицу эффективности КП.
-        /// </summary>
-        /// <param name="tables">Таблицы эффективности.</param>
-        /// <param name="controlPointId">Код КП.</param>
-        /// <returns>СКРМ таблицы эффективности.</returns>
-        private static IEnumerable<EfficiencyItem> GetItems(
-            IReadOnlyDictionary<int, IReadOnlyList<EfficiencyItem>> tables,
-            int controlPointId)
-        {
-            IReadOnlyList<EfficiencyItem>? items;
-            return tables.TryGetValue(controlPointId, out items)
-                ? items
-                : Enumerable.Empty<EfficiencyItem>();
-        }
-
-        /// <summary>
-        /// Создает группу столбцов КП: узлы КП и СКРМ таблицы эффективности
-        /// в порядке перебора алгоритмом.
-        /// </summary>
-        /// <param name="controlPoint">КП.</param>
-        /// <param name="items">СКРМ таблиц эффективности.</param>
-        /// <returns>Группа столбцов.</returns>
-        private static HourlyGroup CreateGroup(ControlPoint controlPoint, IEnumerable<EfficiencyItem> items)
-        {
-            List<Device> devices = new List<Device>();
-            HashSet<int> added = new HashSet<int>();
-            foreach (EfficiencyItem item in items.OrderBy(item => item.Device.Type).ThenBy(item => item.Priority))
-            {
-                if (added.Add(item.Device.Id))
-                {
-                    devices.Add(item.Device);
-                }
-            }
-
-            List<int> nodeNumbers = controlPoint.Nodes
-                .Select(node => node.Number)
-                .ToList();
-            return new HourlyGroup(controlPoint, nodeNumbers, devices);
+            return source.GetScheduleBounds(nodeNumber, hour)
+                ?? new VoltageBounds(0, hour, Layout.LowerVoltageBound, Layout.UpperVoltageBound, DateTime.MinValue);
         }
     }
 }

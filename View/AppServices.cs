@@ -2,6 +2,7 @@ using System;
 
 using VrdoPdg.Model.Protocol;
 using VrdoPdg.Model.Services;
+using VrdoPdg.View.Layout;
 using VrdoPdg.View.Threading;
 
 namespace VrdoPdg.View
@@ -22,6 +23,7 @@ namespace VrdoPdg.View
         /// <param name="regulation">Сервис ввода режима по напряжению в допустимую область.</param>
         /// <param name="resultExport">Сервис сохранения результатов.</param>
         /// <param name="efficiencyTable">Сервис таблицы эффективности.</param>
+        /// <param name="hourlyLayout">Схема таблиц форм «Напряжение по часам» и «Сравнение расчетов».</param>
         public AppServices(
             AppSettings settings,
             StaWorker worker,
@@ -30,7 +32,8 @@ namespace VrdoPdg.View
             DataLoadService dataLoad,
             VoltageRegulationService regulation,
             ResultExportService resultExport,
-            EfficiencyTableService efficiencyTable)
+            EfficiencyTableService efficiencyTable,
+            HourlyLayout hourlyLayout)
         {
             Settings = settings ?? throw new ArgumentNullException(nameof(settings));
             Worker = worker ?? throw new ArgumentNullException(nameof(worker));
@@ -40,6 +43,7 @@ namespace VrdoPdg.View
             Regulation = regulation ?? throw new ArgumentNullException(nameof(regulation));
             ResultExport = resultExport ?? throw new ArgumentNullException(nameof(resultExport));
             EfficiencyTable = efficiencyTable ?? throw new ArgumentNullException(nameof(efficiencyTable));
+            HourlyLayout = hourlyLayout ?? throw new ArgumentNullException(nameof(hourlyLayout));
         }
 
         /// <summary>
@@ -81,5 +85,10 @@ namespace VrdoPdg.View
         /// Сервис таблицы эффективности.
         /// </summary>
         public EfficiencyTableService EfficiencyTable { get; }
+
+        /// <summary>
+        /// Схема таблиц форм «Напряжение по часам» и «Сравнение расчетов».
+        /// </summary>
+        public HourlyLayout HourlyLayout { get; }
     }
 }

@@ -64,22 +64,30 @@ namespace VrdoPdg.Model.Services
         private readonly CalculationProtocol _protocol;
 
         /// <summary>
+        /// Объекты МТ, значения которых считываются для форм просмотра режима.
+        /// </summary>
+        private readonly ObservedObjects _observedObjects;
+
+        /// <summary>
         /// Создает сервис ввода режима.
         /// </summary>
         /// <param name="rastrAdapter">Модуль взаимодействия с ПО «Барс».</param>
         /// <param name="repository">Репозиторий БД.</param>
         /// <param name="archiveService">Сеанс и архив расчетов.</param>
         /// <param name="protocol">Протокол расчета.</param>
+        /// <param name="observedObjects">Объекты МТ, значения которых считываются для форм просмотра режима.</param>
         public VoltageRegulationService(
             IRastrAdapter rastrAdapter,
             IModelDataRepository repository,
             CalculationArchiveService archiveService,
-            CalculationProtocol protocol)
+            CalculationProtocol protocol,
+            ObservedObjects observedObjects)
         {
             _rastrAdapter = rastrAdapter ?? throw new ArgumentNullException(nameof(rastrAdapter));
             _repository = repository ?? throw new ArgumentNullException(nameof(repository));
             _archiveService = archiveService ?? throw new ArgumentNullException(nameof(archiveService));
             _protocol = protocol ?? throw new ArgumentNullException(nameof(protocol));
+            _observedObjects = observedObjects ?? throw new ArgumentNullException(nameof(observedObjects));
         }
 
         /// <summary>
@@ -312,6 +320,7 @@ namespace VrdoPdg.Model.Services
                     run.Session.ControlPoints,
                     run.Session.Devices,
                     run.Session,
+                    _observedObjects,
                     run.After);
                 progress?.Report(hour * 100 / RegimeSnapshot.HourCount);
             }

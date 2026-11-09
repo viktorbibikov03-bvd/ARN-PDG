@@ -84,6 +84,18 @@ namespace VrdoPdg.Tests.Fakes
         public const double GeneratorSetVoltage = 236;
 
         /// <summary>
+        /// Номер узла, отсутствующего в МТ.
+        /// </summary>
+        public const int MissingNode = 9999;
+
+        /// <summary>
+        /// Наблюдаемые объекты форм просмотра режима: основной узел КП, узел управляемого СКРМ,
+        /// узел, отсутствующий в МТ, и реактор.
+        /// </summary>
+        public static ObservedObjects Observed { get; } =
+            new ObservedObjects(new[] { MainNode, ControlledNode, MissingNode }, new[] { ReactorNumber });
+
+        /// <summary>
         /// Создает исходные данные.
         /// </summary>
         public RegulationScenario()
@@ -115,7 +127,7 @@ namespace VrdoPdg.Tests.Fakes
             Repository.EfficiencyEntries.Add(new EfficiencyEntry(ControlPointId, CapacitorId, 3, 3));
             Repository.EfficiencyEntries.Add(new EfficiencyEntry(ControlPointId, GeneratorId, 4, 4));
 
-            Service = new VoltageRegulationService(Adapter, Repository, Archive, Protocol);
+            Service = new VoltageRegulationService(Adapter, Repository, Archive, Protocol, Observed);
         }
 
         /// <summary>
@@ -170,7 +182,8 @@ namespace VrdoPdg.Tests.Fakes
             for (int hour = 1; hour <= RegimeSnapshot.HourCount; hour++)
             {
                 Adapter.SelectHour(hour);
-                RegimeReader.ReadHour(Adapter, hour, Repository.ControlPoints, Repository.Devices, context, initial);
+                RegimeReader.ReadHour(
+                    Adapter, hour, Repository.ControlPoints, Repository.Devices, context, Observed, initial);
             }
 
             List<VoltageBounds> bounds = new List<VoltageBounds>();
