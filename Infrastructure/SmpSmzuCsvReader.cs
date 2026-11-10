@@ -90,7 +90,7 @@ namespace VrdoPdg.Infrastructure
             List<string> lines = text
                 .Split(new[] { "\r\n", "\n" }, StringSplitOptions.None)
                 .ToList();
-            if (lines.Count > 0 && lines[lines.Count - 1].Length == 0)
+            if (lines[lines.Count - 1].Length == 0)
             {
                 lines.RemoveAt(lines.Count - 1);
             }
