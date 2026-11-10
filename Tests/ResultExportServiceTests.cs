@@ -171,6 +171,8 @@ namespace VrdoPdg.Tests
             before.SetMode(new DeviceMode(1, 1, true, 0, -100, 100, null, null, false));
             after.SetMode(new DeviceMode(1, 1, true, 0, null, null, null, null, false));
             before.SetMode(new DeviceMode(1, 2, true, 0, -100, 100, null, null, false));
+            before.SetMode(new DeviceMode(1, 3, true, 0, null, null, null, null, false));
+            after.SetMode(new DeviceMode(1, 3, true, 0, null, null, null, null, false));
             before.SetMode(new DeviceMode(41, 1, true, 0, -50, 50, 236, 10, false));
             after.SetMode(new DeviceMode(41, 1, true, 0, -50, 50, 235.7, 10, false));
             CalculationResult result = CreateResult(new[] { controlled, generator }, before, after);
