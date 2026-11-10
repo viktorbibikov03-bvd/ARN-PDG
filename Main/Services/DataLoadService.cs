@@ -59,11 +59,6 @@ namespace VrdoPdg.Model.Services
         private readonly ISmpSmzuCsvReader _smpSmzuReader;
 
         /// <summary>
-        /// Сеанс и архив расчетов.
-        /// </summary>
-        private readonly CalculationArchiveService _archiveService;
-
-        /// <summary>
         /// Протокол расчета.
         /// </summary>
         private readonly CalculationProtocol _protocol;
@@ -80,7 +75,6 @@ namespace VrdoPdg.Model.Services
         /// <param name="repository">Репозиторий БД.</param>
         /// <param name="ckModel">Модуль взаимодействия с ОИК «СК-11».</param>
         /// <param name="smpSmzuReader">Модуль чтения файла smp_smzu.csv.</param>
-        /// <param name="archiveService">Сеанс и архив расчетов.</param>
         /// <param name="protocol">Протокол расчета.</param>
         /// <param name="observedObjects">Объекты МТ, значения которых считываются для форм просмотра режима.</param>
         public DataLoadService(
@@ -88,7 +82,6 @@ namespace VrdoPdg.Model.Services
             IModelDataRepository repository,
             ICkModel ckModel,
             ISmpSmzuCsvReader smpSmzuReader,
-            CalculationArchiveService archiveService,
             CalculationProtocol protocol,
             ObservedObjects observedObjects)
         {
@@ -96,7 +89,6 @@ namespace VrdoPdg.Model.Services
             _repository = repository ?? throw new ArgumentNullException(nameof(repository));
             _ckModel = ckModel ?? throw new ArgumentNullException(nameof(ckModel));
             _smpSmzuReader = smpSmzuReader ?? throw new ArgumentNullException(nameof(smpSmzuReader));
-            _archiveService = archiveService ?? throw new ArgumentNullException(nameof(archiveService));
             _protocol = protocol ?? throw new ArgumentNullException(nameof(protocol));
             _observedObjects = observedObjects ?? throw new ArgumentNullException(nameof(observedObjects));
         }
@@ -139,7 +131,6 @@ namespace VrdoPdg.Model.Services
                     megapoint.GeneratorNodes,
                     fixedDeviceHours,
                     DateTime.Now);
-                _archiveService.SetSession(session);
                 _protocol.Add(
                     ProtocolTag.Info,
                     "Загрузка исходных данных завершена",

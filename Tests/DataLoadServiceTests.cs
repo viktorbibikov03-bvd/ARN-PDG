@@ -58,7 +58,6 @@ namespace VrdoPdg.Tests
 
             SessionData session = service.Load(megapointPath, smpSmzuPath);
 
-            Assert.That(scenario.Archive.CurrentSession, Is.SameAs(session));
             Assert.That(session.SmpSmzuDocument.Records, Has.Count.EqualTo(2));
             Assert.That(session.IsFixed(RegulationScenario.ReactorId, 6), Is.False);
             Assert.That(session.IsFixed(RegulationScenario.ReactorId, 7), Is.True);
@@ -98,7 +97,6 @@ namespace VrdoPdg.Tests
 
             Assert.That(exception.Error, Is.EqualTo(DataFileError.UnknownFormat));
             Assert.That(scenario.Protocol.GetEntries().Last().Tag, Is.EqualTo(ProtocolTag.Error));
-            Assert.That(scenario.Archive.CurrentSession, Is.Null);
         }
 
         /// <summary>
@@ -137,7 +135,6 @@ namespace VrdoPdg.Tests
                 scenario.Repository,
                 new UnavailableCkModel(),
                 new SmpSmzuCsvReader(),
-                scenario.Archive,
                 scenario.Protocol,
                 RegulationScenario.Observed);
 
@@ -160,7 +157,6 @@ namespace VrdoPdg.Tests
                 scenario.Repository,
                 new CkModel(),
                 new SmpSmzuCsvReader(),
-                scenario.Archive,
                 scenario.Protocol,
                 RegulationScenario.Observed);
         }

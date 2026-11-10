@@ -300,7 +300,7 @@ namespace VrdoPdg.Tests
             Assert.That(scenario.Adapter.OpenCount, Is.EqualTo(2));
             Assert.That(first.Number, Is.EqualTo(1));
             Assert.That(second.Number, Is.EqualTo(2));
-            Assert.That(scenario.Archive.GetLastResult(session), Is.SameAs(second));
+            Assert.That(scenario.Archive.GetResults().Last(), Is.SameAs(second));
         }
 
         /// <summary>

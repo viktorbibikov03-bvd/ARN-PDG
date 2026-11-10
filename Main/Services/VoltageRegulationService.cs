@@ -131,7 +131,6 @@ namespace VrdoPdg.Model.Services
                     session,
                     startedAt,
                     DateTime.Now,
-                    tables,
                     run.After,
                     run.Unresolved.ToList());
                 WriteSummary(run, result);

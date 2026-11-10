@@ -73,7 +73,6 @@ namespace VrdoPdg.View
                             repository,
                             new CkModel(settings.LowerVoltageBound, settings.UpperVoltageBound),
                             new SmpSmzuCsvReader(),
-                            archive,
                             protocol,
                             observedObjects),
                         new VoltageRegulationService(rastrAdapter, repository, archive, protocol, observedObjects),

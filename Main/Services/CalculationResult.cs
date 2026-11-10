@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 
-using VrdoPdg.Model.Entities;
 using VrdoPdg.Model.Regime;
 
 namespace VrdoPdg.Model.Services
@@ -18,7 +17,6 @@ namespace VrdoPdg.Model.Services
         /// <param name="startedAt">Дата и время запуска.</param>
         /// <param name="finishedAt">Дата и время окончания.</param>
         /// <param name="session">Исходные данные сеанса.</param>
-        /// <param name="efficiencyTables">Использованные таблицы эффективности по коду КП.</param>
         /// <param name="after">Режим после расчета.</param>
         /// <param name="unresolvedViolations">КП и часы, в которых напряжение не введено в допустимую область.</param>
         public CalculationResult(
@@ -26,7 +24,6 @@ namespace VrdoPdg.Model.Services
             DateTime startedAt,
             DateTime finishedAt,
             SessionData session,
-            IReadOnlyDictionary<int, IReadOnlyList<EfficiencyItem>> efficiencyTables,
             RegimeSnapshot after,
             IReadOnlyList<UnresolvedViolation> unresolvedViolations)
         {
@@ -34,7 +31,6 @@ namespace VrdoPdg.Model.Services
             StartedAt = startedAt;
             FinishedAt = finishedAt;
             Session = session;
-            EfficiencyTables = efficiencyTables;
             After = after;
             UnresolvedViolations = unresolvedViolations;
         }
@@ -58,11 +54,6 @@ namespace VrdoPdg.Model.Services
         /// Исходные данные сеанса, на которых выполнен расчет.
         /// </summary>
         public SessionData Session { get; }
-
-        /// <summary>
-        /// Таблицы эффективности, с которыми выполнен расчет, по коду КП.
-        /// </summary>
-        public IReadOnlyDictionary<int, IReadOnlyList<EfficiencyItem>> EfficiencyTables { get; }
 
         /// <summary>
         /// Режим до расчета.
