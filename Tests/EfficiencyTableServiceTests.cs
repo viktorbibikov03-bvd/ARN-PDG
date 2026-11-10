@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -161,6 +162,91 @@ namespace VrdoPdg.Tests
 
             Assert.That(exception.Message, Is.EqualTo("Изменения не сохранены: данные некорректны"));
             Assert.That(repository.EfficiencyEntries, Has.Count.EqualTo(4));
+        }
+
+        /// <summary>
+        /// Строки без приоритета и без номера СКРМ отмечаются ошибками.
+        /// </summary>
+        [Test]
+        public void Validate_EmptyCells_ReturnsErrors()
+        {
+            List<EfficiencyRow> rows = new List<EfficiencyRow>
+            {
+                new EfficiencyRow(null, DeviceType.Controlled, 6269),
+                new EfficiencyRow(0, DeviceType.Switched, 7),
+                new EfficiencyRow(1, DeviceType.Switched, null)
+            };
+
+            IReadOnlyList<EfficiencyValidationError> errors = EfficiencyTableService.Validate(rows, _devices);
+
+            Assert.That(errors.Count(error => error.Message == "Не задан приоритет"), Is.EqualTo(2));
+            Assert.That(
+                errors.Single(error => error.RowIndex == 2).Message,
+                Is.EqualTo("Не задан номер узла или реактора"));
+        }
+
+        /// <summary>
+        /// Корректная таблица сохраняется с кодами СКРМ из БД, сохранение записывается в протокол;
+        /// справочники и число СКРМ в действующих таблицах берутся из БД.
+        /// </summary>
+        [Test]
+        public void Save_CorrectTable_SavesPrioritiesAndAddsProtocolEntry()
+        {
+            FakeModelDataRepository repository = CreateRepository();
+            repository.ControlPoints.Add(new ControlPoint(1, 1, "Рубцовская", new ControlPointNode[0]));
+            CalculationProtocol protocol = new CalculationProtocol();
+            EfficiencyTableService service = new EfficiencyTableService(repository, protocol);
+            List<EfficiencyRow> rows = new List<EfficiencyRow>
+            {
+                new EfficiencyRow(2, DeviceType.Switched, 8),
+                new EfficiencyRow(1, DeviceType.Generator, 18)
+            };
+
+            service.Save(service.GetControlPoints()[0], rows);
+
+            Assert.That(service.GetDevices(), Has.Count.EqualTo(4));
+            Assert.That(service.GetActiveDeviceCounts()[1], Is.EqualTo(2));
+            Assert.That(service.GetActiveTable(1).Select(row => row.DeviceNumber), Is.EqualTo(new int?[] { 18, 8 }));
+            Assert.That(
+                protocol.GetEntries().Single().Message,
+                Is.EqualTo("Таблица эффективности КП «Рубцовская» сохранена"));
+            Assert.That(protocol.GetEntries().Single().Details, Is.EqualTo("СКРМ в таблице: 2"));
+        }
+
+        /// <summary>
+        /// Таблицы для расчета содержат только СКРМ с действующим приоритетом, известные в справочнике.
+        /// </summary>
+        [Test]
+        public void BuildActiveTables_UnknownDevices_AreSkipped()
+        {
+            EfficiencyEntry[] entries =
+            {
+                new EfficiencyEntry(1, 1, 2, 1),
+                new EfficiencyEntry(1, 99, 1, null),
+                new EfficiencyEntry(1, 3, null, 3)
+            };
+
+            IReadOnlyDictionary<int, IReadOnlyList<EfficiencyItem>> tables =
+                EfficiencyTableService.BuildActiveTables(entries, _devices);
+
+            EfficiencyItem item = tables[1].Single();
+            Assert.That(item.Device.Id, Is.EqualTo(1));
+            Assert.That(item.Priority, Is.EqualTo(2));
+            Assert.That(item.DefaultPriority, Is.EqualTo(1));
+        }
+
+        /// <summary>
+        /// Аргументы конструктора и КП сохраняемой таблицы обязательны.
+        /// </summary>
+        [Test]
+        public void Constructor_NullArguments_Throw()
+        {
+            FakeModelDataRepository repository = CreateRepository();
+            EfficiencyTableService service = new EfficiencyTableService(repository, new CalculationProtocol());
+
+            Assert.Throws<ArgumentNullException>(() => new EfficiencyTableService(null!, new CalculationProtocol()));
+            Assert.Throws<ArgumentNullException>(() => new EfficiencyTableService(repository, null!));
+            Assert.Throws<ArgumentNullException>(() => service.Save(null!, new EfficiencyRow[0]));
         }
 
         /// <summary>
