@@ -318,7 +318,7 @@ namespace VrdoPdg.Model.Services
                     hour,
                     run.Session.ControlPoints,
                     run.Session.Devices,
-                    run.Session,
+                    run.Session.FixedDeviceHours,
                     _observedObjects,
                     run.After);
                 progress?.Report(hour * 100 / RegimeSnapshot.HourCount);

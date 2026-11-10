@@ -260,7 +260,6 @@ namespace VrdoPdg.Model.Services
 
                 RegimeSnapshot regime = new RegimeSnapshot();
                 Dictionary<int, int> generatorNodes = new Dictionary<int, int>();
-                DeviceModeContext context = new DeviceModeContext(fixedDeviceHours);
                 for (int hour = 1; hour <= RegimeSnapshot.HourCount; hour++)
                 {
                     if (!_rastrAdapter.SelectHour(hour))
@@ -282,7 +281,7 @@ namespace VrdoPdg.Model.Services
                         hour,
                         reference.ControlPoints,
                         reference.Devices,
-                        context,
+                        fixedDeviceHours,
                         _observedObjects,
                         regime);
                 }

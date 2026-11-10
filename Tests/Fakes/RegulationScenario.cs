@@ -176,14 +176,14 @@ namespace VrdoPdg.Tests.Fakes
         /// <returns>Исходные данные сеанса.</returns>
         public SessionData CreateSession()
         {
-            DeviceModeContext context = new DeviceModeContext(
-                new HashSet<(int DeviceId, int Hour)>(FixedDeviceHours));
+            HashSet<(int DeviceId, int Hour)> fixedDeviceHours =
+                new HashSet<(int DeviceId, int Hour)>(FixedDeviceHours);
             RegimeSnapshot initial = new RegimeSnapshot();
             for (int hour = 1; hour <= RegimeSnapshot.HourCount; hour++)
             {
                 Adapter.SelectHour(hour);
                 RegimeReader.ReadHour(
-                    Adapter, hour, Repository.ControlPoints, Repository.Devices, context, Observed, initial);
+                    Adapter, hour, Repository.ControlPoints, Repository.Devices, fixedDeviceHours, Observed, initial);
             }
 
             List<VoltageBounds> bounds = new List<VoltageBounds>();

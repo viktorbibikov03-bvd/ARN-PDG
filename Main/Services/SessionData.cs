@@ -12,17 +12,12 @@ namespace VrdoPdg.Model.Services
     /// Исходные данные сеанса: загруженные МТ и файл smp_smzu.csv, справочные данные БД,
     /// графики напряжений в КП и исходный режим по часам.
     /// </summary>
-    public sealed class SessionData : IDeviceModeContext
+    public sealed class SessionData
     {
         /// <summary>
         /// СКРМ по коду.
         /// </summary>
         private readonly Dictionary<int, Device> _devices;
-
-        /// <summary>
-        /// Часы, в которых состояние СКРМ задано в файле smp_smzu.csv.
-        /// </summary>
-        private readonly HashSet<(int DeviceId, int Hour)> _fixedDeviceHours;
 
         /// <summary>
         /// Номера узлов подключения генераторов по коду СКРМ.
@@ -67,7 +62,7 @@ namespace VrdoPdg.Model.Services
             LoadedAt = loadedAt;
             _devices = devices.ToDictionary(device => device.Id);
             _generatorNodes = generatorNodes;
-            _fixedDeviceHours = new HashSet<(int DeviceId, int Hour)>(fixedDeviceHours);
+            FixedDeviceHours = new HashSet<(int DeviceId, int Hour)>(fixedDeviceHours);
         }
 
         /// <summary>
@@ -116,6 +111,11 @@ namespace VrdoPdg.Model.Services
         public DateTime LoadedAt { get; }
 
         /// <summary>
+        /// Часы, в которых состояние СКРМ задано в файле smp_smzu.csv.
+        /// </summary>
+        public IReadOnlySet<(int DeviceId, int Hour)> FixedDeviceHours { get; }
+
+        /// <summary>
         /// Проверяет, задано ли состояние СКРМ в заданном часе в файле smp_smzu.csv.
         /// </summary>
         /// <param name="deviceId">Код СКРМ.</param>
@@ -123,7 +123,7 @@ namespace VrdoPdg.Model.Services
         /// <returns><c>true</c>, если состояние СКРМ задано и алгоритм его не изменяет.</returns>
         public bool IsFixed(int deviceId, int hour)
         {
-            return _fixedDeviceHours.Contains((deviceId, hour));
+            return FixedDeviceHours.Contains((deviceId, hour));
         }
 
         /// <summary>

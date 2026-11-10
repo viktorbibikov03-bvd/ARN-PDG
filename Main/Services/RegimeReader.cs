@@ -17,7 +17,7 @@ namespace VrdoPdg.Model.Services
         /// <param name="hour">Час суток (1–24).</param>
         /// <param name="controlPoints">КП, напряжения в узлах которых считываются.</param>
         /// <param name="devices">СКРМ, режимы которых считываются.</param>
-        /// <param name="session">Исходные данные: признаки состояний, заданных в файле smp_smzu.csv.</param>
+        /// <param name="fixedDeviceHours">Часы, в которых состояние СКРМ задано в файле smp_smzu.csv.</param>
         /// <param name="observedObjects">Наблюдаемые объекты для форм просмотра режима.</param>
         /// <param name="snapshot">Снимок, в который записываются значения.</param>
         public static void ReadHour(
@@ -25,7 +25,7 @@ namespace VrdoPdg.Model.Services
             int hour,
             IEnumerable<ControlPoint> controlPoints,
             IEnumerable<Device> devices,
-            IDeviceModeContext session,
+            IReadOnlySet<(int DeviceId, int Hour)> fixedDeviceHours,
             ObservedObjects observedObjects,
             RegimeSnapshot snapshot)
         {
@@ -43,7 +43,7 @@ namespace VrdoPdg.Model.Services
 
             foreach (Device device in devices)
             {
-                DeviceMode? mode = ReadMode(rastrAdapter, device, hour, session);
+                DeviceMode? mode = ReadMode(rastrAdapter, device, hour, fixedDeviceHours);
                 if (mode != null)
                 {
                     snapshot.SetMode(mode);
@@ -98,15 +98,15 @@ namespace VrdoPdg.Model.Services
         /// <param name="rastrAdapter">Модуль взаимодействия с ПО «Барс».</param>
         /// <param name="device">СКРМ.</param>
         /// <param name="hour">Час суток (1–24).</param>
-        /// <param name="session">Исходные данные: признаки состояний, заданных в файле smp_smzu.csv.</param>
+        /// <param name="fixedDeviceHours">Часы, в которых состояние СКРМ задано в файле smp_smzu.csv.</param>
         /// <returns>Режим СКРМ или <c>null</c>, если СКРМ не найдено в МТ.</returns>
         public static DeviceMode? ReadMode(
             IRastrAdapter rastrAdapter,
             Device device,
             int hour,
-            IDeviceModeContext session)
+            IReadOnlySet<(int DeviceId, int Hour)> fixedDeviceHours)
         {
-            bool isFixed = session.IsFixed(device.Id, hour);
+            bool isFixed = fixedDeviceHours.Contains((device.Id, hour));
             switch (device.Type)
             {
                 case DeviceType.Controlled:
