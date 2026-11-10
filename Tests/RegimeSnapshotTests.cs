@@ -37,6 +37,8 @@ namespace VrdoPdg.Tests
             Assert.That(target.GetMode(1, 1), Is.Null);
             Assert.That(target.GetObservedNode(564, 1), Is.Null);
             Assert.That(target.GetObservedReactor(9, 1), Is.Null);
+            Assert.That(target.GetObservedNode(564, 2)!.IsOn, Is.True);
+            Assert.That(target.GetObservedNode(564, 2)!.SetVoltage, Is.Zero);
             Assert.That(target.Voltages, Has.Count.EqualTo(1));
             Assert.That(target.Modes, Has.Count.EqualTo(1));
         }
