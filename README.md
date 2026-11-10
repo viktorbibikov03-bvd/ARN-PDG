@@ -91,6 +91,13 @@ dotnet test Tests/Tests.csproj
 $env:VRDO_PDG_TEST_DATABASE = "C:\путь\к\VrdoPdg.db"; dotnet test Tests/Tests.csproj
 ```
 
+Покрытие кода тестами собирается пакетом coverlet.collector; отчет в формате Cobertura сохраняется
+в каталоге TestResults:
+
+```bash
+dotnet test Tests/Tests.csproj --collect:"XPlat Code Coverage"
+```
+
 ## Принятые допущения
 
 - Границы графиков напряжений в КП временно постоянны (500–525 кВ) для всех КП и часов: `CkModel`
