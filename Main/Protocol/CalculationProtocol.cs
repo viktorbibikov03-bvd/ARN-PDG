@@ -107,24 +107,5 @@ namespace VrdoPdg.Model.Protocol
                     : 0;
             }
         }
-
-        /// <summary>
-        /// Проверяет, вложена ли запись в заданную родительскую запись.
-        /// </summary>
-        /// <param name="entry">Проверяемая запись.</param>
-        /// <param name="parent">Родительская запись.</param>
-        /// <returns><c>true</c>, если запись вложена в родительскую на любом уровне.</returns>
-        private static bool IsDescendant(ProtocolEntry entry, ProtocolEntry parent)
-        {
-            for (ProtocolEntry? current = entry.Parent; current != null; current = current.Parent)
-            {
-                if (ReferenceEquals(current, parent))
-                {
-                    return true;
-                }
-            }
-
-            return false;
-        }
     }
 }

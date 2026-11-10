@@ -33,11 +33,6 @@ namespace VrdoPdg.Model.Regime
         }
 
         /// <summary>
-        /// Пустой перечень: дополнительные объекты не считываются.
-        /// </summary>
-        public static ObservedObjects Empty { get; } = new ObservedObjects(new int[0], new int[0]);
-
-        /// <summary>
         /// Номера узлов (ny).
         /// </summary>
         public IReadOnlyList<int> NodeNumbers { get; }

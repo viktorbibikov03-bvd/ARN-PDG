@@ -229,16 +229,6 @@ namespace VrdoPdg.Model.Services
         }
 
         /// <summary>
-        /// Проверяет корректность таблицы эффективности по справочнику СКРМ из БД.
-        /// </summary>
-        /// <param name="rows">Строки таблицы.</param>
-        /// <returns>Ошибки проверки; пустой список, если таблица корректна.</returns>
-        public IReadOnlyList<EfficiencyValidationError> Validate(IReadOnlyList<EfficiencyRow> rows)
-        {
-            return Validate(rows, _repository.GetDevices());
-        }
-
-        /// <summary>
         /// Проверяет и сохраняет действующую таблицу эффективности КП.
         /// Изменения действуют на следующие расчеты.
         /// </summary>
