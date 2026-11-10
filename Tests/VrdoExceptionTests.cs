@@ -23,11 +23,13 @@ namespace VrdoPdg.Tests
 
             VrdoException exception = new VrdoException("Ошибка базы данных", null, inner);
             VrdoException simple = new VrdoException("Ошибка", "подробности");
+            VrdoException empty = new VrdoException("Ошибка", null);
 
             Assert.That(exception.Message, Is.EqualTo("Ошибка базы данных"));
             Assert.That(exception.Details, Is.Empty);
             Assert.That(exception.InnerException, Is.SameAs(inner));
             Assert.That(simple.Details, Is.EqualTo("подробности"));
+            Assert.That(empty.Details, Is.Empty);
         }
     }
 }

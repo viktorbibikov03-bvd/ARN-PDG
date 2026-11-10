@@ -40,10 +40,13 @@ namespace VrdoPdg.Tests
         {
             DataFileException withPath = new DataFileException(DataFileError.NotFound, "smzu.mptsmz", null);
             DataFileException withoutPath = new DataFileException(DataFileError.NotFound, null!, null);
+            DataFileException inner = new DataFileException(
+                DataFileError.NotFound, null!, null, new InvalidOperationException());
 
             Assert.That(withPath.Details, Is.EqualTo("smzu.mptsmz"));
             Assert.That(withoutPath.FilePath, Is.Empty);
             Assert.That(withoutPath.Details, Is.Empty);
+            Assert.That(inner.FilePath, Is.Empty);
         }
     }
 }
