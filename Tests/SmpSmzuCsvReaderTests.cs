@@ -1,3 +1,4 @@
+using System.IO;
 using System.Text;
 
 using NUnit.Framework;
@@ -125,6 +126,114 @@ namespace VrdoPdg.Tests
 
             Assert.That(document.Encoding.GetPreamble(), Is.EqualTo(preamble));
             Assert.That(document.Records, Has.Count.EqualTo(1));
+        }
+
+        /// <summary>
+        /// Файл читается с диска; отсутствующий файл или каталог сообщается ошибкой «не найден»,
+        /// каталог вместо файла — ошибкой доступа.
+        /// </summary>
+        [Test]
+        public void Read_Paths_ReadsFileOrReportsError()
+        {
+            string directory = Path.Combine(Path.GetTempPath(), "vrdo_csv_" + Path.GetRandomFileName());
+            Directory.CreateDirectory(directory);
+            try
+            {
+                string path = Path.Combine(directory, "smp_smzu.csv");
+                File.WriteAllText(path, "20;1;24;185;0;0;1;0;0\r\n");
+                SmpSmzuCsvReader reader = new SmpSmzuCsvReader();
+
+                Assert.That(reader.Read(path).Records, Has.Count.EqualTo(1));
+                Assert.That(
+                    Assert.Throws<DataFileException>(() => reader.Read(Path.Combine(directory, "нет.csv")))!.Error,
+                    Is.EqualTo(DataFileError.NotFound));
+                Assert.That(
+                    Assert.Throws<DataFileException>(() => reader.Read(Path.Combine(directory, "нет", "f.csv")))!.Error,
+                    Is.EqualTo(DataFileError.NotFound));
+                Assert.That(
+                    Assert.Throws<DataFileException>(() => reader.Read(directory))!.Error,
+                    Is.EqualTo(DataFileError.AccessDenied));
+                using (new FileStream(path, FileMode.Open, FileAccess.ReadWrite, FileShare.None))
+                {
+                    Assert.That(
+                        Assert.Throws<DataFileException>(() => reader.Read(path))!.Error,
+                        Is.EqualTo(DataFileError.AccessDenied));
+                }
+            }
+            finally
+            {
+                Directory.Delete(directory, true);
+            }
+        }
+
+        /// <summary>
+        /// Файл в кодировке Windows-1251 разбирается, кодировка сохраняется в документе.
+        /// </summary>
+        [Test]
+        public void Parse_Windows1251_KeepsEncoding()
+        {
+            Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
+            Encoding windows1251 = Encoding.GetEncoding(1251);
+            byte[] bytes = windows1251.GetBytes("Тип;Начало;Конец\r\n20;1;24;185;0;0;1;0;0");
+
+            SmpSmzuDocument document = new SmpSmzuCsvReader().Parse(bytes, "smp_smzu.csv");
+
+            Assert.That(document.Encoding.CodePage, Is.EqualTo(1251));
+            Assert.That(document.Lines[0], Is.EqualTo("Тип;Начало;Конец"));
+            Assert.That(document.Records, Has.Count.EqualTo(1));
+        }
+
+        /// <summary>
+        /// Строки из разделителей пропускаются, пустые адреса и значения допускаются,
+        /// строка из четырех полей дополняется пустыми полями.
+        /// </summary>
+        [Test]
+        public void Parse_EmptyFields_AreAllowed()
+        {
+            SmpSmzuDocument document = Parse(" ; ;\r\n20;1;24;185;;;1;;\r\n20;2;24;186");
+
+            Assert.That(document.Records, Has.Count.EqualTo(2));
+            Assert.That(document.Records[0].Address2, Is.Zero);
+            Assert.That(document.Records[0].Value2, Is.Null);
+            Assert.That(document.Records[1].Value1, Is.Null);
+            Assert.That(document.Lines, Has.Count.EqualTo(3));
+        }
+
+        /// <summary>
+        /// Ошибки числа полей, адресов и значений перечисляются по строкам, в сообщение попадают
+        /// первые пять ошибок и общее число ошибок.
+        /// </summary>
+        [Test]
+        public void Parse_ManyInvalidLines_ReportsFirstErrorsAndCount()
+        {
+            string text = "20;1;24\r\n"
+                + "20;1;24;185;0;0;1;0;0;0\r\n"
+                + "20;1;24;185;x;0;1;0;0\r\n"
+                + "20;1;24;185;0;x;1;0;0\r\n"
+                + "20;1;24;185;0;0;x;0;0\r\n"
+                + "20;1;24;185;0;0;1;1e;0\r\n";
+
+            DataFileException exception = Assert.Throws<DataFileException>(() => Parse(text))!;
+
+            Assert.That(exception.Details, Does.Contain("ожидается от 4 до 9 полей, получено 3"));
+            Assert.That(exception.Details, Does.Contain("получено 10"));
+            Assert.That(exception.Details, Does.Contain("строка 3: адреса элемента должны быть целыми числами"));
+            Assert.That(exception.Details, Does.Contain("строка 5: значения параметров должны быть числами"));
+            Assert.That(exception.Details, Does.Not.Contain("строка 6"));
+            Assert.That(exception.Details, Does.Contain("всего ошибок: 6"));
+        }
+
+        /// <summary>
+        /// Пустой файл разбирается в документ без строк.
+        /// </summary>
+        [Test]
+        public void Parse_EmptyFile_ReturnsEmptyDocument()
+        {
+            SmpSmzuDocument document = Parse(string.Empty);
+
+            Assert.That(document.Lines, Is.Empty);
+            Assert.That(document.Records, Is.Empty);
+            Assert.That(document.NewLine, Is.EqualTo("\r\n"));
         }
 
         /// <summary>
