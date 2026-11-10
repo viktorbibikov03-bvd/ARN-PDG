@@ -84,8 +84,9 @@ dotnet test Tests/Tests.csproj
 ```
 
 Модульные тесты не требуют ПО «Барс»: алгоритм проверяется на тестовой модели режима
-(`Tests/Fakes/FakeRastrAdapter.cs`). Тесты чтения и записи БД выполняются на копии рабочей БД, путь к которой
-задается переменной среды `VRDO_PDG_TEST_DATABASE`; без нее эти тесты пропускаются:
+(`Tests/Fakes/FakeRastrAdapter.cs`). Тесты чтения и записи БД выполняются на копии тестовой БД
+`Tests/TestData/VrdoPdg.db` (схема рабочей БД с небольшим набором данных). Чтобы проверить репозиторий на рабочей
+БД, путь к ней задается переменной среды `VRDO_PDG_TEST_DATABASE`:
 
 ```powershell
 $env:VRDO_PDG_TEST_DATABASE = "C:\путь\к\VrdoPdg.db"; dotnet test Tests/Tests.csproj

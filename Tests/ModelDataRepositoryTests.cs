@@ -16,15 +16,15 @@ using VrdoPdg.Model.Storage;
 namespace VrdoPdg.Tests
 {
     /// <summary>
-    /// Тесты репозитория БД. Тесты чтения и записи выполняются на копии рабочей БД, путь к которой
-    /// задается переменной среды <c>VRDO_PDG_TEST_DATABASE</c>; без нее эти тесты пропускаются.
-    /// Проверки не зависят от состава данных в БД.
+    /// Тесты репозитория БД. Тесты чтения и записи выполняются на копии тестовой БД
+    /// Tests/TestData/VrdoPdg.db или рабочей БД, путь к которой задается переменной среды
+    /// <c>VRDO_PDG_TEST_DATABASE</c>. Проверки не зависят от состава данных в БД.
     /// </summary>
     [TestFixture]
     public sealed class ModelDataRepositoryTests
     {
         /// <summary>
-        /// Переменная среды с путем к рабочей БД.
+        /// Переменная среды с путем к рабочей БД, на копии которой выполняются тесты вместо тестовой БД.
         /// </summary>
         private const string DatabaseVariable = "VRDO_PDG_TEST_DATABASE";
 
@@ -221,20 +221,153 @@ namespace VrdoPdg.Tests
         }
 
         /// <summary>
-        /// Копирует рабочую БД во временный каталог и открывает копию. Без переменной среды
-        /// с путем к рабочей БД тест пропускается.
+        /// Путь к файлу БД обязателен.
         /// </summary>
-        /// <returns>Репозиторий копии рабочей БД.</returns>
+        [Test]
+        public void Constructor_EmptyPath_Throws()
+        {
+            Assert.Throws<ArgumentException>(() => new ModelDataRepository(" "));
+        }
+
+        /// <summary>
+        /// Методы записи не принимают пустые перечни.
+        /// </summary>
+        [Test]
+        public void SaveMethods_NullArguments_Throw()
+        {
+            ModelDataRepository repository = new ModelDataRepository(_databasePath);
+
+            Assert.Throws<ArgumentNullException>(() => repository.SaveEfficiencyTable(1, null!));
+            Assert.Throws<ArgumentNullException>(() => repository.SaveVoltageSchedule(null!));
+            Assert.Throws<ArgumentNullException>(() => repository.SaveRegime(null!, new DeviceMode[0]));
+            Assert.Throws<ArgumentNullException>(() => repository.SaveRegime(new NodeVoltage[0], null!));
+        }
+
+        /// <summary>
+        /// СКРМ без строки подтипа и с неизвестным типом пропускаются, коммутируемые СКРМ
+        /// считываются с видом «Реактор» или «БСК».
+        /// </summary>
+        [Test]
+        public void GetDevices_DevicesWithoutSubtype_AreSkipped()
+        {
+            ModelDataRepository repository = OpenWorkingCopy();
+            int count = repository.GetDevices().Count;
+            Execute("INSERT INTO Device (id_dev, type_dev, name_dev) VALUES "
+                + "(9001, 'Управляемые', 'без узла'), (9002, 'Коммутируемые', 'без реактора'), "
+                + "(9003, 'Генераторы', 'без генератора'), (9004, 'Коммутируемые', 'БСК')");
+            Execute("INSERT INTO Switched_device (id_dev, num_reactor, kind_sd) VALUES (9004, 9004, 'БСК')");
+            Execute("PRAGMA ignore_check_constraints = ON; "
+                + "INSERT INTO Device (id_dev, type_dev, name_dev) VALUES (9005, 'Неизвестные', 'тип')");
+
+            IReadOnlyList<Device> devices = repository.GetDevices();
+
+            Assert.That(devices, Has.Count.EqualTo(count + 1));
+            Device capacitor = devices.Single(device => device.Id == 9004);
+            Assert.That(capacitor.Type, Is.EqualTo(DeviceType.Switched));
+            Assert.That(capacitor.SwitchedKind, Is.EqualTo(SwitchedDeviceKind.CapacitorBank));
+            Assert.That(capacitor.Number, Is.EqualTo(9004));
+        }
+
+        /// <summary>
+        /// СКРМ, исключенное из таблицы эффективности, теряет действующий приоритет: строка
+        /// с приоритетом по умолчанию сохраняется, остальные удаляются.
+        /// </summary>
+        [Test]
+        public void SaveEfficiencyTable_RemovedDevices_KeepOnlyDefaultPriorities()
+        {
+            ModelDataRepository repository = OpenWorkingCopy();
+            Execute("INSERT INTO Control_point (id_cp, id_ps, name_cp) VALUES (9001, 1, 'Тестовый КП')");
+            Execute("INSERT INTO Efficiency_table (id_cp, id_dev, priority, priority_pur) VALUES "
+                + "(9001, 1, 1, 1), (9001, 2, 2, NULL), (9001, 3, 3, 2)");
+
+            repository.SaveEfficiencyTable(9001, new[] { new DevicePriority(3, 1) });
+
+            List<EfficiencyEntry> saved = repository.GetEfficiencyEntries()
+                .Where(entry => entry.ControlPointId == 9001)
+                .OrderBy(entry => entry.DeviceId)
+                .ToList();
+            Assert.That(saved, Has.Count.EqualTo(2));
+            Assert.That(saved[0].DeviceId, Is.EqualTo(1));
+            Assert.That(saved[0].Priority, Is.Null);
+            Assert.That(saved[0].DefaultPriority, Is.EqualTo(1));
+            Assert.That(saved[1].DeviceId, Is.EqualTo(3));
+            Assert.That(saved[1].Priority, Is.EqualTo(1));
+            Assert.That(saved[1].DefaultPriority, Is.EqualTo(2));
+        }
+
+        /// <summary>
+        /// Дата получения графика в формате, отличном от формата системы, разбирается,
+        /// неразборчивая дата заменяется минимальной.
+        /// </summary>
+        [Test]
+        public void GetVoltageSchedule_OtherDateFormats_AreParsed()
+        {
+            ModelDataRepository repository = OpenWorkingCopy();
+            int controlPointId = repository.GetControlPoints().First().Id;
+            Execute("INSERT INTO Voltage_schedule (id_cp, hour, u_low, u_high, received_at) VALUES "
+                + "(" + controlPointId + ", 1, 500, 525, '2026-10-13T09:30:00'), "
+                + "(" + controlPointId + ", 2, 500, 525, 'вчера')");
+
+            List<VoltageBounds> schedule = repository.GetVoltageSchedule()
+                .Where(item => item.ControlPointId == controlPointId)
+                .ToList();
+
+            Assert.That(schedule[0].ReceivedAt, Is.EqualTo(new DateTime(2026, 10, 13, 9, 30, 0)));
+            Assert.That(schedule[1].ReceivedAt, Is.EqualTo(DateTime.MinValue));
+        }
+
+        /// <summary>
+        /// Режимы СКРМ сохраняются со всеми значениями, в том числе пустыми и признаками.
+        /// </summary>
+        [Test]
+        public void SaveRegime_Modes_AreSavedWithFlags()
+        {
+            ModelDataRepository repository = OpenWorkingCopy();
+            Device device = repository.GetDevices().First();
+            repository.SaveRegime(
+                new NodeVoltage[0],
+                new[]
+                {
+                    new DeviceMode(device.Id, 1, true, -180, -180, 0, 525, null, true),
+                    new DeviceMode(device.Id, 2, false, null, null, null, null, 120, false)
+                });
+
+            Assert.That(Scalar("SELECT COUNT(*) FROM Device_mode WHERE is_on = 1 AND is_fixed = 1"), Is.EqualTo(1));
+            Assert.That(Scalar("SELECT COUNT(*) FROM Device_mode WHERE is_on = 0 AND q_dev IS NULL"), Is.EqualTo(1));
+        }
+
+        /// <summary>
+        /// Копирует БД во временный каталог и открывает копию: рабочую БД, если задана переменная
+        /// среды с путем к ней, иначе тестовую БД проекта тестов.
+        /// </summary>
+        /// <returns>Репозиторий копии БД.</returns>
         private ModelDataRepository OpenWorkingCopy()
         {
             string? source = Environment.GetEnvironmentVariable(DatabaseVariable);
-            if (string.IsNullOrWhiteSpace(source) || !File.Exists(source))
+            if (string.IsNullOrWhiteSpace(source))
             {
-                Assert.Ignore("Не задан путь к рабочей БД: переменная среды " + DatabaseVariable);
+                source = Path.Combine(TestContext.CurrentContext.TestDirectory, "TestData", "VrdoPdg.db");
             }
 
-            File.Copy(source!, _databasePath, true);
+            File.Copy(source, _databasePath, true);
             return new ModelDataRepository(_databasePath);
+        }
+
+        /// <summary>
+        /// Выполняет запрос к копии БД, не возвращающий данных.
+        /// </summary>
+        /// <param name="sql">Текст запроса.</param>
+        private void Execute(string sql)
+        {
+            using (SqliteConnection connection = new SqliteConnection("Data Source=" + _databasePath))
+            {
+                connection.Open();
+                using (SqliteCommand command = connection.CreateCommand())
+                {
+                    command.CommandText = sql;
+                    command.ExecuteNonQuery();
+                }
+            }
         }
 
         /// <summary>
