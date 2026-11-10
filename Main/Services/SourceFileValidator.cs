@@ -47,19 +47,11 @@ namespace VrdoPdg.Model.Services
 
             try
             {
-                using (FileStream stream = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.ReadWrite))
+                using (new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.ReadWrite))
                 {
-                    if (!stream.CanRead)
-                    {
-                        throw new DataFileException(DataFileError.AccessDenied, path, null);
-                    }
                 }
             }
-            catch (UnauthorizedAccessException exception)
-            {
-                throw new DataFileException(DataFileError.AccessDenied, path, exception.Message, exception);
-            }
-            catch (IOException exception)
+            catch (Exception exception) when (exception is UnauthorizedAccessException || exception is IOException)
             {
                 throw new DataFileException(DataFileError.AccessDenied, path, exception.Message, exception);
             }
