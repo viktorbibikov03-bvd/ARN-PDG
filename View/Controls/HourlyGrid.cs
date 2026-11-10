@@ -34,6 +34,11 @@ namespace VrdoPdg.View.Controls
         private const int ValueColumnWidth = 64;
 
         /// <summary>
+        /// Отступ наименования КП от границ заголовка, пикселей.
+        /// </summary>
+        private const int TitlePadding = 16;
+
+        /// <summary>
         /// Высота строки с одним значением, пикселей.
         /// </summary>
         private const int SingleRowHeight = 28;
@@ -106,6 +111,11 @@ namespace VrdoPdg.View.Controls
             + SystemInformation.HorizontalScrollBarHeight + 2;
 
         /// <summary>
+        /// Шрифт наименования КП.
+        /// </summary>
+        private static Font TitleFont => UiFonts.Semibold(9.5f);
+
+        /// <summary>
         /// Выводит в таблицу блок КП.
         /// </summary>
         /// <param name="model">Данные таблиц.</param>
@@ -122,6 +132,7 @@ namespace VrdoPdg.View.Controls
             _offsets.Add(0);
             foreach (HourlyLayoutControlPoint controlPoint in block.ControlPoints)
             {
+                int columnWidth = GetValueColumnWidth(controlPoint);
                 int first = Columns.Count;
                 List<SectionRange> sections = new List<SectionRange>();
                 foreach (HourlyLayoutGroup group in controlPoint.Groups)
@@ -130,9 +141,9 @@ namespace VrdoPdg.View.Controls
                     foreach (HourlyLayoutColumn source in group.Columns)
                     {
                         HourlyColumn column = new HourlyColumn(controlPoint, group, source);
-                        AddColumn(column, ValueColumnWidth, column.NumberText, false);
+                        AddColumn(column, columnWidth, column.NumberText, false);
                         _offsets.Add(offset);
-                        offset += ValueColumnWidth;
+                        offset += columnWidth;
                     }
 
                     if (Columns.Count > sectionFirst)
@@ -214,7 +225,7 @@ namespace VrdoPdg.View.Controls
                 Rectangle title = new Rectangle(left, 0, right - left, BandHeight);
                 FillBand(graphics, title);
                 Rectangle visibleTitle = Rectangle.Intersect(title, area);
-                TextRenderer.DrawText(graphics, range.ControlPoint.Name, UiFonts.Semibold(9.5f), visibleTitle,
+                TextRenderer.DrawText(graphics, range.ControlPoint.Name, TitleFont, visibleTitle,
                     Palette.Text, TextFormatFlags.HorizontalCenter | TextFormatFlags.VerticalCenter
                     | TextFormatFlags.EndEllipsis | TextFormatFlags.SingleLine | TextFormatFlags.NoPrefix);
 
@@ -260,6 +271,29 @@ namespace VrdoPdg.View.Controls
             {
                 e.ToolTipText = column.Description;
             }
+        }
+
+        /// <summary>
+        /// Возвращает ширину столбцов значений КП: наименование КП должно поместиться
+        /// в заголовок над его столбцами.
+        /// </summary>
+        /// <param name="controlPoint">КП схемы таблиц.</param>
+        /// <returns>Ширина столбца, пикселей.</returns>
+        private static int GetValueColumnWidth(HourlyLayoutControlPoint controlPoint)
+        {
+            int count = 0;
+            foreach (HourlyLayoutGroup group in controlPoint.Groups)
+            {
+                count += group.Columns.Count;
+            }
+
+            if (count == 0)
+            {
+                return ValueColumnWidth;
+            }
+
+            int titleWidth = TextRenderer.MeasureText(controlPoint.Name, TitleFont).Width + TitlePadding;
+            return Math.Max(ValueColumnWidth, (titleWidth + count - 1) / count);
         }
 
         /// <summary>
