@@ -161,6 +161,11 @@ namespace VrdoPdg.Tests.Fakes
         public HashSet<(int DeviceId, int Hour)> FixedDeviceHours { get; } = new HashSet<(int DeviceId, int Hour)>();
 
         /// <summary>
+        /// Коды КП, для которых не задан график напряжения; для остальных КП границы 500–525 кВ.
+        /// </summary>
+        public HashSet<int> ControlPointsWithoutSchedule { get; } = new HashSet<int>();
+
+        /// <summary>
         /// Устанавливает базовое напряжение основного узла КП в часе.
         /// </summary>
         /// <param name="hour">Час суток.</param>
@@ -187,9 +192,15 @@ namespace VrdoPdg.Tests.Fakes
             }
 
             List<VoltageBounds> bounds = new List<VoltageBounds>();
-            for (int hour = 1; hour <= RegimeSnapshot.HourCount; hour++)
+            foreach (ControlPoint controlPoint in Repository.ControlPoints)
             {
-                bounds.Add(new VoltageBounds(ControlPointId, hour, 500, 525, DateTime.Now));
+                for (int hour = 1; hour <= RegimeSnapshot.HourCount; hour++)
+                {
+                    if (!ControlPointsWithoutSchedule.Contains(controlPoint.Id))
+                    {
+                        bounds.Add(new VoltageBounds(controlPoint.Id, hour, 500, 525, DateTime.Now));
+                    }
+                }
             }
 
             SmpSmzuDocument document = new SmpSmzuDocument(

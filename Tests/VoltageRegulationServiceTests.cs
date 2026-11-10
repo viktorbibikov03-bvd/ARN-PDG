@@ -1,11 +1,14 @@
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 
 using NUnit.Framework;
 
+using VrdoPdg.Model;
 using VrdoPdg.Model.Entities;
 using VrdoPdg.Model.Protocol;
+using VrdoPdg.Model.Regime;
 using VrdoPdg.Model.Services;
 using VrdoPdg.Tests.Fakes;
 
@@ -366,6 +369,249 @@ namespace VrdoPdg.Tests
                 .All(entry => ReferenceEquals(entry.Parent, hour)), Is.True);
             Assert.That(scenario.Protocol.GetCount(ProtocolTag.Device), Is.EqualTo(2));
             Assert.That(scenario.Protocol.GetCount(ProtocolTag.Regime), Is.EqualTo(2));
+        }
+
+        /// <summary>
+        /// КП без основного узла или без графика напряжения не участвуют в расчете,
+        /// КП без таблицы эффективности попадает в перечень невведенных.
+        /// </summary>
+        [Test]
+        public void Run_IncompleteControlPoints_SkipsOrRegistersThem()
+        {
+            RegulationScenario scenario = new RegulationScenario();
+            scenario.Repository.ControlPoints.Add(new ControlPoint(
+                2, 1, "Рубцовская", new[] { new ControlPointNode(RegulationScenario.ExtraNode, true) }));
+            scenario.Repository.ControlPoints.Add(new ControlPoint(
+                3, 1, "Алтай", new[] { new ControlPointNode(RegulationScenario.ExtraNode, false) }));
+            scenario.Repository.ControlPoints.Add(new ControlPoint(
+                4, 1, "Власиха", new[] { new ControlPointNode(RegulationScenario.ExtraNode, true) }));
+            scenario.ControlPointsWithoutSchedule.Add(4);
+            scenario.Adapter.BaseVoltages[RegulationScenario.ExtraNode][1] = 530;
+
+            CalculationResult result = scenario.Run();
+
+            string[] skipped = scenario.Protocol.GetEntries()
+                .Where(entry => entry.Message == "КП не участвует в расчете")
+                .Select(entry => entry.Details)
+                .ToArray();
+            Assert.That(
+                skipped,
+                Is.EqualTo(new[] { "Алтай: не задан основной узел", "Власиха: не задан график напряжения" }));
+            UnresolvedViolation violation = result.UnresolvedViolations.Single();
+            Assert.That(violation.ControlPoint.Name, Is.EqualTo("Рубцовская"));
+            Assert.That(violation.Voltage, Is.EqualTo(530));
+            Assert.That(violation.Bounds.UpperBound, Is.EqualTo(525));
+        }
+
+        /// <summary>
+        /// Час, режим которого при выборе не сошелся, не обрабатывается: значения часа
+        /// после расчета совпадают с исходными; ход расчета сообщается до 100 %.
+        /// </summary>
+        [Test]
+        public void Run_HourDiverges_KeepsInitialRegimeAndReportsProgress()
+        {
+            RegulationScenario scenario = new RegulationScenario();
+            scenario.SetVoltage(1, 535);
+            scenario.SetVoltage(3, 535);
+            SessionData session = scenario.CreateSession();
+            scenario.Adapter.DivergentHours.Add(3);
+            ProgressRecorder progress = new ProgressRecorder();
+
+            CalculationResult result = scenario.Service.Run(session, progress, CancellationToken.None);
+
+            Assert.That(result.After.GetVoltage(RegulationScenario.MainNode, 3), Is.EqualTo(535));
+            Assert.That(
+                result.After.GetMode(RegulationScenario.ControlledId, 3)!.MinReactivePower,
+                Is.EqualTo(session.InitialRegime.GetMode(RegulationScenario.ControlledId, 3)!.MinReactivePower));
+            Assert.That(scenario.Protocol.GetEntries().Any(entry => entry.Tag == ProtocolTag.Warning
+                && entry.Message == "Час 3: расчет режима МТ не сошелся"), Is.True);
+            Assert.That(progress.Values, Does.Contain(12));
+            Assert.That(progress.Values.Last(), Is.EqualTo(100));
+            Assert.That(result.FinishedAt, Is.GreaterThanOrEqualTo(result.StartedAt));
+        }
+
+        /// <summary>
+        /// Ошибки БД и ПО «Барс» прерывают расчет и записываются в протокол.
+        /// </summary>
+        [Test]
+        public void Run_DatabaseOrBarsFails_ThrowsSystemErrors()
+        {
+            RegulationScenario scenario = new RegulationScenario();
+            SessionData session = scenario.CreateSession();
+
+            scenario.Repository.FailingMethods.Add("GetEfficiencyEntries");
+            VrdoException databaseError = Assert.Throws<VrdoException>(
+                () => scenario.Service.Run(session, null, CancellationToken.None))!;
+            scenario.Repository.FailingMethods.Clear();
+            scenario.Adapter.OpenException = new InvalidOperationException("Нет лицензии");
+            VrdoException openError = Assert.Throws<VrdoException>(
+                () => scenario.Service.Run(session, null, CancellationToken.None))!;
+            scenario.Adapter.OpenException = null;
+            scenario.Adapter.SelectHourException = new InvalidOperationException("Сбой COM");
+            VrdoException hourError = Assert.Throws<VrdoException>(
+                () => scenario.Service.Run(session, null, CancellationToken.None))!;
+
+            Assert.That(databaseError.Message, Is.EqualTo(DataLoadService.DatabaseErrorMessage));
+            Assert.That(openError.Message, Is.EqualTo(DataLoadService.BarsErrorMessage));
+            Assert.That(openError.Details, Is.EqualTo("Нет лицензии"));
+            Assert.That(hourError.Message, Is.EqualTo(DataLoadService.BarsErrorMessage));
+            Assert.That(hourError.Details, Is.EqualTo("Сбой COM"));
+            Assert.That(scenario.Protocol.GetCount(ProtocolTag.Error), Is.EqualTo(3));
+            Assert.That(scenario.Archive.GetResults(), Is.Empty);
+        }
+
+        /// <summary>
+        /// СКРМ, не найденные в МТ, отключенные генераторы и генераторы без диапазона регулирования
+        /// пропускаются; режим вводится оставшимися СКРМ.
+        /// </summary>
+        [Test]
+        public void Run_UnavailableDevices_AreSkipped()
+        {
+            RegulationScenario scenario = new RegulationScenario();
+            scenario.SetVoltage(1, 560);
+            AddDevice(scenario, new Device(70, DeviceType.Controlled, "СТК-2", 7001, null), 5);
+            AddDevice(scenario, new Device(71, DeviceType.Switched, "Р-2", 7002, SwitchedDeviceKind.Reactor), 6);
+            AddDevice(scenario, new Device(72, DeviceType.Generator, "ТГ-7", 7003, null), 7);
+            AddDevice(scenario, new Device(73, DeviceType.Generator, "ТГ-8", 7004, null), 8);
+            AddDevice(scenario, new Device(74, DeviceType.Generator, "ТГ-9", 7005, null), 9);
+            AddDevice(scenario, new Device(75, DeviceType.Generator, "ТГ-10", 7006, null), 10);
+            scenario.Adapter.Generators[7004] = new FakeGenerator(6004, 236, 50, -50, 100, 10, 0.05)
+            {
+                IsOn = false
+            };
+            scenario.Adapter.Generators[7005] = new FakeGenerator(6005, 0, 50, -50, 100, 10, 0.05);
+            scenario.Adapter.Generators[7006] = new FakeGenerator(6006, 236, 50, 50, 50, 10, 0.05);
+
+            CalculationResult result = scenario.Run();
+
+            Assert.That(result.After.GetMode(70, 1), Is.Null);
+            Assert.That(result.After.GetMode(73, 1)!.SetVoltage, Is.EqualTo(236));
+            Assert.That(result.After.GetMode(75, 1)!.SetVoltage, Is.EqualTo(236));
+            Assert.That(result.After.GetMode(RegulationScenario.ReactorId, 1)!.IsOn, Is.True);
+            Assert.That(result.UnresolvedViolations, Has.Count.EqualTo(1));
+        }
+
+        /// <summary>
+        /// Напряжение ниже нижней границы: заданное напряжение генератора повышается шагами
+        /// по 0,3 кВ, генератор на верхнем пределе не изменяется.
+        /// </summary>
+        [Test]
+        public void Run_VoltageBelowLowerBound_IncreasesGeneratorSetVoltage()
+        {
+            RegulationScenario scenario = new RegulationScenario();
+            scenario.SetVoltage(1, 499.6);
+            scenario.SetVoltage(2, 499.6);
+            scenario.Adapter.ControlledDevices[RegulationScenario.ControlledNode].IsOn = false;
+            scenario.Adapter.Generators[14] = new FakeGenerator(6001, 236, 100, -50, 100, 10, 0.05);
+            AddDevice(scenario, new Device(42, DeviceType.Generator, "ТГ-6", 14, null), 0);
+
+            CalculationResult result = scenario.Run();
+
+            Assert.That(result.After.GetMode(42, 1)!.SetVoltage, Is.EqualTo(236));
+            Assert.That(
+                result.After.GetMode(RegulationScenario.GeneratorId, 1)!.SetVoltage,
+                Is.EqualTo(RegulationScenario.GeneratorSetVoltage + 0.9).Within(Tolerance));
+            Assert.That(result.After.GetVoltage(RegulationScenario.MainNode, 1), Is.EqualTo(500.05).Within(Tolerance));
+            Assert.That(result.UnresolvedViolations, Is.Empty);
+        }
+
+        /// <summary>
+        /// Узел КП отключился после изменения СКРМ: в протокол записывается отсутствие напряжения,
+        /// ввод режима КП в часе прекращается.
+        /// </summary>
+        [Test]
+        public void Run_MainNodeLost_StopsRegulation()
+        {
+            RegulationScenario scenario = new RegulationScenario();
+            scenario.SetVoltage(1, 535);
+            FakeSwitchedDevice reactor = scenario.Adapter.SwitchedDevices[RegulationScenario.ReactorNumber];
+            SessionData session = scenario.CreateSession();
+            scenario.Adapter.NodeLossCondition = () => reactor.IsOn;
+
+            CalculationResult result = scenario.Service.Run(session, null, CancellationToken.None);
+
+            Assert.That(scenario.Protocol.GetEntries().Any(entry => entry.Tag == ProtocolTag.Regime
+                && entry.Message == "Расчет УР: нет напряжения в основном узле КП"), Is.True);
+            Assert.That(result.After.GetMode(RegulationScenario.CapacitorId, 1)!.IsOn, Is.True);
+            Assert.That(result.UnresolvedViolations, Is.Empty);
+        }
+
+        /// <summary>
+        /// Режим не сходится ни после изменения, ни после его отмены: в протокол записывается,
+        /// что повторный расчет исходного режима не сошелся.
+        /// </summary>
+        [Test]
+        public void Run_RestoredRegimeDiverges_WritesWarning()
+        {
+            RegulationScenario scenario = new RegulationScenario();
+            scenario.SetVoltage(1, 535);
+            scenario.SetVoltage(2, 535);
+            scenario.Adapter.DivergenceCondition = () => true;
+
+            CalculationResult result = scenario.Run();
+
+            Assert.That(scenario.Protocol.GetEntries().Any(entry => entry.Tag == ProtocolTag.Warning
+                && entry.Details.EndsWith("повторный расчет исходного режима не сошелся")), Is.True);
+            Assert.That(scenario.Protocol.GetEntries().Any(
+                entry => entry.Message == "Напряжение не введено в допустимую область"
+                    && entry.Details == "Барнаульская: часы 1, 2"), Is.True);
+            Assert.That(result.UnresolvedViolations, Has.Count.EqualTo(2));
+        }
+
+        /// <summary>
+        /// Исходные данные сеанса и зависимости сервиса обязательны.
+        /// </summary>
+        [Test]
+        public void Run_NullArguments_Throw()
+        {
+            RegulationScenario scenario = new RegulationScenario();
+            FakeRastrAdapter adapter = scenario.Adapter;
+            FakeModelDataRepository repository = scenario.Repository;
+            CalculationArchiveService archive = scenario.Archive;
+            CalculationProtocol protocol = scenario.Protocol;
+            ObservedObjects observed = RegulationScenario.Observed;
+
+            Assert.Throws<ArgumentNullException>(() => scenario.Service.Run(null!, null, CancellationToken.None));
+            Assert.Throws<ArgumentNullException>(
+                () => new VoltageRegulationService(null!, repository, archive, protocol, observed));
+            Assert.Throws<ArgumentNullException>(
+                () => new VoltageRegulationService(adapter, null!, archive, protocol, observed));
+            Assert.Throws<ArgumentNullException>(
+                () => new VoltageRegulationService(adapter, repository, null!, protocol, observed));
+            Assert.Throws<ArgumentNullException>(
+                () => new VoltageRegulationService(adapter, repository, archive, null!, observed));
+            Assert.Throws<ArgumentNullException>(
+                () => new VoltageRegulationService(adapter, repository, archive, protocol, null!));
+        }
+
+        /// <summary>
+        /// Добавляет СКРМ в справочник и в таблицу эффективности КП.
+        /// </summary>
+        /// <param name="scenario">Тестовые исходные данные.</param>
+        /// <param name="device">СКРМ.</param>
+        /// <param name="priority">Приоритет СКРМ.</param>
+        private static void AddDevice(RegulationScenario scenario, Device device, int priority)
+        {
+            scenario.Repository.Devices.Add(device);
+            scenario.Repository.EfficiencyEntries.Add(
+                new EfficiencyEntry(RegulationScenario.ControlPointId, device.Id, priority, priority));
+        }
+
+        /// <summary>
+        /// Получатель хода расчета, запоминающий значения в порядке сообщения.
+        /// </summary>
+        private sealed class ProgressRecorder : IProgress<int>
+        {
+            /// <summary>
+            /// Сообщенные значения хода расчета, %.
+            /// </summary>
+            public List<int> Values { get; } = new List<int>();
+
+            /// <inheritdoc/>
+            public void Report(int value)
+            {
+                Values.Add(value);
+            }
         }
     }
 }
