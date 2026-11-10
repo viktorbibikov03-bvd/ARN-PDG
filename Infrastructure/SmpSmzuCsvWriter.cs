@@ -89,11 +89,11 @@ namespace VrdoPdg.Infrastructure
         }
 
         /// <summary>
-        /// Формирует строку записи, например «20;7;24;185;0;0;1;0;0».
+        /// Формирует строку записи
         /// </summary>
-        /// <param name="record">Запись.</param>
-        /// <param name="decimalSeparator">Десятичный разделитель значений.</param>
-        /// <returns>Строка записи.</returns>
+        /// <param name="record">Запись</param>
+        /// <param name="decimalSeparator">Десятичный разделитель значений</param>
+        /// <returns>Строка записи</returns>
         public static string FormatRecord(SmpSmzuRecord record, char decimalSeparator)
         {
             string[] fields =

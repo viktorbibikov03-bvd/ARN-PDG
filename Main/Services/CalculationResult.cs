@@ -78,18 +78,5 @@ namespace VrdoPdg.Model.Services
         /// КП и часы, в которых напряжение не введено в допустимую область.
         /// </summary>
         public IReadOnlyList<UnresolvedViolation> UnresolvedViolations { get; }
-
-        /// <summary>
-        /// Возвращает таблицу эффективности КП, использованную в расчете.
-        /// </summary>
-        /// <param name="controlPointId">Код КП.</param>
-        /// <returns>СКРМ таблицы эффективности; пустой список, если таблица не задана.</returns>
-        public IReadOnlyList<EfficiencyItem> GetEfficiencyTable(int controlPointId)
-        {
-            IReadOnlyList<EfficiencyItem>? items;
-            return EfficiencyTables.TryGetValue(controlPointId, out items)
-                ? items
-                : new EfficiencyItem[0];
-        }
     }
 }

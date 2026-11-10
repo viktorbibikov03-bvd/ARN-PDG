@@ -131,16 +131,6 @@ namespace VrdoPdg.Model.Services
         }
 
         /// <summary>
-        /// Возвращает действующие таблицы эффективности всех КП в порядке перебора алгоритмом.
-        /// </summary>
-        /// <param name="devices">Справочник СКРМ.</param>
-        /// <returns>Таблицы эффективности по коду КП.</returns>
-        public IReadOnlyDictionary<int, IReadOnlyList<EfficiencyItem>> GetActiveTables(IReadOnlyList<Device> devices)
-        {
-            return BuildActiveTables(_repository.GetEfficiencyEntries(), devices);
-        }
-
-        /// <summary>
         /// Ищет СКРМ по типу и номеру в МТ.
         /// </summary>
         /// <param name="devices">Справочник СКРМ.</param>

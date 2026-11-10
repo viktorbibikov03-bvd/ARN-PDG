@@ -1,7 +1,7 @@
 namespace VrdoPdg.View
 {
     /// <summary>
-    /// Форматирование текстов интерфейса.
+    /// Форматирование текстов интерфейса
     /// </summary>
     internal static class TextFormat
     {
@@ -18,6 +18,7 @@ namespace VrdoPdg.View
             int lastTwoDigits = count % 100;
             int lastDigit = count % 10;
             string word;
+
             if (lastTwoDigits >= 11 && lastTwoDigits <= 14)
             {
                 word = many;

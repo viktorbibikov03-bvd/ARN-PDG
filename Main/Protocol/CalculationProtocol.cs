@@ -109,19 +109,6 @@ namespace VrdoPdg.Model.Protocol
         }
 
         /// <summary>
-        /// Возвращает количество вложенных записей всех уровней.
-        /// </summary>
-        /// <param name="parent">Родительская запись.</param>
-        /// <returns>Количество вложенных записей.</returns>
-        public int GetDescendantCount(ProtocolEntry parent)
-        {
-            lock (_syncRoot)
-            {
-                return _entries.Count(entry => IsDescendant(entry, parent));
-            }
-        }
-
-        /// <summary>
         /// Проверяет, вложена ли запись в заданную родительскую запись.
         /// </summary>
         /// <param name="entry">Проверяемая запись.</param>

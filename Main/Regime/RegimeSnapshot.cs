@@ -6,23 +6,23 @@ using VrdoPdg.Model.Entities;
 namespace VrdoPdg.Model.Regime
 {
     /// <summary>
-    /// Снимок режима: почасовые напряжения в узлах КП и режимы СКРМ.
+    /// Снимок режима: почасовые напряжения в узлах КП и режимы СКРМ
     /// </summary>
     public sealed class RegimeSnapshot
     {
         /// <summary>
-        /// Количество часов в сутках МТ.
+        /// Количество часов в сутках МТ
         /// </summary>
         public const int HourCount = 24;
 
         /// <summary>
-        /// Напряжения по номеру узла и часу.
+        /// Напряжения по номеру узла и часу
         /// </summary>
         private readonly Dictionary<(int NodeNumber, int Hour), NodeVoltage> _voltages =
             new Dictionary<(int NodeNumber, int Hour), NodeVoltage>();
 
         /// <summary>
-        /// Режимы СКРМ по коду СКРМ и часу.
+        /// Режимы СКРМ по коду СКРМ и часу
         /// </summary>
         private readonly Dictionary<(int DeviceId, int Hour), DeviceMode> _modes =
             new Dictionary<(int DeviceId, int Hour), DeviceMode>();

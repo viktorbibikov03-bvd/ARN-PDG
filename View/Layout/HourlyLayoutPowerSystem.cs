@@ -3,14 +3,14 @@ using System.Collections.Generic;
 namespace VrdoPdg.View.Layout
 {
     /// <summary>
-    /// Энергосистема в таблице по часам: блоки КП, выводимые один под другим.
+    /// Энергосистема в таблице по часам: блоки КП, выводимые один под другим
     /// </summary>
     internal sealed class HourlyLayoutPowerSystem
     {
         /// <summary>
-        /// Создает энергосистему.
+        /// Создает энергосистему
         /// </summary>
-        /// <param name="name">Наименование энергосистемы.</param>
+        /// <param name="name">Наименование энергосистемы</param>
         /// <param name="blocks">Блоки КП.</param>
         public HourlyLayoutPowerSystem(string name, IReadOnlyList<HourlyLayoutBlock> blocks)
         {
@@ -19,12 +19,12 @@ namespace VrdoPdg.View.Layout
         }
 
         /// <summary>
-        /// Наименование энергосистемы.
+        /// Наименование энергосистемы
         /// </summary>
         public string Name { get; }
 
         /// <summary>
-        /// Блоки КП.
+        /// Блоки КП
         /// </summary>
         public IReadOnlyList<HourlyLayoutBlock> Blocks { get; }
     }

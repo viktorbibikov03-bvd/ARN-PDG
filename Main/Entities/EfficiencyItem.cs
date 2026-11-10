@@ -1,12 +1,12 @@
 namespace VrdoPdg.Model.Entities
 {
     /// <summary>
-    /// СКРМ действующей таблицы эффективности КП с приоритетом.
+    /// СКРМ действующей таблицы эффективности КП с приоритетом
     /// </summary>
     public sealed class EfficiencyItem
     {
         /// <summary>
-        /// Создает элемент таблицы эффективности.
+        /// Создает элемент таблицы эффективности
         /// </summary>
         /// <param name="device">СКРМ.</param>
         /// <param name="priority">Действующий приоритет.</param>
@@ -19,17 +19,17 @@ namespace VrdoPdg.Model.Entities
         }
 
         /// <summary>
-        /// СКРМ.
+        /// СКРМ
         /// </summary>
         public Device Device { get; }
 
         /// <summary>
-        /// Действующий приоритет.
+        /// Действующий приоритет
         /// </summary>
         public int Priority { get; }
 
         /// <summary>
-        /// Приоритет согласно ПУР; <c>null</c>, если СКРМ в ПУР не входит.
+        /// Приоритет согласно ПУР; <c>null</c>, если СКРМ в ПУР не входит
         /// </summary>
         public int? DefaultPriority { get; }
     }

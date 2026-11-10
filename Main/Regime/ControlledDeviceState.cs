@@ -1,18 +1,18 @@
 namespace VrdoPdg.Model.Regime
 {
     /// <summary>
-    /// Состояние и загрузка управляемого СКРМ по данным таблицы «Узлы» МТ.
+    /// Состояние и загрузка управляемого СКРМ по данным таблицы «Узлы» МТ
     /// </summary>
     public sealed class ControlledDeviceState
     {
         /// <summary>
-        /// Создает состояние управляемого СКРМ.
+        /// Создает состояние управляемого СКРМ
         /// </summary>
-        /// <param name="isOn">Признак состояния «Включено».</param>
-        /// <param name="reactivePower">Загрузка по реактивной мощности, Мвар.</param>
-        /// <param name="minReactivePower">Нижний предел реактивной мощности, Мвар.</param>
-        /// <param name="maxReactivePower">Верхний предел реактивной мощности, Мвар.</param>
-        /// <param name="setVoltage">Заданное напряжение в узле, кВ.</param>
+        /// <param name="isOn">Признак состояния «Включено»</param>
+        /// <param name="reactivePower">Загрузка по реактивной мощности, Мвар</param>
+        /// <param name="minReactivePower">Нижний предел реактивной мощности, Мвар</param>
+        /// <param name="maxReactivePower">Верхний предел реактивной мощности, Мвар</param>
+        /// <param name="setVoltage">Заданное напряжение в узле, кВ</param>
         public ControlledDeviceState(
             bool isOn,
             double reactivePower,
@@ -28,27 +28,27 @@ namespace VrdoPdg.Model.Regime
         }
 
         /// <summary>
-        /// Признак состояния «Включено».
+        /// Признак состояния «Включено»
         /// </summary>
         public bool IsOn { get; }
 
         /// <summary>
-        /// Загрузка по реактивной мощности, Мвар.
+        /// Загрузка по реактивной мощности, Мвар
         /// </summary>
         public double ReactivePower { get; }
 
         /// <summary>
-        /// Нижний предел реактивной мощности (Qmin), Мвар.
+        /// Нижний предел реактивной мощности (Qmin), Мвар
         /// </summary>
         public double MinReactivePower { get; }
 
         /// <summary>
-        /// Верхний предел реактивной мощности (Qmax), Мвар.
+        /// Верхний предел реактивной мощности (Qmax), Мвар
         /// </summary>
         public double MaxReactivePower { get; }
 
         /// <summary>
-        /// Заданное напряжение в узле, кВ.
+        /// Заданное напряжение в узле, кВ
         /// </summary>
         public double SetVoltage { get; }
     }

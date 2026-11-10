@@ -4,7 +4,7 @@ using System.Drawing;
 namespace VrdoPdg.View.Theme
 {
     /// <summary>
-    /// Шрифты интерфейса. Шрифты создаются один раз и используются повторно.
+    /// Шрифты интерфейса. Шрифты создаются один раз и используются повторно
     /// </summary>
     internal static class UiFonts
     {

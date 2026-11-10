@@ -6,10 +6,10 @@ namespace VrdoPdg.Model.Entities
     public sealed class ControlPointNode
     {
         /// <summary>
-        /// Создает узел КП.
+        /// Создает узел КП
         /// </summary>
-        /// <param name="number">Номер узла в таблице «Узлы» МТ.</param>
-        /// <param name="isMain">Признак основного узла.</param>
+        /// <param name="number">Номер узла в таблице «Узлы» МТ</param>
+        /// <param name="isMain">Признак основного узла</param>
         public ControlPointNode(int number, bool isMain)
         {
             Number = number;
@@ -23,7 +23,7 @@ namespace VrdoPdg.Model.Entities
 
         /// <summary>
         /// Признак основного узла, в котором осуществляется ввод режима
-        /// по напряжению в допустимую область.
+        /// по напряжению в допустимую область
         /// </summary>
         public bool IsMain { get; }
     }

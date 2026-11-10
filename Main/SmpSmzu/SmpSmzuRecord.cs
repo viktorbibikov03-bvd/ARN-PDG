@@ -7,7 +7,7 @@ namespace VrdoPdg.Model.SmpSmzu
     public sealed class SmpSmzuRecord
     {
         /// <summary>
-        /// Создает запись файла smp_smzu.csv.
+        /// Создает запись файла smp_smzu.csv
         /// </summary>
         /// <param name="typeCode">Код типа записи.</param>
         /// <param name="startHour">Номер часа начала действия смены параметра.</param>
@@ -44,32 +44,32 @@ namespace VrdoPdg.Model.SmpSmzu
         }
 
         /// <summary>
-        /// Код типа записи.
+        /// Код типа записи
         /// </summary>
         public int TypeCode { get; }
 
         /// <summary>
-        /// Тип записи.
+        /// Тип записи
         /// </summary>
         public SmpSmzuRecordType Type => (SmpSmzuRecordType)TypeCode;
 
         /// <summary>
-        /// Номер часа начала действия смены параметра.
+        /// Номер часа начала действия смены параметра
         /// </summary>
         public int StartHour { get; }
 
         /// <summary>
-        /// Номер часа конца действия смены параметра.
+        /// Номер часа конца действия смены параметра
         /// </summary>
         public int EndHour { get; }
 
         /// <summary>
-        /// Адрес 1: номер узла, номер СКРМ в таблице «Реакторы» или номер узла начала ветви.
+        /// Адрес 1: номер узла, номер СКРМ в таблице «Реакторы» или номер узла начала ветви
         /// </summary>
         public int Address1 { get; }
 
         /// <summary>
-        /// Адрес 2: номер узла окончания ветви.
+        /// Адрес 2: номер узла окончания ветви
         /// </summary>
         public int Address2 { get; }
 
@@ -97,15 +97,5 @@ namespace VrdoPdg.Model.SmpSmzu
         /// Номер строки в файле; 0 — запись сформирована системой.
         /// </summary>
         public int LineNumber { get; }
-
-        /// <summary>
-        /// Проверяет, действует ли запись в заданном часе.
-        /// </summary>
-        /// <param name="hour">Час суток (1–24).</param>
-        /// <returns><c>true</c>, если час входит в диапазон действия записи.</returns>
-        public bool CoversHour(int hour)
-        {
-            return hour >= StartHour && hour <= EndHour;
-        }
     }
 }

@@ -63,7 +63,7 @@ namespace VrdoPdg.View.Theme
         }
 
         /// <summary>
-        /// Проверяет, установлен ли шрифт значков.
+        /// Проверяет, установлен ли шрифт значков
         /// </summary>
         /// <returns><c>true</c>, если шрифт установлен.</returns>
         private static bool IsFontInstalled()

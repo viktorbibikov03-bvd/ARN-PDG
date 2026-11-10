@@ -43,9 +43,9 @@ namespace VrdoPdg.Model.Services
         }
 
         /// <summary>
-        /// Устанавливает исходные данные текущего сеанса.
+        /// Устанавливает исходные данные текущего сеанса
         /// </summary>
-        /// <param name="session">Исходные данные сеанса.</param>
+        /// <param name="session">Исходные данные сеанса</param>
         public void SetSession(SessionData session)
         {
             if (session == null)

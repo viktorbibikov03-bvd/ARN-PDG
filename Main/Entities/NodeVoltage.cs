@@ -1,16 +1,16 @@
 namespace VrdoPdg.Model.Entities
 {
     /// <summary>
-    /// Напряжение в узле КП в определенном часе суток.
+    /// Напряжение в узле КП в определенном часе суток
     /// </summary>
     public sealed class NodeVoltage
     {
         /// <summary>
-        /// Создает значение напряжения в узле.
+        /// Создает значение напряжения в узле
         /// </summary>
-        /// <param name="nodeNumber">Номер узла.</param>
-        /// <param name="hour">Час суток (1–24).</param>
-        /// <param name="voltage">Напряжение, кВ.</param>
+        /// <param name="nodeNumber">Номер узла</param>
+        /// <param name="hour">Час суток</param>
+        /// <param name="voltage">Напряжение, кВ</param>
         public NodeVoltage(int nodeNumber, int hour, double voltage)
         {
             NodeNumber = nodeNumber;
@@ -19,17 +19,17 @@ namespace VrdoPdg.Model.Entities
         }
 
         /// <summary>
-        /// Номер узла.
+        /// Номер узла
         /// </summary>
         public int NodeNumber { get; }
 
         /// <summary>
-        /// Час суток (1–24).
+        /// Час суток
         /// </summary>
         public int Hour { get; }
 
         /// <summary>
-        /// Напряжение, кВ.
+        /// Напряжение, кВ
         /// </summary>
         public double Voltage { get; }
     }

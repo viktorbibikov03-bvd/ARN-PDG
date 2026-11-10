@@ -116,24 +116,6 @@ namespace VrdoPdg.Model.Services
         public DateTime LoadedAt { get; }
 
         /// <summary>
-        /// Количество часов, в которых состояние СКРМ задано в файле smp_smzu.csv.
-        /// </summary>
-        public int FixedDeviceHourCount => _fixedDeviceHours.Count;
-
-        /// <summary>
-        /// Возвращает СКРМ по коду.
-        /// </summary>
-        /// <param name="deviceId">Код СКРМ.</param>
-        /// <returns>СКРМ или <c>null</c>, если СКРМ не найдено.</returns>
-        public Device? FindDevice(int deviceId)
-        {
-            Device? device;
-            return _devices.TryGetValue(deviceId, out device)
-                ? device
-                : null;
-        }
-
-        /// <summary>
         /// Проверяет, задано ли состояние СКРМ в заданном часе в файле smp_smzu.csv.
         /// </summary>
         /// <param name="deviceId">Код СКРМ.</param>

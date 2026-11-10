@@ -28,12 +28,12 @@ namespace VrdoPdg.Infrastructure
         private const int MinFieldCount = 4;
 
         /// <summary>
-        /// Наибольшее число полей записи.
+        /// Наибольшее число полей записи
         /// </summary>
         private const int MaxFieldCount = 9;
 
         /// <summary>
-        /// Наибольшее число ошибок, выводимых в сообщении.
+        /// Наибольшее число ошибок, выводимых в сообщении
         /// </summary>
         private const int MaxReportedErrors = 5;
 
@@ -182,7 +182,7 @@ namespace VrdoPdg.Infrastructure
         }
 
         /// <summary>
-        /// Разбирает поля записи.
+        /// Разбирает поля записи
         /// </summary>
         /// <param name="fields">Поля строки.</param>
         /// <param name="lineNumber">Номер строки.</param>

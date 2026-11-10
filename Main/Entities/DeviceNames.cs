@@ -78,18 +78,6 @@ namespace VrdoPdg.Model.Entities
         }
 
         /// <summary>
-        /// Возвращает наименование вида коммутируемого СКРМ.
-        /// </summary>
-        /// <param name="kind">Вид коммутируемого СКРМ.</param>
-        /// <returns>Наименование вида.</returns>
-        public static string GetKindName(SwitchedDeviceKind kind)
-        {
-            return kind == SwitchedDeviceKind.CapacitorBank
-                ? CapacitorBank
-                : Reactor;
-        }
-
-        /// <summary>
         /// Определяет вид коммутируемого СКРМ по наименованию.
         /// </summary>
         /// <param name="name">Наименование вида.</param>

@@ -3,19 +3,18 @@ using System;
 namespace VrdoPdg.Model.Entities
 {
     /// <summary>
-    /// СКРМ: средство компенсации реактивной мощности или генератор,
-    /// используемые алгоритмом для регулирования напряжения.
+    /// СКРМ, используемые алгоритмом для регулирования напряжения
     /// </summary>
     public sealed class Device
     {
         /// <summary>
-        /// Создает СКРМ.
+        /// Создает СКРМ
         /// </summary>
-        /// <param name="id">Код СКРМ в БД.</param>
-        /// <param name="type">Тип СКРМ.</param>
-        /// <param name="name">Наименование СКРМ.</param>
-        /// <param name="number">Номер СКРМ в МТ.</param>
-        /// <param name="switchedKind">Вид коммутируемого СКРМ.</param>
+        /// <param name="id">Код СКРМ в БД</param>
+        /// <param name="type">Тип СКРМ</param>
+        /// <param name="name">Наименование СКРМ</param>
+        /// <param name="number">Номер СКРМ в МТ</param>
+        /// <param name="switchedKind">Вид коммутируемого СКРМ</param>
         public Device(int id, DeviceType type, string name, int number, SwitchedDeviceKind? switchedKind)
         {
             if (type == DeviceType.Switched && switchedKind == null)
@@ -33,17 +32,17 @@ namespace VrdoPdg.Model.Entities
         }
 
         /// <summary>
-        /// Код СКРМ в БД.
+        /// Код СКРМ в БД
         /// </summary>
         public int Id { get; }
 
         /// <summary>
-        /// Тип СКРМ.
+        /// Тип СКРМ
         /// </summary>
         public DeviceType Type { get; }
 
         /// <summary>
-        /// Наименование СКРМ.
+        /// Наименование СКРМ
         /// </summary>
         public string Name { get; }
 
@@ -59,12 +58,12 @@ namespace VrdoPdg.Model.Entities
         public SwitchedDeviceKind? SwitchedKind { get; }
 
         /// <summary>
-        /// Признак БСК: коммутируемого СКРМ, выдающего реактивную мощность.
+        /// Признак БСК
         /// </summary>
         public bool IsCapacitorBank => SwitchedKind == SwitchedDeviceKind.CapacitorBank;
 
         /// <summary>
-        /// Наименование типа СКРМ.
+        /// Наименование типа СКРМ
         /// </summary>
         public string TypeName => DeviceNames.GetTypeName(Type);
 
@@ -74,7 +73,7 @@ namespace VrdoPdg.Model.Entities
         public string NumberText => DeviceNames.GetNumberCaption(Type) + " " + Number;
 
         /// <summary>
-        /// Возвращает наименование СКРМ с номером в МТ.
+        /// Возвращает наименование СКРМ с номером в МТ
         /// </summary>
         /// <returns>Строка вида «Р-1 ПС 500 кВ Барнаульская (реактор 9)».</returns>
         public override string ToString()

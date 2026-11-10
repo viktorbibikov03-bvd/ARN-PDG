@@ -1,12 +1,10 @@
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Runtime.InteropServices;
 using System.Runtime.Versioning;
 
 using ASTRALib;
 
-using VrdoPdg.Model.Entities;
 using VrdoPdg.Model.Regime;
 
 namespace VrdoPdg.Infrastructure.Bars
@@ -156,9 +154,6 @@ namespace VrdoPdg.Infrastructure.Bars
                 return null;
             }
 
-            // Узел подключения генератора: столбец Node таблицы «Генераторы УР» — номер ny таблицы «Узлы».
-            // Заданное напряжение, загрузка и пределы реактивной мощности берутся из строки узла:
-            // после расчета УР обновляется qg узла, а столбец Q таблицы генераторов не меняется.
             int nodeNumber = _generators.ReadInteger("Node", row);
             int nodeRow;
             if (!nodes.TryFindRow(nodeNumber, out nodeRow))
@@ -239,9 +234,9 @@ namespace VrdoPdg.Infrastructure.Bars
         }
 
         /// <summary>
-        /// Освобождает объект ASTRALib.
+        /// Освобождает объект ASTRALib
         /// </summary>
-        /// <param name="rastr">Объект ASTRALib.</param>
+        /// <param name="rastr">Объект ASTRALib</param>
         private static void ReleaseComObject(IRastr rastr)
         {
             if (Marshal.IsComObject(rastr))
@@ -251,12 +246,12 @@ namespace VrdoPdg.Infrastructure.Bars
         }
 
         /// <summary>
-        /// Ищет строку таблицы по ключу.
+        /// Ищет строку таблицы по ключу
         /// </summary>
-        /// <param name="table">Таблица.</param>
-        /// <param name="key">Значение ключа.</param>
-        /// <param name="caption">Наименование объекта для сообщения об ошибке.</param>
-        /// <returns>Индекс строки.</returns>
+        /// <param name="table">Таблица</param>
+        /// <param name="key">Значение ключа</param>
+        /// <param name="caption">Наименование объекта для сообщения об ошибке</param>
+        /// <returns>Индекс строки</returns>
         private static int FindRow(RastrTable table, int key, string caption)
         {
             int row;
@@ -269,7 +264,7 @@ namespace VrdoPdg.Infrastructure.Bars
         }
 
         /// <summary>
-        /// Запоминает исходное значение ячейки и записывает новое.
+        /// Запоминает исходное значение ячейки и записывает новое
         /// </summary>
         /// <param name="change">Изменение, в которое добавляется ячейка.</param>
         /// <param name="column">Столбец.</param>
@@ -283,7 +278,7 @@ namespace VrdoPdg.Infrastructure.Bars
         }
 
         /// <summary>
-        /// Восстанавливает исходные значения ячеек изменения.
+        /// Восстанавливает исходные значения ячеек изменения
         /// </summary>
         /// <param name="change">Изменение.</param>
         private static void Restore(List<CellValue> change)
@@ -296,9 +291,9 @@ namespace VrdoPdg.Infrastructure.Bars
         }
 
         /// <summary>
-        /// Возвращает объект ASTRALib, проверяя, что МТ открыта.
+        /// Возвращает объект ASTRALib, проверяя, что МТ открыта
         /// </summary>
-        /// <returns>Объект ASTRALib.</returns>
+        /// <returns>Объект ASTRALib</returns>
         private IRastr GetRastr()
         {
             if (_rastr == null)

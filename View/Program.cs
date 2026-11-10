@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.IO;
 using System.Windows.Forms;
 
@@ -15,17 +15,17 @@ namespace VrdoPdg.View
 {
     /// <summary>
     /// Точка входа АС «ВРДО ПДГ»: создание модулей инфраструктуры, сервисов прикладного уровня
-    /// и главной формы.
+    /// и главной формы
     /// </summary>
     internal static class Program
     {
         /// <summary>
-        /// Время ожидания освобождения ASTRALib при завершении программы.
+        /// Время ожидания освобождения ASTRALib при завершении программы
         /// </summary>
         private static readonly TimeSpan _shutdownTimeout = TimeSpan.FromSeconds(10);
 
         /// <summary>
-        /// Запускает приложение.
+        /// Запускает приложение
         /// </summary>
         [STAThread]
         private static void Main()
@@ -91,10 +91,10 @@ namespace VrdoPdg.View
 
         /// <summary>
         /// Загружает схему таблиц по часам. Если файл не найден или заполнен неправильно,
-        /// выводится предупреждение и таблицы форм просмотра режима остаются пустыми.
+        /// выводится предупреждение и таблицы форм просмотра режима остаются пустыми
         /// </summary>
         /// <param name="path">Путь к файлу схемы таблиц.</param>
-        /// <returns>Схема таблиц.</returns>
+        /// <returns>Схема таблиц</returns>
         private static HourlyLayout LoadHourlyLayout(string path)
         {
             try

@@ -33,7 +33,7 @@ namespace VrdoPdg.View.Layout
         }
 
         /// <summary>
-        /// Пустая схема: таблицы не содержат объектов.
+        /// Пустая схема: таблицы не содержат объектов
         /// </summary>
         public static HourlyLayout Empty { get; } = new HourlyLayout(500, 525, new HourlyLayoutPowerSystem[0]);
 

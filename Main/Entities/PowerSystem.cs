@@ -2,12 +2,12 @@ namespace VrdoPdg.Model.Entities
 {
     /// <summary>
     /// Энергосистема. По энергосистемам КП распределяются по вкладкам
-    /// форм «Напряжение по часам» и «Сравнение расчетов».
+    /// форм «Напряжение по часам» и «Сравнение расчетов»
     /// </summary>
     public sealed class PowerSystem
     {
         /// <summary>
-        /// Создает энергосистему.
+        /// Создает энергосистему
         /// </summary>
         /// <param name="id">Код энергосистемы.</param>
         /// <param name="name">Наименование энергосистемы.</param>
@@ -18,22 +18,13 @@ namespace VrdoPdg.Model.Entities
         }
 
         /// <summary>
-        /// Код энергосистемы. Задает порядок вкладок.
+        /// Код энергосистемы. Задает порядок вкладок
         /// </summary>
         public int Id { get; }
 
         /// <summary>
-        /// Наименование энергосистемы.
+        /// Наименование энергосистемы
         /// </summary>
         public string Name { get; }
-
-        /// <summary>
-        /// Возвращает наименование энергосистемы.
-        /// </summary>
-        /// <returns>Наименование энергосистемы.</returns>
-        public override string ToString()
-        {
-            return Name;
-        }
     }
 }

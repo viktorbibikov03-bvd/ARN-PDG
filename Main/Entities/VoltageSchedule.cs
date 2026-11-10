@@ -4,17 +4,17 @@ using System.Linq;
 namespace VrdoPdg.Model.Entities
 {
     /// <summary>
-    /// Графики напряжений в КП: границы допустимой области по каждому КП и часу суток.
+    /// Графики напряжений в КП: границы допустимой области по каждому КП и часу суток
     /// </summary>
     public sealed class VoltageSchedule
     {
         /// <summary>
-        /// Границы графиков по коду КП и часу суток.
+        /// Границы графиков по коду КП и часу суток
         /// </summary>
         private readonly Dictionary<(int ControlPointId, int Hour), VoltageBounds> _bounds;
 
         /// <summary>
-        /// Создает графики напряжений.
+        /// Создает графики напряжений
         /// </summary>
         /// <param name="bounds">Границы графиков по КП и часам.</param>
         public VoltageSchedule(IEnumerable<VoltageBounds> bounds)
@@ -27,15 +27,7 @@ namespace VrdoPdg.Model.Entities
         }
 
         /// <summary>
-        /// Все границы графиков, упорядоченные по коду КП и часу.
-        /// </summary>
-        public IReadOnlyList<VoltageBounds> All => _bounds.Values
-            .OrderBy(item => item.ControlPointId)
-            .ThenBy(item => item.Hour)
-            .ToList();
-
-        /// <summary>
-        /// Возвращает границы графика КП в заданном часе.
+        /// Возвращает границы графика КП в заданном часе
         /// </summary>
         /// <param name="controlPointId">Код КП.</param>
         /// <param name="hour">Час суток (1–24).</param>

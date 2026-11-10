@@ -26,12 +26,12 @@ namespace VrdoPdg.Infrastructure
         private const string MissingDatabaseMessage = "Не найден файл базы данных";
 
         /// <summary>
-        /// Сообщение об отсутствии таблиц системы в БД.
+        /// Сообщение об отсутствии таблиц системы в БД
         /// </summary>
         private const string MissingTablesMessage = "База данных не содержит таблиц системы";
 
         /// <summary>
-        /// Формат хранения даты и времени (ISO 8601).
+        /// Формат хранения даты и времени (ISO 8601)
         /// </summary>
         private const string DateTimeFormat = "yyyy-MM-dd HH:mm:ss";
 
@@ -52,7 +52,7 @@ namespace VrdoPdg.Infrastructure
         /// <summary>
         /// Создает репозиторий.
         /// </summary>
-        /// <param name="databasePath">Путь к файлу БД.</param>
+        /// <param name="databasePath">Путь к файлу БД</param>
         public ModelDataRepository(string databasePath)
         {
             if (string.IsNullOrWhiteSpace(databasePath))
@@ -70,7 +70,7 @@ namespace VrdoPdg.Infrastructure
         }
 
         /// <summary>
-        /// Полный путь к файлу БД.
+        /// Полный путь к файлу БД
         /// </summary>
         public string DatabasePath { get; }
 
@@ -162,7 +162,7 @@ namespace VrdoPdg.Infrastructure
 
             return controlPoints
                 .Select(item => new ControlPoint(item.Id, item.PowerSystemId, item.Name, nodes[item.Id]))
-                .ToList();
+                    .ToList();
         }
 
         /// <inheritdoc/>
@@ -247,7 +247,6 @@ namespace VrdoPdg.Infrastructure
                     }
                 }
 
-                // Временные отрицательные приоритеты исключают нарушение уникальности при перестановке.
                 using (SqliteCommand shift = CreateCommand(
                     connection,
                     transaction,

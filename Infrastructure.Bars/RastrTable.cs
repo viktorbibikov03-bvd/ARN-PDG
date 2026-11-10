@@ -8,7 +8,7 @@ using ASTRALib;
 namespace VrdoPdg.Infrastructure.Bars
 {
     /// <summary>
-    /// Таблица МТ с индексом строк по ключевому столбцу.
+    /// Таблица МТ с индексом строк по ключевому столбцу
     /// </summary>
     internal sealed class RastrTable
     {
@@ -18,20 +18,20 @@ namespace VrdoPdg.Infrastructure.Bars
         private readonly ITable _table;
 
         /// <summary>
-        /// Столбцы таблицы по имени.
+        /// Столбцы таблицы по имени
         /// </summary>
         private readonly Dictionary<string, ICol> _columns = new Dictionary<string, ICol>(StringComparer.Ordinal);
 
         /// <summary>
-        /// Индексы строк по значению ключевого столбца.
+        /// Индексы строк по значению ключевого столбца
         /// </summary>
         private readonly Dictionary<int, int> _rows = new Dictionary<int, int>();
 
         /// <summary>
-        /// Создает таблицу и строит индекс строк.
+        /// Создает таблицу и строит индекс строк
         /// </summary>
-        /// <param name="table">Таблица ASTRALib.</param>
-        /// <param name="keyColumn">Имя ключевого столбца.</param>
+        /// <param name="table">Таблица ASTRALib</param>
+        /// <param name="keyColumn">Имя ключевого столбца</param>
         private RastrTable(ITable table, string keyColumn)
         {
             _table = table;
@@ -48,17 +48,12 @@ namespace VrdoPdg.Infrastructure.Bars
         }
 
         /// <summary>
-        /// Количество строк таблицы.
+        /// Открывает таблицу МТ
         /// </summary>
-        public int Count => _table.Count;
-
-        /// <summary>
-        /// Открывает таблицу МТ.
-        /// </summary>
-        /// <param name="rastr">Объект ASTRALib.</param>
-        /// <param name="tableName">Имя таблицы.</param>
-        /// <param name="keyColumn">Имя ключевого столбца.</param>
-        /// <returns>Таблица или <c>null</c>, если таблицы нет в МТ.</returns>
+        /// <param name="rastr">Объект ASTRALib</param>
+        /// <param name="tableName">Имя таблицы</param>
+        /// <param name="keyColumn">Имя ключевого столбца</param>
+        /// <returns>Таблица или <c>null</c>, если таблицы нет в МТ</returns>
         public static RastrTable? TryOpen(IRastr rastr, string tableName, string keyColumn)
         {
             ITable? table;
@@ -77,11 +72,11 @@ namespace VrdoPdg.Infrastructure.Bars
         }
 
         /// <summary>
-        /// Ищет строку по значению ключевого столбца.
+        /// Ищет строку по значению ключевого столбца
         /// </summary>
-        /// <param name="key">Значение ключа.</param>
-        /// <param name="row">Индекс строки.</param>
-        /// <returns><c>true</c>, если строка найдена.</returns>
+        /// <param name="key">Значение ключа</param>
+        /// <param name="row">Индекс строки</param>
+        /// <returns><c>true</c>, если строка найдена</returns>
         public bool TryFindRow(int key, out int row)
         {
             return _rows.TryGetValue(key, out row);

@@ -119,10 +119,5 @@ namespace VrdoPdg.View.Theme
         /// Сравнить.
         /// </summary>
         public const char Compare = '\uE89A';
-
-        /// <summary>
-        /// Командная строка (заголовок протокола).
-        /// </summary>
-        public const char Console = '\uE756';
     }
 }
