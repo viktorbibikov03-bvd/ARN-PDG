@@ -233,6 +233,7 @@ namespace VrdoPdg.Tests
             Assert.That(item.Device.Id, Is.EqualTo(1));
             Assert.That(item.Priority, Is.EqualTo(2));
             Assert.That(item.DefaultPriority, Is.EqualTo(1));
+            Assert.That(EfficiencyTableService.FindDevice(_devices, DeviceType.Switched, null), Is.Null);
         }
 
         /// <summary>
