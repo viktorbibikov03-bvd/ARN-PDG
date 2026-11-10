@@ -1,4 +1,6 @@
+using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Text;
 
 using NUnit.Framework;
@@ -107,6 +109,76 @@ namespace VrdoPdg.Tests
             IReadOnlyList<string> lines = new SmpSmzuCsvWriter(',').ComposeLines(source, new[] { _records[1] });
 
             Assert.That(lines[lines.Count - 1], Is.EqualTo("01;4;19;263;0;0;235.7;0;0"));
+        }
+
+        /// <summary>
+        /// В пустой файл записи добавляются после пустой строки-разделителя.
+        /// </summary>
+        [Test]
+        public void ComposeLines_EmptySource_AddsSecondBlock()
+        {
+            IReadOnlyList<string> lines = new SmpSmzuCsvWriter('.').ComposeLines(CreateDocument(), _records);
+
+            Assert.That(lines, Is.EqualTo(new[]
+            {
+                string.Empty,
+                "20;7;24;185;0;0;1;0;0",
+                "01;4;19;263;0;0;235.7;0;0"
+            }));
+        }
+
+        /// <summary>
+        /// Десятичным разделителем по умолчанию может быть только точка или запятая.
+        /// </summary>
+        [Test]
+        public void Constructor_InvalidSeparator_Throws()
+        {
+            Assert.Throws<ArgumentException>(() => new SmpSmzuCsvWriter(';'));
+            Assert.DoesNotThrow(() => new SmpSmzuCsvWriter());
+        }
+
+        /// <summary>
+        /// Пустые значения записываются пустыми полями.
+        /// </summary>
+        [Test]
+        public void FormatRecord_EmptyValues_WritesEmptyFields()
+        {
+            SmpSmzuRecord record = new SmpSmzuRecord(16, 7, 16, 613, 0, 0, null, 50, null, 0);
+
+            Assert.That(SmpSmzuCsvWriter.FormatRecord(record, ','), Is.EqualTo("16;7;16;613;0;0;;50;"));
+        }
+
+        /// <summary>
+        /// Файл записывается в новый каталог с переводами строк и кодировкой исходного файла;
+        /// файл без каталога записывается в текущий каталог.
+        /// </summary>
+        [Test]
+        public void Write_NewDirectory_CreatesDirectoryAndFile()
+        {
+            string directory = Path.Combine(Path.GetTempPath(), "vrdo_out_" + Path.GetRandomFileName());
+            string currentDirectory = Environment.CurrentDirectory;
+            try
+            {
+                string path = Path.Combine(directory, "BarsCSV", "smp_smzu.csv");
+                SmpSmzuDocument source = CreateDocument("20;1;24;5;0;0;1;0;0");
+
+                new SmpSmzuCsvWriter(',').Write(path, source, _records);
+                Directory.CreateDirectory(directory);
+                Environment.CurrentDirectory = directory;
+                new SmpSmzuCsvWriter(',').Write("local.csv", source, new SmpSmzuRecord[0]);
+
+                Assert.That(
+                    File.ReadAllText(path),
+                    Is.EqualTo("20;1;24;5;0;0;1;0;0\r\n\r\n20;7;24;185;0;0;1;0;0\r\n01;4;19;263;0;0;235,7;0;0\r\n"));
+                Assert.That(
+                    File.ReadAllText(Path.Combine(directory, "local.csv")),
+                    Is.EqualTo("20;1;24;5;0;0;1;0;0\r\n"));
+            }
+            finally
+            {
+                Environment.CurrentDirectory = currentDirectory;
+                Directory.Delete(directory, true);
+            }
         }
 
         /// <summary>
