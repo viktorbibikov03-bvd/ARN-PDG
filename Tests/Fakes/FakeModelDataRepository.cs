@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -46,6 +47,11 @@ namespace VrdoPdg.Tests.Fakes
         /// </summary>
         public List<DeviceMode> SavedModes { get; } = new List<DeviceMode>();
 
+        /// <summary>
+        /// Имена методов, которые завершаются ошибкой обращения к БД.
+        /// </summary>
+        public HashSet<string> FailingMethods { get; } = new HashSet<string>();
+
         /// <inheritdoc/>
         public void CheckDatabase()
         {
@@ -60,6 +66,7 @@ namespace VrdoPdg.Tests.Fakes
         /// <inheritdoc/>
         public IReadOnlyList<ControlPoint> GetControlPoints()
         {
+            CheckFailure(nameof(GetControlPoints));
             return ControlPoints.ToList();
         }
 
@@ -72,6 +79,7 @@ namespace VrdoPdg.Tests.Fakes
         /// <inheritdoc/>
         public IReadOnlyList<EfficiencyEntry> GetEfficiencyEntries()
         {
+            CheckFailure(nameof(GetEfficiencyEntries));
             return EfficiencyEntries.ToList();
         }
 
@@ -104,12 +112,14 @@ namespace VrdoPdg.Tests.Fakes
         /// <inheritdoc/>
         public IReadOnlyList<VoltageBounds> GetVoltageSchedule()
         {
+            CheckFailure(nameof(GetVoltageSchedule));
             return Schedule.ToList();
         }
 
         /// <inheritdoc/>
         public void SaveVoltageSchedule(IReadOnlyList<VoltageBounds> bounds)
         {
+            CheckFailure(nameof(SaveVoltageSchedule));
             Schedule.Clear();
             Schedule.AddRange(bounds);
         }
@@ -117,10 +127,23 @@ namespace VrdoPdg.Tests.Fakes
         /// <inheritdoc/>
         public void SaveRegime(IReadOnlyList<NodeVoltage> voltages, IReadOnlyList<DeviceMode> modes)
         {
+            CheckFailure(nameof(SaveRegime));
             SavedVoltages.Clear();
             SavedVoltages.AddRange(voltages);
             SavedModes.Clear();
             SavedModes.AddRange(modes);
+        }
+
+        /// <summary>
+        /// Завершает метод ошибкой обращения к БД, если метод задан в перечне <see cref="FailingMethods"/>.
+        /// </summary>
+        /// <param name="method">Имя метода.</param>
+        private void CheckFailure(string method)
+        {
+            if (FailingMethods.Contains(method))
+            {
+                throw new InvalidOperationException("database is locked");
+            }
         }
     }
 }

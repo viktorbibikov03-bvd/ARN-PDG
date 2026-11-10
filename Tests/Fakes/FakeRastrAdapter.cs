@@ -52,6 +52,21 @@ namespace VrdoPdg.Tests.Fakes
         public Func<bool>? DivergenceCondition { get; set; }
 
         /// <summary>
+        /// Условие, при котором узлы отключены: напряжения в узлах не рассчитываются.
+        /// </summary>
+        public Func<bool>? NodeLossCondition { get; set; }
+
+        /// <summary>
+        /// Ошибка ПО «Барс» при открытии МТ.
+        /// </summary>
+        public Exception? OpenException { get; set; }
+
+        /// <summary>
+        /// Ошибка ПО «Барс» при выборе часа.
+        /// </summary>
+        public Exception? SelectHourException { get; set; }
+
+        /// <summary>
         /// Часы, расчет режима которых при выборе часа не сходится.
         /// </summary>
         public HashSet<int> DivergentHours { get; } = new HashSet<int>();
@@ -85,6 +100,11 @@ namespace VrdoPdg.Tests.Fakes
         /// <inheritdoc/>
         public void Open(string megapointPath)
         {
+            if (OpenException != null)
+            {
+                throw OpenException;
+            }
+
             OpenCount++;
             _undo.Clear();
         }
@@ -92,6 +112,11 @@ namespace VrdoPdg.Tests.Fakes
         /// <inheritdoc/>
         public bool SelectHour(int hour)
         {
+            if (SelectHourException != null)
+            {
+                throw SelectHourException;
+            }
+
             _hour = hour;
             _undo.Clear();
             return !DivergentHours.Contains(hour);
@@ -108,7 +133,7 @@ namespace VrdoPdg.Tests.Fakes
         public double? GetNodeVoltage(int nodeNumber)
         {
             double[]? values;
-            if (!BaseVoltages.TryGetValue(nodeNumber, out values))
+            if (!BaseVoltages.TryGetValue(nodeNumber, out values) || (NodeLossCondition != null && NodeLossCondition()))
             {
                 return null;
             }
