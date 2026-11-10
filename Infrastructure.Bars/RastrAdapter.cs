@@ -112,6 +112,24 @@ namespace VrdoPdg.Infrastructure.Bars
         }
 
         /// <inheritdoc/>
+        public NodeState? GetNodeState(int nodeNumber)
+        {
+            RastrTable nodes = GetNodes();
+            int row;
+            if (!nodes.TryFindRow(nodeNumber, out row))
+            {
+                return null;
+            }
+
+            bool isOn = !nodes.ReadBoolean("sta", row);
+            return new NodeState(
+                isOn,
+                isOn ? nodes.ReadDouble("vras", row) : 0,
+                nodes.ReadDouble("vzd", row),
+                nodes.ReadDouble("qmin", row));
+        }
+
+        /// <inheritdoc/>
         public ControlledDeviceState? GetControlledDevice(int nodeNumber)
         {
             RastrTable nodes = GetNodes();

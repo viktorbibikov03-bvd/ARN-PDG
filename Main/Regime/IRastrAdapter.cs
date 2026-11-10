@@ -39,6 +39,13 @@ namespace VrdoPdg.Model.Regime
         double? GetNodeVoltage(int nodeNumber);
 
         /// <summary>
+        /// Возвращает значения строки узла
+        /// </summary>
+        /// <param name="nodeNumber">Номер узла</param>
+        /// <returns>Значения строки узла или <c>null</c>, если узел не найден</returns>
+        NodeState? GetNodeState(int nodeNumber);
+
+        /// <summary>
         /// Возвращает состояние управляемого СКРМ
         /// </summary>
         /// <param name="nodeNumber">Номер узла СКРМ</param>

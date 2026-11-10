@@ -69,20 +69,17 @@ namespace VrdoPdg.Model.Services
         {
             foreach (int nodeNumber in observedObjects.NodeNumbers)
             {
-                ControlledDeviceState? node = rastrAdapter.GetControlledDevice(nodeNumber);
-                if (node == null)
+                NodeState? node = rastrAdapter.GetNodeState(nodeNumber);
+                if (node != null)
                 {
-                    continue;
+                    snapshot.SetObservedNode(new ObservedNodeState(
+                        nodeNumber,
+                        hour,
+                        node.IsOn,
+                        node.Voltage,
+                        node.SetVoltage,
+                        node.MinReactivePower));
                 }
-
-                double? voltage = rastrAdapter.GetNodeVoltage(nodeNumber);
-                snapshot.SetObservedNode(new ObservedNodeState(
-                    nodeNumber,
-                    hour,
-                    voltage.HasValue,
-                    voltage ?? 0,
-                    node.SetVoltage,
-                    node.MinReactivePower));
             }
 
             foreach (int reactorNumber in observedObjects.ReactorNumbers)
