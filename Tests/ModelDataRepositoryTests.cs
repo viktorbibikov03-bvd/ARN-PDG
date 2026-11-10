@@ -270,7 +270,8 @@ namespace VrdoPdg.Tests
 
         /// <summary>
         /// СКРМ, исключенное из таблицы эффективности, теряет действующий приоритет: строка
-        /// с приоритетом по умолчанию сохраняется, остальные удаляются.
+        /// с приоритетом по умолчанию сохраняется, остальные удаляются; добавленное СКРМ
+        /// сохраняется без приоритета по умолчанию.
         /// </summary>
         [Test]
         public void SaveEfficiencyTable_RemovedDevices_KeepOnlyDefaultPriorities()
@@ -280,19 +281,22 @@ namespace VrdoPdg.Tests
             Execute("INSERT INTO Efficiency_table (id_cp, id_dev, priority, priority_pur) VALUES "
                 + "(9001, 1, 1, 1), (9001, 2, 2, NULL), (9001, 3, 3, 2)");
 
-            repository.SaveEfficiencyTable(9001, new[] { new DevicePriority(3, 1) });
+            repository.SaveEfficiencyTable(9001, new[] { new DevicePriority(3, 1), new DevicePriority(4, 2) });
 
             List<EfficiencyEntry> saved = repository.GetEfficiencyEntries()
                 .Where(entry => entry.ControlPointId == 9001)
                 .OrderBy(entry => entry.DeviceId)
                 .ToList();
-            Assert.That(saved, Has.Count.EqualTo(2));
+            Assert.That(saved, Has.Count.EqualTo(3));
             Assert.That(saved[0].DeviceId, Is.EqualTo(1));
             Assert.That(saved[0].Priority, Is.Null);
             Assert.That(saved[0].DefaultPriority, Is.EqualTo(1));
             Assert.That(saved[1].DeviceId, Is.EqualTo(3));
             Assert.That(saved[1].Priority, Is.EqualTo(1));
             Assert.That(saved[1].DefaultPriority, Is.EqualTo(2));
+            Assert.That(saved[2].DeviceId, Is.EqualTo(4));
+            Assert.That(saved[2].Priority, Is.EqualTo(2));
+            Assert.That(saved[2].DefaultPriority, Is.Null);
         }
 
         /// <summary>
