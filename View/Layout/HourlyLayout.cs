@@ -17,19 +17,35 @@ namespace VrdoPdg.View.Layout
     internal sealed class HourlyLayout
     {
         /// <summary>
+        /// Нижняя граница напряжений, выделяемых цветом, по умолчанию, кВ.
+        /// </summary>
+        public const double DefaultHighlightMinVoltage = 400;
+
+        /// <summary>
+        /// Верхняя граница напряжений, выделяемых цветом, по умолчанию, кВ.
+        /// </summary>
+        public const double DefaultHighlightMaxVoltage = 600;
+
+        /// <summary>
         /// Создает схему таблиц.
         /// </summary>
         /// <param name="lowerVoltageBound">Нижняя граница напряжения на шинах, кВ.</param>
         /// <param name="upperVoltageBound">Верхняя граница напряжения на шинах, кВ.</param>
         /// <param name="powerSystems">Энергосистемы.</param>
+        /// <param name="highlightMinVoltage">Нижняя граница напряжений, выделяемых цветом, кВ.</param>
+        /// <param name="highlightMaxVoltage">Верхняя граница напряжений, выделяемых цветом, кВ.</param>
         public HourlyLayout(
             double lowerVoltageBound,
             double upperVoltageBound,
-            IReadOnlyList<HourlyLayoutPowerSystem> powerSystems)
+            IReadOnlyList<HourlyLayoutPowerSystem> powerSystems,
+            double highlightMinVoltage = DefaultHighlightMinVoltage,
+            double highlightMaxVoltage = DefaultHighlightMaxVoltage)
         {
             LowerVoltageBound = lowerVoltageBound;
             UpperVoltageBound = upperVoltageBound;
             PowerSystems = powerSystems;
+            HighlightMinVoltage = highlightMinVoltage;
+            HighlightMaxVoltage = highlightMaxVoltage;
         }
 
         /// <summary>
@@ -51,6 +67,17 @@ namespace VrdoPdg.View.Layout
         /// Энергосистемы.
         /// </summary>
         public IReadOnlyList<HourlyLayoutPowerSystem> PowerSystems { get; }
+
+        /// <summary>
+        /// Нижняя граница напряжений, выделяемых цветом при выходе за границы графика, кВ:
+        /// узлы другого класса напряжения не выделяются.
+        /// </summary>
+        public double HighlightMinVoltage { get; }
+
+        /// <summary>
+        /// Верхняя граница напряжений, выделяемых цветом при выходе за границы графика, кВ.
+        /// </summary>
+        public double HighlightMaxVoltage { get; }
 
         /// <summary>
         /// Загружает схему таблиц из файла.
@@ -93,7 +120,24 @@ namespace VrdoPdg.View.Layout
                 throw new InvalidDataException("Нижняя граница напряжения должна быть меньше верхней");
             }
 
+            if (layout.HighlightMinVoltage >= layout.HighlightMaxVoltage)
+            {
+                throw new InvalidDataException(
+                    "Нижняя граница напряжений, выделяемых цветом, должна быть меньше верхней");
+            }
+
             return layout;
+        }
+
+        /// <summary>
+        /// Проверяет, выделяется ли напряжение цветом при выходе за границы графика: выделяются
+        /// только напряжения в диапазоне от <see cref="HighlightMinVoltage"/> до <see cref="HighlightMaxVoltage"/>.
+        /// </summary>
+        /// <param name="voltage">Напряжение, кВ.</param>
+        /// <returns><c>true</c>, если напряжение выделяется цветом.</returns>
+        public bool IsHighlighted(double voltage)
+        {
+            return voltage >= HighlightMinVoltage && voltage <= HighlightMaxVoltage;
         }
 
         /// <summary>

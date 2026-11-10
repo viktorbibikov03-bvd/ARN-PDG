@@ -1,6 +1,8 @@
 {
   "lowerVoltageBound": 500,
   "upperVoltageBound": 525,
+  "highlightMinVoltage": 400,
+  "highlightMaxVoltage": 600,
   "powerSystems": [
     {
       "name": "ОЭС Сибири",

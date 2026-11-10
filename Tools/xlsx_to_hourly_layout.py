@@ -29,6 +29,11 @@ SHEETS = {
 LOWER_VOLTAGE_BOUND = 500
 UPPER_VOLTAGE_BOUND = 525
 
+# Диапазон напряжений, выделяемых цветом при выходе за границы графика, кВ: узлы другого
+# класса напряжения (не 500 кВ) не выделяются.
+HIGHLIGHT_MIN_VOLTAGE = 400
+HIGHLIGHT_MAX_VOLTAGE = 600
+
 # Ссылка формулы RTD на номер узла: "ny="&D$4.
 NODE_REFERENCE = re.compile(r'ny="&\$?([A-Z]+)\$?\d+')
 
@@ -133,6 +138,8 @@ def main():
     layout = {
         "lowerVoltageBound": LOWER_VOLTAGE_BOUND,
         "upperVoltageBound": UPPER_VOLTAGE_BOUND,
+        "highlightMinVoltage": HIGHLIGHT_MIN_VOLTAGE,
+        "highlightMaxVoltage": HIGHLIGHT_MAX_VOLTAGE,
         "powerSystems": [{"name": name, "blocks": read_sheet(workbook[sheet], warnings)}
                          for sheet, name in SHEETS.items()],
     }

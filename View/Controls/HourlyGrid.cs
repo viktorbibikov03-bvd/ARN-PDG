@@ -573,6 +573,7 @@ namespace VrdoPdg.View.Controls
 
         /// <summary>
         /// Формирует значение напряжения на шинах с выделением выхода за границы графика.
+        /// Напряжения вне диапазона выделения схемы таблиц (узлы другого класса напряжения) не выделяются.
         /// </summary>
         /// <param name="node">Значения узла.</param>
         /// <param name="source">Источник значений.</param>
@@ -591,6 +592,11 @@ namespace VrdoPdg.View.Controls
             }
 
             string text = ValueFormat.ShortVoltage(node.Voltage);
+            if (!_model!.Layout.IsHighlighted(node.Voltage))
+            {
+                return new CellText(text, numberColor, null);
+            }
+
             VoltageBounds bounds = _model!.GetBounds(source, node.NodeNumber, hour);
             if (bounds.IsAbove(node.Voltage))
             {
