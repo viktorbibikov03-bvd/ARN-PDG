@@ -4,7 +4,7 @@ using VrdoPdg.Model.Entities;
 using VrdoPdg.Model.Regime;
 using VrdoPdg.Model.Services;
 
-namespace VrdoPdg.View.Controls
+namespace VrdoPdg.View.Layout
 {
     /// <summary>
     /// Источник значений таблицы по часам: режим до или после расчета и графики напряжений КП БД.

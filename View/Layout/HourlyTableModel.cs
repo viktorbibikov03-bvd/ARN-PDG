@@ -4,9 +4,8 @@ using System.Collections.Generic;
 using VrdoPdg.Model.Entities;
 using VrdoPdg.Model.Regime;
 using VrdoPdg.Model.Services;
-using VrdoPdg.View.Layout;
 
-namespace VrdoPdg.View.Controls
+namespace VrdoPdg.View.Layout
 {
     /// <summary>
     /// Данные таблиц по часам: схема таблиц из файла «Анализ.xlsx» и источники значений —
