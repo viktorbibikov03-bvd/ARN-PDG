@@ -343,13 +343,9 @@ namespace VrdoPdg.Model.Services
             ControlPoint controlPoint,
             CancellationToken cancellationToken)
         {
-            VoltageBounds? bounds = run.Session.Schedule.GetBounds(controlPoint.Id, hourState.Hour);
-            ControlPointNode? mainNode = controlPoint.MainNode;
-            if (bounds == null || mainNode == null)
-            {
-                return false;
-            }
-
+            // КП расчета отобраны методом SelectControlPoints: основной узел и график на все часы заданы.
+            VoltageBounds bounds = run.Session.Schedule.GetBounds(controlPoint.Id, hourState.Hour)!;
+            ControlPointNode mainNode = controlPoint.MainNode!;
             double? voltage = _rastrAdapter.GetNodeVoltage(mainNode.Number);
             if (!voltage.HasValue)
             {
@@ -684,14 +680,8 @@ namespace VrdoPdg.Model.Services
         {
             foreach (ControlPoint controlPoint in run.ControlPoints)
             {
-                VoltageBounds? bounds = run.Session.Schedule.GetBounds(controlPoint.Id, hour);
-                ControlPointNode? mainNode = controlPoint.MainNode;
-                if (bounds == null || mainNode == null)
-                {
-                    continue;
-                }
-
-                double? voltage = _rastrAdapter.GetNodeVoltage(mainNode.Number);
+                VoltageBounds bounds = run.Session.Schedule.GetBounds(controlPoint.Id, hour)!;
+                double? voltage = _rastrAdapter.GetNodeVoltage(controlPoint.MainNode!.Number);
                 if (!voltage.HasValue || bounds.Contains(voltage.Value))
                 {
                     continue;

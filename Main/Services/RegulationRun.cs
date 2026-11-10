@@ -33,7 +33,7 @@ namespace VrdoPdg.Model.Services
         /// </summary>
         /// <param name="session">Исходные данные сеанса.</param>
         /// <param name="efficiencyTables">Таблицы эффективности по коду КП.</param>
-        /// <param name="controlPoints">КП, участвующие в расчете.</param>
+        /// <param name="controlPoints">КП, участвующие в расчете: с основным узлом и графиком на все часы.</param>
         /// <param name="protocol">Протокол расчета.</param>
         public RegulationRun(
             SessionData session,
@@ -94,7 +94,7 @@ namespace VrdoPdg.Model.Services
         /// Возвращает запись протокола о часе КП, создавая при необходимости
         /// записи о КП (метка ВРДО) и о часе (метка ЧАС).
         /// </summary>
-        /// <param name="controlPoint">КП.</param>
+        /// <param name="controlPoint">КП расчета.</param>
         /// <param name="hour">Час суток (1–24).</param>
         /// <param name="voltage">Напряжение в основном узле КП, кВ.</param>
         /// <param name="bounds">Границы графика напряжения.</param>
@@ -110,10 +110,9 @@ namespace VrdoPdg.Model.Services
             ProtocolEntry? controlPointEntry;
             if (!_controlPointEntries.TryGetValue(controlPoint.Id, out controlPointEntry))
             {
-                string nodeText = controlPoint.MainNode == null
-                    ? string.Empty
-                    : " · узел " + controlPoint.MainNode.Number;
-                controlPointEntry = _protocol.Add(ProtocolTag.Vrdo, controlPoint.Name + nodeText);
+                controlPointEntry = _protocol.Add(
+                    ProtocolTag.Vrdo,
+                    controlPoint.Name + " · узел " + controlPoint.MainNode!.Number);
                 _protocol.Add(
                     ProtocolTag.Warning,
                     "Выход за границы графика!",
