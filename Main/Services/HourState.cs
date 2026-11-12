@@ -3,8 +3,8 @@ using System.Collections.Generic;
 namespace VrdoPdg.Model.Services
 {
     /// <summary>
-    /// Состояние ввода режима в пределах одного часа: исчерпанные СКРМ,
-    /// направления выполненных изменений и число шагов генераторов.
+    /// Состояние ввода режима в пределах одного часа: этап ввода режима, исчерпанные СКРМ,
+    /// отложенные изменения, направления выполненных изменений и число шагов генераторов
     /// </summary>
     internal sealed class HourState
     {
@@ -12,6 +12,13 @@ namespace VrdoPdg.Model.Services
         /// СКРМ, исключенные из перебора для КП: режим не сошелся или изменение не подействовало.
         /// </summary>
         private readonly HashSet<(int ControlPointId, int DeviceId)> _exhausted =
+            new HashSet<(int ControlPointId, int DeviceId)>();
+
+        /// <summary>
+        /// СКРМ, изменение которых на первом этапе вывело за границы графика другой КП:
+        /// изменение отложено до второго этапа
+        /// </summary>
+        private readonly HashSet<(int ControlPointId, int DeviceId)> _deferred =
             new HashSet<(int ControlPointId, int DeviceId)>();
 
         /// <summary>
@@ -39,6 +46,40 @@ namespace VrdoPdg.Model.Services
         public int Hour { get; }
 
         /// <summary>
+        /// Признак второго этапа ввода режима: изменение СКРМ допускается, даже если другой КП выходит
+        /// за границы графика, при условии, что наибольшее отклонение напряжения среди КП уменьшается
+        /// </summary>
+        public bool IsSecondStage { get; set; }
+
+        /// <summary>
+        /// Признак отложенных на второй этап изменений СКРМ
+        /// </summary>
+        public bool HasDeferredChanges => _deferred.Count > 0;
+
+        /// <summary>
+        /// Откладывает изменение СКРМ для КП до второго этапа ввода режима
+        /// </summary>
+        /// <param name="controlPointId">Код КП</param>
+        /// <param name="deviceId">Код СКРМ</param>
+        public void MarkDeferred(int controlPointId, int deviceId)
+        {
+            _deferred.Add((controlPointId, deviceId));
+        }
+
+        /// <summary>
+        /// Проверяет, можно ли использовать СКРМ для ввода режима в КП: СКРМ не исключено из перебора,
+        /// а отложенное изменение доступно только на втором этапе
+        /// </summary>
+        /// <param name="controlPointId">Код КП</param>
+        /// <param name="deviceId">Код СКРМ</param>
+        /// <returns><c>true</c>, если СКРМ можно использовать</returns>
+        public bool IsAvailable(int controlPointId, int deviceId)
+        {
+            return !_exhausted.Contains((controlPointId, deviceId))
+                && (IsSecondStage || !_deferred.Contains((controlPointId, deviceId)));
+        }
+
+        /// <summary>
         /// Исключает СКРМ из перебора для КП в этом часе.
         /// </summary>
         /// <param name="controlPointId">Код КП.</param>
@@ -46,17 +87,6 @@ namespace VrdoPdg.Model.Services
         public void MarkExhausted(int controlPointId, int deviceId)
         {
             _exhausted.Add((controlPointId, deviceId));
-        }
-
-        /// <summary>
-        /// Проверяет, исключено ли СКРМ из перебора для КП.
-        /// </summary>
-        /// <param name="controlPointId">Код КП.</param>
-        /// <param name="deviceId">Код СКРМ.</param>
-        /// <returns><c>true</c>, если СКРМ исключено.</returns>
-        public bool IsExhausted(int controlPointId, int deviceId)
-        {
-            return _exhausted.Contains((controlPointId, deviceId));
         }
 
         /// <summary>

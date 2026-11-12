@@ -560,10 +560,11 @@ namespace VrdoPdg.Tests
 
         /// <summary>
         /// Изменение СКРМ, выводящее за границы графика другой КП, который был в допустимой области,
-        /// отменяется; режим вводится следующими СКРМ таблицы эффективности
+        /// на первом этапе откладывается; режим вводится следующими СКРМ таблицы эффективности,
+        /// и второй этап не нужен
         /// </summary>
         [Test]
-        public void Run_ChangeViolatesOtherControlPoint_UndoesChangeAndUsesNextDevice()
+        public void Run_ChangeViolatesOtherControlPoint_DefersChangeAndUsesNextDevice()
         {
             const int otherNode = 570;
             RegulationScenario scenario = new RegulationScenario();
@@ -582,7 +583,10 @@ namespace VrdoPdg.Tests
             Assert.That(result.After.GetVoltage(RegulationScenario.MainNode, 1), Is.EqualTo(525).Within(0.2));
             Assert.That(result.UnresolvedViolations, Is.Empty);
             ProtocolEntry warning = scenario.Protocol.GetEntries().Single(entry => entry.Message
-                == "Изменение отменено: напряжение в другом КП вышло за границы графика");
+                == "Изменение отложено: напряжение в другом КП вышло за границы графика");
+            Assert.That(
+                scenario.Protocol.GetEntries().Any(entry => entry.Message == "Час 1: второй этап ввода режима"),
+                Is.False);
             Assert.That(
                 warning.Details,
                 Is.EqualTo("Р-1 ПС 500 кВ Барнаульская (реактор 9); "
@@ -590,7 +594,8 @@ namespace VrdoPdg.Tests
         }
 
         /// <summary>
-        /// Изменение СКРМ, после которого в основном узле другого КП нет напряжения, отменяется
+        /// Изменение СКРМ, после которого в основном узле другого КП нет напряжения, откладывается
+        /// и на втором этапе не принимается: наибольшее отклонение не уменьшается
         /// </summary>
         [Test]
         public void Run_ChangeDisconnectsOtherControlPoint_UndoesChange()
@@ -599,6 +604,9 @@ namespace VrdoPdg.Tests
             RegulationScenario scenario = new RegulationScenario();
             scenario.SetVoltage(1, 535);
             scenario.Adapter.SetBaseVoltage(otherNode, 510);
+            scenario.Adapter.SwitchedDevices[RegulationScenario.CapacitorNumber] =
+                new FakeSwitchedDevice(false, 4, RegulationScenario.MainNode);
+            scenario.Adapter.Generators[RegulationScenario.GeneratorNumber].IsOn = false;
             FakeSwitchedDevice reactor = scenario.Adapter.SwitchedDevices[RegulationScenario.ReactorNumber];
             scenario.Repository.ControlPoints.Add(
                 new ControlPoint(2, 1, "Рубцовская", new[] { new ControlPointNode(otherNode, true) }));
@@ -611,6 +619,77 @@ namespace VrdoPdg.Tests
             Assert.That(result.After.GetVoltage(otherNode, 1), Is.EqualTo(510));
             Assert.That(scenario.Protocol.GetEntries().Any(entry => entry.Details
                 == "Р-1 ПС 500 кВ Барнаульская (реактор 9); Рубцовская: нет напряжения в основном узле КП"), Is.True);
+            ProtocolEntry rejected = scenario.Protocol.GetEntries().Single(entry => entry.Message
+                == "Изменение отменено: наибольшее отклонение напряжения в КП не уменьшилось");
+            Assert.That(rejected.Details, Does.EndWith("наибольшее отклонение: 5,00 кВ → нет напряжения"));
+            Assert.That(result.UnresolvedViolations.Single().ControlPoint.Name, Is.EqualTo("Барнаульская"));
+        }
+
+        /// <summary>
+        /// Если отложенное изменение — единственный способ ввести режим, на втором этапе оно
+        /// принимается: наибольшее отклонение среди КП уменьшается, хотя другой КП выходит
+        /// за границы графика
+        /// </summary>
+        [Test]
+        public void Run_SecondStage_AcceptsChangeReducingLargestDeviation()
+        {
+            const int otherNode = 570;
+            RegulationScenario scenario = new RegulationScenario();
+            scenario.SetVoltage(1, 544);
+            scenario.Adapter.SetBaseVoltage(otherNode, 502);
+            scenario.Adapter.SwitchedDevices[RegulationScenario.ReactorNumber] =
+                new FakeSwitchedDevice(false, -6, RegulationScenario.MainNode, otherNode);
+            scenario.Repository.ControlPoints.Add(
+                new ControlPoint(2, 1, "Рубцовская", new[] { new ControlPointNode(otherNode, true) }));
+
+            CalculationResult result = scenario.Run();
+
+            Assert.That(result.After.GetMode(RegulationScenario.ReactorId, 1)!.IsOn, Is.True);
+            Assert.That(result.After.GetVoltage(RegulationScenario.MainNode, 1), Is.EqualTo(524.5).Within(Tolerance));
+            Assert.That(result.After.GetVoltage(otherNode, 1), Is.EqualTo(496).Within(Tolerance));
+            UnresolvedViolation violation = result.UnresolvedViolations.Single();
+            Assert.That(violation.ControlPoint.Name, Is.EqualTo("Рубцовская"));
+            Assert.That(violation.Hour, Is.EqualTo(1));
+            Assert.That(
+                scenario.Protocol.GetEntries().Any(entry => entry.Message == "Час 1: второй этап ввода режима"),
+                Is.True);
+            ProtocolEntry accepted = scenario.Protocol.GetEntries().Single(entry => entry.Message
+                == "Изменение принято с выходом за границы графика другого КП");
+            Assert.That(accepted.Details, Is.EqualTo("Р-1 ПС 500 кВ Барнаульская (реактор 9); "
+                + "Рубцовская: U = 496,00 кВ, ниже нижней границы 500,00 кВ; "
+                + "наибольшее отклонение: 5,50 кВ → 4,00 кВ"));
+        }
+
+        /// <summary>
+        /// На втором этапе отложенное изменение отменяется, если наибольшее отклонение среди КП
+        /// не уменьшается: небольшое превышение в одном КП не исправляется ценой большего
+        /// нарушения в другом
+        /// </summary>
+        [Test]
+        public void Run_SecondStage_RejectsChangeIncreasingLargestDeviation()
+        {
+            const int otherNode = 570;
+            RegulationScenario scenario = new RegulationScenario();
+            scenario.SetVoltage(1, 532);
+            scenario.Adapter.SetBaseVoltage(otherNode, 500.5);
+            scenario.Adapter.SwitchedDevices[RegulationScenario.ReactorNumber] =
+                new FakeSwitchedDevice(false, -6, RegulationScenario.MainNode, otherNode);
+            scenario.Adapter.SwitchedDevices[RegulationScenario.CapacitorNumber] =
+                new FakeSwitchedDevice(false, 4, RegulationScenario.MainNode);
+            scenario.Adapter.Generators[RegulationScenario.GeneratorNumber].IsOn = false;
+            scenario.Repository.ControlPoints.Add(
+                new ControlPoint(2, 1, "Рубцовская", new[] { new ControlPointNode(otherNode, true) }));
+
+            CalculationResult result = scenario.Run();
+
+            Assert.That(result.After.GetMode(RegulationScenario.ReactorId, 1)!.IsOn, Is.False);
+            Assert.That(result.After.GetVoltage(RegulationScenario.MainNode, 1), Is.EqualTo(527).Within(Tolerance));
+            Assert.That(result.After.GetVoltage(otherNode, 1), Is.EqualTo(500.5).Within(Tolerance));
+            UnresolvedViolation violation = result.UnresolvedViolations.Single();
+            Assert.That(violation.ControlPoint.Name, Is.EqualTo("Барнаульская"));
+            ProtocolEntry rejected = scenario.Protocol.GetEntries().Single(entry => entry.Message
+                == "Изменение отменено: наибольшее отклонение напряжения в КП не уменьшилось");
+            Assert.That(rejected.Details, Does.EndWith("наибольшее отклонение: 2,00 кВ → 5,50 кВ"));
         }
 
         /// <summary>
