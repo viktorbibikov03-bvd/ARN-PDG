@@ -88,5 +88,22 @@ namespace VrdoPdg.Model.Entities
         {
             return !IsAbove(voltage) && !IsBelow(voltage);
         }
+
+        /// <summary>
+        /// Возвращает отклонение напряжения от допустимой области
+        /// </summary>
+        /// <param name="voltage">Напряжение, кВ</param>
+        /// <returns>Превышение верхней границы или снижение ниже нижней границы, кВ; 0 в границах графика</returns>
+        public double GetDeviation(double voltage)
+        {
+            if (IsAbove(voltage))
+            {
+                return voltage - UpperBound;
+            }
+
+            return IsBelow(voltage)
+                ? LowerBound - voltage
+                : 0;
+        }
     }
 }

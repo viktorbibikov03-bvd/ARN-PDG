@@ -52,9 +52,9 @@ namespace VrdoPdg.Tests.Fakes
         public Func<bool>? DivergenceCondition { get; set; }
 
         /// <summary>
-        /// Условие, при котором узлы отключены: напряжения в узлах не рассчитываются.
+        /// Условие отключения узла по его номеру: напряжение в отключенном узле не рассчитывается
         /// </summary>
-        public Func<bool>? NodeLossCondition { get; set; }
+        public Func<int, bool>? NodeLossCondition { get; set; }
 
         /// <summary>
         /// Ошибка ПО «Барс» при открытии МТ.
@@ -133,7 +133,8 @@ namespace VrdoPdg.Tests.Fakes
         public double? GetNodeVoltage(int nodeNumber)
         {
             double[]? values;
-            if (!BaseVoltages.TryGetValue(nodeNumber, out values) || (NodeLossCondition != null && NodeLossCondition()))
+            if (!BaseVoltages.TryGetValue(nodeNumber, out values)
+                || (NodeLossCondition != null && NodeLossCondition(nodeNumber)))
             {
                 return null;
             }

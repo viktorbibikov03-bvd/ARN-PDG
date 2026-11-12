@@ -526,7 +526,7 @@ namespace VrdoPdg.Tests
             scenario.SetVoltage(1, 535);
             FakeSwitchedDevice reactor = scenario.Adapter.SwitchedDevices[RegulationScenario.ReactorNumber];
             SessionData session = scenario.CreateSession();
-            scenario.Adapter.NodeLossCondition = () => reactor.IsOn;
+            scenario.Adapter.NodeLossCondition = node => reactor.IsOn;
 
             CalculationResult result = scenario.Service.Run(session, null, CancellationToken.None);
 
@@ -556,6 +556,115 @@ namespace VrdoPdg.Tests
                 entry => entry.Message == "Напряжение не введено в допустимую область"
                     && entry.Details == "Барнаульская: часы 1, 2"), Is.True);
             Assert.That(result.UnresolvedViolations, Has.Count.EqualTo(2));
+        }
+
+        /// <summary>
+        /// Изменение СКРМ, выводящее за границы графика другой КП, который был в допустимой области,
+        /// отменяется; режим вводится следующими СКРМ таблицы эффективности
+        /// </summary>
+        [Test]
+        public void Run_ChangeViolatesOtherControlPoint_UndoesChangeAndUsesNextDevice()
+        {
+            const int otherNode = 570;
+            RegulationScenario scenario = new RegulationScenario();
+            scenario.SetVoltage(1, 535);
+            scenario.Adapter.SetBaseVoltage(otherNode, 502);
+            scenario.Adapter.SwitchedDevices[RegulationScenario.ReactorNumber] =
+                new FakeSwitchedDevice(false, -6, RegulationScenario.MainNode, otherNode);
+            scenario.Repository.ControlPoints.Add(
+                new ControlPoint(2, 1, "Рубцовская", new[] { new ControlPointNode(otherNode, true) }));
+
+            CalculationResult result = scenario.Run();
+
+            Assert.That(result.After.GetMode(RegulationScenario.ReactorId, 1)!.IsOn, Is.False);
+            Assert.That(result.After.GetMode(RegulationScenario.CapacitorId, 1)!.IsOn, Is.False);
+            Assert.That(result.After.GetVoltage(otherNode, 1), Is.EqualTo(502));
+            Assert.That(result.After.GetVoltage(RegulationScenario.MainNode, 1), Is.EqualTo(525).Within(0.2));
+            Assert.That(result.UnresolvedViolations, Is.Empty);
+            ProtocolEntry warning = scenario.Protocol.GetEntries().Single(entry => entry.Message
+                == "Изменение отменено: напряжение в другом КП вышло за границы графика");
+            Assert.That(
+                warning.Details,
+                Is.EqualTo("Р-1 ПС 500 кВ Барнаульская (реактор 9); "
+                    + "Рубцовская: U = 496,00 кВ, ниже нижней границы 500,00 кВ"));
+        }
+
+        /// <summary>
+        /// Изменение СКРМ, после которого в основном узле другого КП нет напряжения, отменяется
+        /// </summary>
+        [Test]
+        public void Run_ChangeDisconnectsOtherControlPoint_UndoesChange()
+        {
+            const int otherNode = 570;
+            RegulationScenario scenario = new RegulationScenario();
+            scenario.SetVoltage(1, 535);
+            scenario.Adapter.SetBaseVoltage(otherNode, 510);
+            FakeSwitchedDevice reactor = scenario.Adapter.SwitchedDevices[RegulationScenario.ReactorNumber];
+            scenario.Repository.ControlPoints.Add(
+                new ControlPoint(2, 1, "Рубцовская", new[] { new ControlPointNode(otherNode, true) }));
+            SessionData session = scenario.CreateSession();
+            scenario.Adapter.NodeLossCondition = node => node == otherNode && reactor.IsOn;
+
+            CalculationResult result = scenario.Service.Run(session, null, CancellationToken.None);
+
+            Assert.That(result.After.GetMode(RegulationScenario.ReactorId, 1)!.IsOn, Is.False);
+            Assert.That(result.After.GetVoltage(otherNode, 1), Is.EqualTo(510));
+            Assert.That(scenario.Protocol.GetEntries().Any(entry => entry.Details
+                == "Р-1 ПС 500 кВ Барнаульская (реактор 9); Рубцовская: нет напряжения в основном узле КП"), Is.True);
+        }
+
+        /// <summary>
+        /// КП, который до изменения уже был вне допустимой области, не защищается от изменения:
+        /// его вводит повторный проход или он попадает в перечень невведенных
+        /// </summary>
+        [Test]
+        public void Run_OtherControlPointAlreadyViolated_AcceptsChange()
+        {
+            const int otherNode = 570;
+            RegulationScenario scenario = new RegulationScenario();
+            scenario.SetVoltage(1, 535);
+            scenario.Adapter.SetBaseVoltage(otherNode, 499);
+            scenario.Adapter.SwitchedDevices[RegulationScenario.ReactorNumber] =
+                new FakeSwitchedDevice(false, -6, RegulationScenario.MainNode, otherNode);
+            scenario.Repository.ControlPoints.Add(
+                new ControlPoint(2, 1, "Рубцовская", new[] { new ControlPointNode(otherNode, true) }));
+
+            CalculationResult result = scenario.Run();
+
+            Assert.That(result.After.GetMode(RegulationScenario.ReactorId, 1)!.IsOn, Is.True);
+            UnresolvedViolation violation = result.UnresolvedViolations.Single(item => item.Hour == 1);
+            Assert.That(violation.ControlPoint.Name, Is.EqualTo("Рубцовская"));
+            Assert.That(violation.Voltage, Is.EqualTo(493).Within(Tolerance));
+        }
+
+        /// <summary>
+        /// КП обрабатываются по убыванию отклонения напряжения от допустимой области:
+        /// первым — КП с наибольшим отклонением
+        /// </summary>
+        [Test]
+        public void Run_SeveralViolations_ProcessesLargestDeviationFirst()
+        {
+            const int otherNode = 570;
+            RegulationScenario scenario = new RegulationScenario();
+            scenario.SetVoltage(1, 527);
+            scenario.SetVoltage(2, 540);
+            scenario.Adapter.SetBaseVoltage(otherNode, 530);
+            scenario.Repository.ControlPoints.Add(
+                new ControlPoint(2, 1, "Рубцовская", new[] { new ControlPointNode(otherNode, true) }));
+
+            scenario.Run();
+
+            string[] order = scenario.Protocol.GetEntries()
+                .Where(entry => entry.Tag == ProtocolTag.Hour)
+                .Select(entry => entry.Parent!.Message.Split(' ')[0] + " " + entry.Message)
+                .ToArray();
+            Assert.That(order.Take(4), Is.EqualTo(new[]
+            {
+                "Рубцовская Час 1",
+                "Барнаульская Час 1",
+                "Барнаульская Час 2",
+                "Рубцовская Час 2"
+            }));
         }
 
         /// <summary>

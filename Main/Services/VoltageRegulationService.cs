@@ -34,7 +34,8 @@ namespace VrdoPdg.Model.Services
 
         /// <summary>
         /// Наибольшее число проходов по КП в часе: повторные проходы вводят в допустимую
-        /// область КП, режим в которых нарушен действиями для других КП.
+        /// область КП, которые еще не введены или отклонение в которых увеличилось
+        /// из-за действий для других КП
         /// </summary>
         public const int MaxPasses = 3;
 
@@ -295,10 +296,11 @@ namespace VrdoPdg.Model.Services
                 for (int pass = 1; pass <= MaxPasses; pass++)
                 {
                     bool isChanged = false;
+                    IReadOnlyList<ControlPoint> controlPoints = OrderByDeviation(run, hour);
                     for (int index = 0; index < count; index++)
                     {
                         cancellationToken.ThrowIfCancellationRequested();
-                        isChanged |= RegulateControlPoint(run, hourState, run.ControlPoints[index], cancellationToken);
+                        isChanged |= RegulateControlPoint(run, hourState, controlPoints[index], cancellationToken);
                         if (pass == 1)
                         {
                             int done = (hour - 1) * count + index + 1;
@@ -370,7 +372,7 @@ namespace VrdoPdg.Model.Services
                     break;
                 }
 
-                if (ApplyChange(hourState, controlPoint, change, hourEntry, mainNode.Number, bounds))
+                if (ApplyChange(run, hourState, controlPoint, change, hourEntry, mainNode.Number, bounds))
                 {
                     isChanged = true;
                 }
@@ -597,10 +599,106 @@ namespace VrdoPdg.Model.Services
         }
 
         /// <summary>
-        /// Применяет изменение СКРМ и рассчитывает установившийся режим. Если режим
-        /// не сошелся или изменение генератора не повлияло на его загрузку, изменение
-        /// отменяется и СКРМ исключается из перебора для КП в этом часе.
+        /// Упорядочивает КП расчета по убыванию отклонения напряжения в основном узле от допустимой
+        /// области: первым обрабатывается КП с наибольшим отклонением. КП в допустимой области
+        /// и КП без напряжения в основном узле обрабатываются последними в порядке справочника
         /// </summary>
+        /// <param name="run">Данные расчета</param>
+        /// <param name="hour">Час суток (1–24)</param>
+        /// <returns>КП расчета в порядке обработки</returns>
+        private IReadOnlyList<ControlPoint> OrderByDeviation(RegulationRun run, int hour)
+        {
+            return run.ControlPoints
+                .Select(controlPoint => new
+                {
+                    ControlPoint = controlPoint,
+                    Deviation = GetDeviation(run, controlPoint, hour)
+                })
+                .OrderByDescending(item => item.Deviation)
+                .Select(item => item.ControlPoint)
+                .ToList();
+        }
+
+        /// <summary>
+        /// Возвращает отклонение напряжения в основном узле КП от допустимой области
+        /// </summary>
+        /// <param name="run">Данные расчета</param>
+        /// <param name="controlPoint">КП расчета</param>
+        /// <param name="hour">Час суток (1–24)</param>
+        /// <returns>Отклонение, кВ; 0, если напряжение в допустимой области или не рассчитано</returns>
+        private double GetDeviation(RegulationRun run, ControlPoint controlPoint, int hour)
+        {
+            double? voltage = _rastrAdapter.GetNodeVoltage(controlPoint.MainNode!.Number);
+            return voltage.HasValue
+                ? run.Session.Schedule.GetBounds(controlPoint.Id, hour)!.GetDeviation(voltage.Value)
+                : 0;
+        }
+
+        /// <summary>
+        /// Возвращает КП расчета, кроме заданного, напряжение в основном узле которых
+        /// находится в допустимой области
+        /// </summary>
+        /// <param name="run">Данные расчета</param>
+        /// <param name="hour">Час суток (1–24)</param>
+        /// <param name="excluded">КП, для которого выполняется ввод режима</param>
+        /// <returns>КП в допустимой области</returns>
+        private IReadOnlyList<ControlPoint> GetControlPointsInBounds(
+            RegulationRun run,
+            int hour,
+            ControlPoint excluded)
+        {
+            List<ControlPoint> result = new List<ControlPoint>();
+            foreach (ControlPoint controlPoint in run.ControlPoints)
+            {
+                if (controlPoint.Id == excluded.Id)
+                {
+                    continue;
+                }
+
+                double? voltage = _rastrAdapter.GetNodeVoltage(controlPoint.MainNode!.Number);
+                if (voltage.HasValue && run.Session.Schedule.GetBounds(controlPoint.Id, hour)!.Contains(voltage.Value))
+                {
+                    result.Add(controlPoint);
+                }
+            }
+
+            return result;
+        }
+
+        /// <summary>
+        /// Проверяет, остались ли КП в допустимой области после изменения СКРМ
+        /// </summary>
+        /// <param name="run">Данные расчета</param>
+        /// <param name="hour">Час суток (1–24)</param>
+        /// <param name="controlPoints">КП, которые до изменения были в допустимой области</param>
+        /// <returns>Описание первого КП, вышедшего за границы графика, или <c>null</c></returns>
+        private string? FindViolation(RegulationRun run, int hour, IReadOnlyList<ControlPoint> controlPoints)
+        {
+            foreach (ControlPoint controlPoint in controlPoints)
+            {
+                double? voltage = _rastrAdapter.GetNodeVoltage(controlPoint.MainNode!.Number);
+                if (!voltage.HasValue)
+                {
+                    return controlPoint.Name + ": нет напряжения в основном узле КП";
+                }
+
+                VoltageBounds bounds = run.Session.Schedule.GetBounds(controlPoint.Id, hour)!;
+                if (!bounds.Contains(voltage.Value))
+                {
+                    return controlPoint.Name + ": " + RegulationRun.DescribeVoltage(voltage.Value, bounds);
+                }
+            }
+
+            return null;
+        }
+
+        /// <summary>
+        /// Применяет изменение СКРМ и рассчитывает установившийся режим. Изменение отменяется
+        /// и СКРМ исключается из перебора для КП в этом часе, если режим не сошелся, изменение
+        /// генератора не повлияло на его загрузку или напряжение в другом КП расчета, которое
+        /// было в допустимой области, вышло за границы графика
+        /// </summary>
+        /// <param name="run">Данные расчета</param>
         /// <param name="hourState">Состояние часа.</param>
         /// <param name="controlPoint">КП.</param>
         /// <param name="change">Изменение СКРМ.</param>
@@ -609,6 +707,7 @@ namespace VrdoPdg.Model.Services
         /// <param name="bounds">Границы графика.</param>
         /// <returns><c>true</c>, если изменение выполнено.</returns>
         private bool ApplyChange(
+            RegulationRun run,
             HourState hourState,
             ControlPoint controlPoint,
             DeviceChange change,
@@ -617,6 +716,7 @@ namespace VrdoPdg.Model.Services
             VoltageBounds bounds)
         {
             Device device = change.Device;
+            IReadOnlyList<ControlPoint> protectedPoints = GetControlPointsInBounds(run, hourState.Hour, controlPoint);
             change.Apply();
             _protocol.Add(ProtocolTag.Device, device.ToString(), change.Description, hourEntry);
 
@@ -650,6 +750,20 @@ namespace VrdoPdg.Model.Services
                     hourState.MarkExhausted(controlPoint.Id, device.Id);
                     return false;
                 }
+            }
+
+            string? violation = FindViolation(run, hourState.Hour, protectedPoints);
+            if (violation != null)
+            {
+                _rastrAdapter.UndoLastChange();
+                _rastrAdapter.CalculateRegime();
+                _protocol.Add(
+                    ProtocolTag.Warning,
+                    "Изменение отменено: напряжение в другом КП вышло за границы графика",
+                    device.ToString() + "; " + violation,
+                    hourEntry);
+                hourState.MarkExhausted(controlPoint.Id, device.Id);
+                return false;
             }
 
             hourState.RegisterChange(device.Id, change.Direction);
