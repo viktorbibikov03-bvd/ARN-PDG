@@ -16,19 +16,21 @@ namespace VrdoPdg.Tests
     public sealed class SmpSmzuCsvReaderTests
     {
         /// <summary>
-        /// Записи всех типов из приложения Б разбираются с кодами, часами, адресами и значениями.
+        /// Записи типов, которые формирует система (коды 03, 20, 01), разбираются с кодами,
+        /// часами, адресами и значениями
         /// </summary>
         [Test]
-        public void Parse_RecordsFromInstruction_ParsesAllFields()
+        public void Parse_SystemRecordTypes_ParsesAllFields()
         {
             string text = "03;5;20;331;0;0;50;-28;0\r\n"
                 + "20;1;3;5;0;0;1;0;0\r\n"
+                + "\r\n"
                 + "01;4;19;263;0;0;218;0;0\r\n";
 
             SmpSmzuDocument document = Parse(text);
 
-            Assert.That(document.Records, Has.Count.EqualTo(7));
-            Assert.That(document.Lines, Has.Count.EqualTo(8));
+            Assert.That(document.Records, Has.Count.EqualTo(3));
+            Assert.That(document.Lines, Has.Count.EqualTo(4));
             Assert.That(document.NewLine, Is.EqualTo("\r\n"));
             SmpSmzuRecord limits = document.Records[0];
             Assert.That(limits.Type, Is.EqualTo(SmpSmzuRecordType.NodeReactivePowerLimits));
@@ -37,16 +39,40 @@ namespace VrdoPdg.Tests
             Assert.That(limits.Address1, Is.EqualTo(331));
             Assert.That(limits.Value1, Is.EqualTo(50));
             Assert.That(limits.Value2, Is.EqualTo(-28));
-            Assert.That(document.Records[1].Type, Is.EqualTo(SmpSmzuRecordType.Reactor));
-            Assert.That(document.Records[3].Type, Is.EqualTo(SmpSmzuRecordType.NodeVoltage));
-            SmpSmzuRecord activePower = document.Records[5];
+            SmpSmzuRecord reactor = document.Records[1];
+            Assert.That(reactor.Type, Is.EqualTo(SmpSmzuRecordType.Reactor));
+            Assert.That(reactor.Address1, Is.EqualTo(5));
+            Assert.That(reactor.Value1, Is.EqualTo(1));
+            SmpSmzuRecord voltage = document.Records[2];
+            Assert.That(voltage.Type, Is.EqualTo(SmpSmzuRecordType.NodeVoltage));
+            Assert.That(voltage.Value1, Is.EqualTo(218));
+            Assert.That(voltage.LineNumber, Is.EqualTo(4));
+        }
+
+        /// <summary>
+        /// Записи других типов, которые может содержать файл из ПО «Барс» (например, коды 04 и 16),
+        /// не отклоняются: они разбираются с исходным кодом и сохраняются в документе без изменений
+        /// </summary>
+        [Test]
+        public void Parse_OtherRecordTypes_KeepsCodesAndFields()
+        {
+            string text = "16;7;16;613;0;0;;50;\r\n"
+                + "04;7;20;381;295;1;0;0;0\r\n";
+
+            SmpSmzuDocument document = Parse(text);
+
+            Assert.That(document.Records, Has.Count.EqualTo(2));
+            SmpSmzuRecord activePower = document.Records[0];
+            Assert.That(activePower.TypeCode, Is.EqualTo(16));
             Assert.That(activePower.Value1, Is.Null);
             Assert.That(activePower.Value2, Is.EqualTo(50));
             Assert.That(activePower.Value3, Is.Null);
-            SmpSmzuRecord branch = document.Records[6];
+            SmpSmzuRecord branch = document.Records[1];
+            Assert.That(branch.TypeCode, Is.EqualTo(4));
             Assert.That(branch.Address2, Is.EqualTo(295));
             Assert.That(branch.Address3, Is.EqualTo(1));
-            Assert.That(branch.LineNumber, Is.EqualTo(8));
+            Assert.That(branch.LineNumber, Is.EqualTo(2));
+            Assert.That(document.Lines, Is.EqualTo(new[] { "16;7;16;613;0;0;;50;", "04;7;20;381;295;1;0;0;0" }));
         }
 
         /// <summary>
