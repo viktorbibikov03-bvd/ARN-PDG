@@ -1,16 +1,16 @@
 namespace VrdoPdg.Model.Regime
 {
     /// <summary>
-    /// Состояние наблюдаемого реактора таблицы «Реакторы» МТ в определенном часе суток.
+    /// Состояние наблюдаемого реактора таблицы «Реакторы» МТ в определенном часе суток
     /// </summary>
     public sealed class ObservedReactorState
     {
         /// <summary>
-        /// Создает состояние реактора.
+        /// Создает состояние реактора
         /// </summary>
-        /// <param name="reactorNumber">Номер реактора (Id).</param>
-        /// <param name="hour">Час суток (1–24).</param>
-        /// <param name="isOn">Признак состояния «Включено».</param>
+        /// <param name="reactorNumber">Номер реактора</param>
+        /// <param name="hour">Час суток</param>
+        /// <param name="isOn">Признак состояния «Включено»</param>
         public ObservedReactorState(int reactorNumber, int hour, bool isOn)
         {
             ReactorNumber = reactorNumber;
@@ -19,17 +19,17 @@ namespace VrdoPdg.Model.Regime
         }
 
         /// <summary>
-        /// Номер реактора (Id).
+        /// Номер реактора
         /// </summary>
         public int ReactorNumber { get; }
 
         /// <summary>
-        /// Час суток (1–24).
+        /// Час суток
         /// </summary>
         public int Hour { get; }
 
         /// <summary>
-        /// Признак состояния «Включено».
+        /// Признак состояния «Включено»
         /// </summary>
         public bool IsOn { get; }
     }

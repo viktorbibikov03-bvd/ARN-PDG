@@ -84,7 +84,7 @@ namespace VrdoPdg.Model.Services
         }
 
         /// <summary>
-        /// Увеличивает число шагов изменения заданного напряжения генератора.
+        /// Увеличивает число шагов изменения заданного напряжения генератора
         /// </summary>
         /// <param name="deviceId">Код СКРМ генератора.</param>
         public void AddGeneratorStep(int deviceId)
@@ -93,7 +93,7 @@ namespace VrdoPdg.Model.Services
         }
 
         /// <summary>
-        /// Возвращает число шагов изменения заданного напряжения генератора.
+        /// Возвращает число шагов изменения заданного напряжения генератора
         /// </summary>
         /// <param name="deviceId">Код СКРМ генератора.</param>
         /// <returns>Число шагов.</returns>

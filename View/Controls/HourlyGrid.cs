@@ -447,13 +447,17 @@ namespace VrdoPdg.View.Controls
         private void PaintValueCell(Graphics graphics, Rectangle bounds, HourlyColumn column, int columnIndex, int hour)
         {
             HourlyTableModel model = _model!;
-            using (SolidBrush brush = new SolidBrush(hour % 2 == 0 ? _alternateBack : Palette.Background))
+            using (SolidBrush brush = new SolidBrush(hour % 2 == 0
+                ? _alternateBack
+                : Palette.Background))
             {
                 graphics.FillRectangle(brush, bounds);
             }
 
-            TextFormatFlags flags = TextFormatFlags.HorizontalCenter | TextFormatFlags.VerticalCenter
-                | TextFormatFlags.SingleLine | TextFormatFlags.NoPrefix;
+            TextFormatFlags flags = TextFormatFlags.HorizontalCenter
+                | TextFormatFlags.VerticalCenter
+                | TextFormatFlags.SingleLine
+                | TextFormatFlags.NoPrefix;
             if (column.IsHour)
             {
                 TextRenderer.DrawText(graphics, hour.ToString(), UiFonts.Monospace(9.5f), bounds,

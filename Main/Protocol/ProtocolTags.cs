@@ -3,12 +3,12 @@ using System.Collections.Generic;
 namespace VrdoPdg.Model.Protocol
 {
     /// <summary>
-    /// Подписи меток записей протокола расчета.
+    /// Подписи меток записей протокола расчета
     /// </summary>
     public static class ProtocolTags
     {
         /// <summary>
-        /// Все метки в порядке вывода на панели фильтров.
+        /// Все метки в порядке вывода на панели фильтров
         /// </summary>
         public static IReadOnlyList<ProtocolTag> All { get; } = new[]
         {
@@ -22,10 +22,10 @@ namespace VrdoPdg.Model.Protocol
         };
 
         /// <summary>
-        /// Возвращает подпись метки.
+        /// Возвращает подпись метки
         /// </summary>
-        /// <param name="tag">Метка записи.</param>
-        /// <returns>Подпись метки: ВРДО, ЧАС, СКРМ, УР, WARN, INFO или ERR.</returns>
+        /// <param name="tag">Метка записи</param>
+        /// <returns>Подпись метки: ВРДО, ЧАС, СКРМ, УР, WARN, INFO или ERR</returns>
         public static string GetLabel(ProtocolTag tag)
         {
             switch (tag)

@@ -23,12 +23,7 @@ namespace VrdoPdg.Tests
         {
             string text = "03;5;20;331;0;0;50;-28;0\r\n"
                 + "20;1;3;5;0;0;1;0;0\r\n"
-                + "00;1;14;669;0;0;0;0;0\r\n"
-                + "\r\n"
-                + "01;4;19;263;0;0;218;0;0\r\n"
-                + "12;11;24;805;0;0;1;0;0\r\n"
-                + "16;7;16;613;0;0;;50;\r\n"
-                + "04;7;20;381;295;1;0;0;0\r\n";
+                + "01;4;19;263;0;0;218;0;0\r\n";
 
             SmpSmzuDocument document = Parse(text);
 
@@ -43,16 +38,12 @@ namespace VrdoPdg.Tests
             Assert.That(limits.Value1, Is.EqualTo(50));
             Assert.That(limits.Value2, Is.EqualTo(-28));
             Assert.That(document.Records[1].Type, Is.EqualTo(SmpSmzuRecordType.Reactor));
-            Assert.That(document.Records[2].Type, Is.EqualTo(SmpSmzuRecordType.NodeState));
             Assert.That(document.Records[3].Type, Is.EqualTo(SmpSmzuRecordType.NodeVoltage));
-            Assert.That(document.Records[4].Type, Is.EqualTo(SmpSmzuRecordType.BalancingNode));
             SmpSmzuRecord activePower = document.Records[5];
-            Assert.That(activePower.Type, Is.EqualTo(SmpSmzuRecordType.NodeActivePowerLimits));
             Assert.That(activePower.Value1, Is.Null);
             Assert.That(activePower.Value2, Is.EqualTo(50));
             Assert.That(activePower.Value3, Is.Null);
             SmpSmzuRecord branch = document.Records[6];
-            Assert.That(branch.Type, Is.EqualTo(SmpSmzuRecordType.BranchState));
             Assert.That(branch.Address2, Is.EqualTo(295));
             Assert.That(branch.Address3, Is.EqualTo(1));
             Assert.That(branch.LineNumber, Is.EqualTo(8));

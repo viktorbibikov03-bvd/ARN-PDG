@@ -1,15 +1,15 @@
 namespace VrdoPdg.Model.Regime
 {
     /// <summary>
-    /// Состояние коммутируемого СКРМ по данным таблицы «Реакторы» МТ.
+    /// Состояние коммутируемого СКРМ по данным таблицы «Реакторы» МТ
     /// </summary>
     public sealed class SwitchedDeviceState
     {
         /// <summary>
-        /// Создает состояние коммутируемого СКРМ.
+        /// Создает состояние коммутируемого СКРМ
         /// </summary>
-        /// <param name="isOn">Признак состояния «Включено».</param>
-        /// <param name="reactivePower">Расчетная реактивная мощность, Мвар.</param>
+        /// <param name="isOn">Признак состояния «Включено»</param>
+        /// <param name="reactivePower">Расчетная реактивная мощность, Мвар</param>
         public SwitchedDeviceState(bool isOn, double reactivePower)
         {
             IsOn = isOn;
@@ -17,12 +17,12 @@ namespace VrdoPdg.Model.Regime
         }
 
         /// <summary>
-        /// Признак состояния «Включено».
+        /// Признак состояния «Включено»
         /// </summary>
         public bool IsOn { get; }
 
         /// <summary>
-        /// Расчетная реактивная мощность, Мвар.
+        /// Расчетная реактивная мощность, Мвар
         /// </summary>
         public double ReactivePower { get; }
     }

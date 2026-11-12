@@ -6,38 +6,38 @@ namespace VrdoPdg.Model.Storage
 {
     /// <summary>
     /// Репозиторий базы данных системы: доступ к данным об узлах и СКРМ,
-    /// графикам напряжений в КП и таблицам эффективности.
+    /// графикам напряжений в КП и таблицам эффективности
     /// </summary>
     public interface IModelDataRepository
     {
         /// <summary>
         /// Проверяет, что файл БД существует и содержит таблицы системы. БД не создается.
         /// </summary>
-        /// <exception cref="VrdoException">Файл БД не найден или в нем нет таблиц системы.</exception>
+        /// <exception cref="VrdoException">Файл БД не найден или в нем нет таблиц системы</exception>
         void CheckDatabase();
 
         /// <summary>
-        /// Возвращает энергосистемы, упорядоченные по коду.
+        /// Возвращает энергосистемы, упорядоченные по коду
         /// </summary>
         /// <returns>Список энергосистем.</returns>
         IReadOnlyList<PowerSystem> GetPowerSystems();
 
         /// <summary>
-        /// Возвращает КП с узлами, упорядоченные по коду КП.
+        /// Возвращает КП с узлами, упорядоченные по коду КП
         /// </summary>
-        /// <returns>Список КП.</returns>
+        /// <returns>Список КП</returns>
         IReadOnlyList<ControlPoint> GetControlPoints();
 
         /// <summary>
-        /// Возвращает справочник СКРМ.
+        /// Возвращает справочник СКРМ
         /// </summary>
-        /// <returns>Список СКРМ.</returns>
+        /// <returns>Список СКРМ</returns>
         IReadOnlyList<Device> GetDevices();
 
         /// <summary>
-        /// Возвращает строки таблиц эффективности всех КП.
+        /// Возвращает строки таблиц эффективности всех КП
         /// </summary>
-        /// <returns>Строки таблиц эффективности.</returns>
+        /// <returns>Строки таблиц эффективности</returns>
         IReadOnlyList<EfficiencyEntry> GetEfficiencyEntries();
 
         /// <summary>

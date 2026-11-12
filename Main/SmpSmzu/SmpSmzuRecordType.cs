@@ -7,11 +7,6 @@ namespace VrdoPdg.Model.SmpSmzu
     public enum SmpSmzuRecordType
     {
         /// <summary>
-        /// Узел: изменено значение параметра «Состояние» (код 00).
-        /// </summary>
-        NodeState = 0,
-
-        /// <summary>
         /// Узел: изменено значение параметра «Напряжение» (код 01).
         /// </summary>
         NodeVoltage = 1,
@@ -20,21 +15,6 @@ namespace VrdoPdg.Model.SmpSmzu
         /// Узел: изменены значения параметров «Qузл_макс», «Qузл_мин» (код 03).
         /// </summary>
         NodeReactivePowerLimits = 3,
-
-        /// <summary>
-        /// Ветвь: изменено значение параметра «Состояние» (код 04).
-        /// </summary>
-        BranchState = 4,
-
-        /// <summary>
-        /// Узел: изменено значение параметра «Балансирующий» (код 12).
-        /// </summary>
-        BalancingNode = 12,
-
-        /// <summary>
-        /// Узел: изменены значения параметров «Рн», «Рмакс», «Рмин» (код 16).
-        /// </summary>
-        NodeActivePowerLimits = 16,
 
         /// <summary>
         /// Реакторы: изменено значение параметра «Состояние» (код 20).

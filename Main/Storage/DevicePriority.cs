@@ -1,15 +1,15 @@
 namespace VrdoPdg.Model.Storage
 {
     /// <summary>
-    /// Действующий приоритет СКРМ в таблице эффективности КП.
+    /// Действующий приоритет СКРМ в таблице эффективности КП
     /// </summary>
     public sealed class DevicePriority
     {
         /// <summary>
-        /// Создает приоритет СКРМ.
+        /// Создает приоритет СКРМ
         /// </summary>
-        /// <param name="deviceId">Код СКРМ.</param>
-        /// <param name="priority">Действующий приоритет.</param>
+        /// <param name="deviceId">Код СКРМ</param>
+        /// <param name="priority">Действующий приоритет</param>
         public DevicePriority(int deviceId, int priority)
         {
             DeviceId = deviceId;
@@ -17,12 +17,12 @@ namespace VrdoPdg.Model.Storage
         }
 
         /// <summary>
-        /// Код СКРМ.
+        /// Код СКРМ
         /// </summary>
         public int DeviceId { get; }
 
         /// <summary>
-        /// Действующий приоритет.
+        /// Действующий приоритет
         /// </summary>
         public int Priority { get; }
     }

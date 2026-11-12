@@ -6,37 +6,37 @@ namespace VrdoPdg.Model.Protocol
 {
     /// <summary>
     /// Протокол расчета: хранит записи о действиях системы в иерархии
-    /// «КП → час → действия с СКРМ и результаты расчета УР».
+    /// «КП → час → действия с СКРМ и результаты расчета УР»
     /// </summary>
     /// <remarks>
     /// Записи добавляются сервисами прикладного уровня из рабочего потока,
-    /// поэтому все операции протокола потокобезопасны.
+    /// поэтому все операции протокола потокобезопасны
     /// </remarks>
     public sealed class CalculationProtocol
     {
         /// <summary>
-        /// Объект синхронизации доступа к записям.
+        /// Объект синхронизации доступа к записям
         /// </summary>
         private readonly object _syncRoot = new object();
 
         /// <summary>
-        /// Записи в хронологическом порядке.
+        /// Записи в хронологическом порядке
         /// </summary>
         private readonly List<ProtocolEntry> _entries = new List<ProtocolEntry>();
 
         /// <summary>
-        /// Количество записей по меткам.
+        /// Количество записей по меткам
         /// </summary>
         private readonly Dictionary<ProtocolTag, int> _counts = new Dictionary<ProtocolTag, int>();
 
         /// <summary>
         /// Возникает при добавлении записи в протокол. Обработчик вызывается
-        /// в потоке, добавившем запись.
+        /// в потоке, добавившем запись
         /// </summary>
         public event EventHandler<ProtocolEntryEventArgs>? EntryAdded;
 
         /// <summary>
-        /// Общее количество записей.
+        /// Общее количество записей
         /// </summary>
         public int Count
         {
@@ -50,13 +50,13 @@ namespace VrdoPdg.Model.Protocol
         }
 
         /// <summary>
-        /// Добавляет запись в протокол.
+        /// Добавляет запись в протокол
         /// </summary>
-        /// <param name="tag">Метка типа записи.</param>
-        /// <param name="message">Текст сообщения.</param>
-        /// <param name="details">Пояснение к сообщению.</param>
-        /// <param name="parent">Родительская запись.</param>
-        /// <returns>Добавленная запись.</returns>
+        /// <param name="tag">Метка типа записи</param>
+        /// <param name="message">Текст сообщения</param>
+        /// <param name="details">Пояснение к сообщению</param>
+        /// <param name="parent">Родительская запись</param>
+        /// <returns>Добавленная запись</returns>
         public ProtocolEntry Add(ProtocolTag tag, string message, string? details = null, ProtocolEntry? parent = null)
         {
             ProtocolEntry entry;
@@ -81,9 +81,9 @@ namespace VrdoPdg.Model.Protocol
         }
 
         /// <summary>
-        /// Возвращает все записи в хронологическом порядке.
+        /// Возвращает все записи в хронологическом порядке
         /// </summary>
-        /// <returns>Копия списка записей.</returns>
+        /// <returns>Копия списка записей</returns>
         public IReadOnlyList<ProtocolEntry> GetEntries()
         {
             lock (_syncRoot)
@@ -93,10 +93,10 @@ namespace VrdoPdg.Model.Protocol
         }
 
         /// <summary>
-        /// Возвращает количество записей с заданной меткой.
+        /// Возвращает количество записей с заданной меткой
         /// </summary>
-        /// <param name="tag">Метка типа записи.</param>
-        /// <returns>Количество записей.</returns>
+        /// <param name="tag">Метка типа записи</param>
+        /// <returns>Количество записей</returns>
         public int GetCount(ProtocolTag tag)
         {
             lock (_syncRoot)
