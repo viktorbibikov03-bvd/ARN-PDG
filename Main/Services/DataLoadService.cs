@@ -130,7 +130,8 @@ namespace VrdoPdg.Model.Services
                     megapoint.Regime,
                     megapoint.GeneratorNodes,
                     fixedDeviceHours,
-                    DateTime.Now);
+                    DateTime.Now,
+                    megapoint.Catalog);
                 _protocol.Add(
                     ProtocolTag.Info,
                     "Загрузка исходных данных завершена",
@@ -257,6 +258,7 @@ namespace VrdoPdg.Model.Services
             try
             {
                 _rastrAdapter.Open(path);
+                MegapointCatalog catalog = _rastrAdapter.ReadCatalog();
 
                 RegimeSnapshot regime = new RegimeSnapshot();
                 Dictionary<int, int> generatorNodes = new Dictionary<int, int>();
@@ -293,7 +295,7 @@ namespace VrdoPdg.Model.Services
                         + "; значений напряжения: " + regime.Voltages.Count
                         + "; режимов СКРМ: " + regime.Modes.Count,
                     group);
-                return new MegapointData(regime, generatorNodes);
+                return new MegapointData(regime, generatorNodes, catalog);
             }
             catch (Exception exception) when (!(exception is VrdoException))
             {
@@ -516,10 +518,15 @@ namespace VrdoPdg.Model.Services
             /// </summary>
             /// <param name="regime">Режим по часам.</param>
             /// <param name="generatorNodes">Узлы подключения генераторов.</param>
-            public MegapointData(RegimeSnapshot regime, IReadOnlyDictionary<int, int> generatorNodes)
+            /// <param name="catalog">Перечень объектов МТ</param>
+            public MegapointData(
+                RegimeSnapshot regime,
+                IReadOnlyDictionary<int, int> generatorNodes,
+                MegapointCatalog catalog)
             {
                 Regime = regime;
                 GeneratorNodes = generatorNodes;
+                Catalog = catalog;
             }
 
             /// <summary>
@@ -531,6 +538,11 @@ namespace VrdoPdg.Model.Services
             /// Узлы подключения генераторов по коду СКРМ.
             /// </summary>
             public IReadOnlyDictionary<int, int> GeneratorNodes { get; }
+
+            /// <summary>
+            /// Перечень объектов МТ
+            /// </summary>
+            public MegapointCatalog Catalog { get; }
         }
     }
 }

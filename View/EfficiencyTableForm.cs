@@ -6,6 +6,7 @@ using System.Windows.Forms;
 
 using VrdoPdg.Model;
 using VrdoPdg.Model.Entities;
+using VrdoPdg.Model.Regime;
 using VrdoPdg.Model.Services;
 using VrdoPdg.View.Theme;
 
@@ -23,9 +24,14 @@ namespace VrdoPdg.View
         private readonly EfficiencyTableService _service;
 
         /// <summary>
-        /// Справочник СКРМ.
+        /// Перечень объектов загруженной МТ; <c>null</c> — МТ не загружена
         /// </summary>
-        private readonly IReadOnlyList<Device> _devices;
+        private readonly MegapointCatalog? _catalog;
+
+        /// <summary>
+        /// Сопоставление строк таблицы со СКРМ БД и МТ
+        /// </summary>
+        private EfficiencyDeviceResolver _resolver;
 
         /// <summary>
         /// Все КП.
@@ -86,12 +92,19 @@ namespace VrdoPdg.View
         /// Создает окно «Таблица эффективности».
         /// </summary>
         /// <param name="service">Сервис таблицы эффективности.</param>
-        public EfficiencyTableForm(EfficiencyTableService service)
+        /// <param name="catalog">Перечень объектов загруженной МТ; <c>null</c> — МТ не загружена</param>
+        public EfficiencyTableForm(EfficiencyTableService service, MegapointCatalog? catalog)
         {
             InitializeComponent();
             EnableWindowDrag(_headerPanel, _titlePanel, _titleLabel, _subtitleLabel, _iconBox, _icon);
             _service = service ?? throw new ArgumentNullException(nameof(service));
-            _devices = service.GetDevices();
+            _catalog = catalog;
+            _resolver = service.CreateResolver(catalog);
+            if (!_resolver.IsMegapointLoaded)
+            {
+                _subtitleLabel.Text = "МТ не загружена: СКРМ проверяются по БД, генераторы указаны номером генератора";
+            }
+
             _controlPoints = service.GetControlPoints();
             _counts = service.GetActiveDeviceCounts();
 
@@ -118,9 +131,14 @@ namespace VrdoPdg.View
         /// </summary>
         /// <param name="first">Первая строка.</param>
         /// <param name="second">Вторая строка.</param>
-        /// <returns><c>true</c>, если тип и номер СКРМ совпадают.</returns>
+        /// <returns><c>true</c>, если коды СКРМ в БД или тип и номер СКРМ совпадают</returns>
         private static bool IsSameDevice(EfficiencyRow first, EfficiencyRow second)
         {
+            if (first.DeviceId.HasValue && second.DeviceId.HasValue)
+            {
+                return first.DeviceId == second.DeviceId;
+            }
+
             return first.DeviceType == second.DeviceType && first.DeviceNumber == second.DeviceNumber;
         }
 
@@ -250,7 +268,7 @@ namespace VrdoPdg.View
             }
             else
             {
-                _original = _service.GetActiveTable(controlPoint.Id).ToList();
+                _original = _service.GetActiveTable(controlPoint.Id, _resolver).ToList();
                 _rows = _original.Select(row => row.Clone()).ToList();
                 _controlPointLabel.Text = controlPoint.Name;
             }
@@ -294,8 +312,7 @@ namespace VrdoPdg.View
         /// <returns>Наименование или пустая строка.</returns>
         private string GetDeviceName(EfficiencyRow row)
         {
-            Device? device = EfficiencyTableService.FindDevice(_devices, row.DeviceType, row.DeviceNumber);
-            return device?.Name ?? string.Empty;
+            return _resolver.GetName(row);
         }
 
         /// <summary>
@@ -804,6 +821,7 @@ namespace VrdoPdg.View
             else if (e.ColumnIndex == _numberColumn.Index)
             {
                 row.DeviceNumber = ParseInteger(value);
+                row.DeviceId = null;
             }
             else if (e.ColumnIndex == _typeColumn.Index)
             {
@@ -811,6 +829,7 @@ namespace VrdoPdg.View
                 if (DeviceNames.TryParseType(value?.ToString(), out type))
                 {
                     row.DeviceType = type;
+                    row.DeviceId = null;
                 }
             }
             else
@@ -983,7 +1002,7 @@ namespace VrdoPdg.View
                 return;
             }
 
-            _rows = _service.GetDefaultTable(_controlPoint.Id).ToList();
+            _rows = _service.GetDefaultTable(_controlPoint.Id, _resolver).ToList();
             RefreshGrid();
             OnTableChanged();
         }
@@ -1001,7 +1020,7 @@ namespace VrdoPdg.View
             }
 
             _grid.EndEdit();
-            IReadOnlyList<EfficiencyValidationError> errors = EfficiencyTableService.Validate(_rows, _devices);
+            IReadOnlyList<EfficiencyValidationError> errors = EfficiencyTableService.Validate(_rows, _resolver);
             if (errors.Count > 0)
             {
                 ShowErrors(errors);
@@ -1010,7 +1029,7 @@ namespace VrdoPdg.View
 
             try
             {
-                _service.Save(_controlPoint, _rows);
+                _service.Save(_controlPoint, _rows, _resolver);
             }
             catch (VrdoException exception)
             {
@@ -1026,6 +1045,7 @@ namespace VrdoPdg.View
             }
 
             ControlPoint controlPoint = _controlPoint;
+            _resolver = _service.CreateResolver(_catalog);
             _counts = _service.GetActiveDeviceCounts();
             ShowTable(controlPoint);
             _isSaved = true;

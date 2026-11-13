@@ -74,6 +74,11 @@ namespace VrdoPdg.Tests
             Assert.That(
                 session.GetGeneratorNode(RegulationScenario.GeneratorId),
                 Is.EqualTo(RegulationScenario.GeneratorNode));
+            Assert.That(
+                session.Catalog.GetGenerator(RegulationScenario.GeneratorNumber)!.NodeNumber,
+                Is.EqualTo(RegulationScenario.GeneratorNode));
+            Assert.That(session.Catalog.GetReactorName(RegulationScenario.ReactorNumber), Is.Not.Null);
+            Assert.That(session.Catalog.GetNodeName(RegulationScenario.MainNode), Is.Not.Null);
             Assert.That(scenario.Repository.SavedVoltages, Has.Count.EqualTo(48));
             Assert.That(scenario.Repository.SavedModes, Has.Count.EqualTo(96));
             Assert.That(scenario.Repository.SavedModes.Count(mode => mode.IsFixed), Is.EqualTo(18));

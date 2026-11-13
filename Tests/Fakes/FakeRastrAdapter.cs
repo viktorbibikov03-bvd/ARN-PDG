@@ -109,6 +109,31 @@ namespace VrdoPdg.Tests.Fakes
             _undo.Clear();
         }
 
+        /// <summary>
+        /// Наименования узлов МТ, не входящих в КП и не являющихся узлами СКРМ
+        /// </summary>
+        public Dictionary<int, string> ExtraNodes { get; } = new Dictionary<int, string>();
+
+        /// <inheritdoc/>
+        public MegapointCatalog ReadCatalog()
+        {
+            Dictionary<int, string> nodes = new Dictionary<int, string>(ExtraNodes);
+            foreach (int node in BaseVoltages.Keys.Concat(ControlledDevices.Keys))
+            {
+                nodes[node] = "Узел " + node;
+            }
+
+            foreach (FakeGenerator generator in Generators.Values)
+            {
+                nodes[generator.NodeNumber] = "Узел " + generator.NodeNumber;
+            }
+
+            return new MegapointCatalog(
+                nodes,
+                SwitchedDevices.Keys.ToDictionary(number => number, number => "Реактор " + number),
+                Generators.Select(pair => new MegapointGenerator(pair.Key, pair.Value.NodeNumber, "ТГ " + pair.Key)));
+        }
+
         /// <inheritdoc/>
         public bool SelectHour(int hour)
         {

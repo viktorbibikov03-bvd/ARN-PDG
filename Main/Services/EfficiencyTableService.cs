@@ -4,6 +4,7 @@ using System.Linq;
 
 using VrdoPdg.Model.Entities;
 using VrdoPdg.Model.Protocol;
+using VrdoPdg.Model.Regime;
 using VrdoPdg.Model.Storage;
 
 namespace VrdoPdg.Model.Services
@@ -45,12 +46,13 @@ namespace VrdoPdg.Model.Services
         }
 
         /// <summary>
-        /// Возвращает справочник СКРМ.
+        /// Создает сопоставление строк таблицы со СКРМ по справочнику СКРМ из БД и загруженной МТ
         /// </summary>
-        /// <returns>Список СКРМ.</returns>
-        public IReadOnlyList<Device> GetDevices()
+        /// <param name="catalog">Перечень объектов загруженной МТ; <c>null</c> — МТ не загружена</param>
+        /// <returns>Сопоставление строк таблицы со СКРМ</returns>
+        public EfficiencyDeviceResolver CreateResolver(MegapointCatalog? catalog)
         {
-            return _repository.GetDevices();
+            return new EfficiencyDeviceResolver(_repository.GetDevices(), catalog);
         }
 
         /// <summary>
@@ -69,8 +71,9 @@ namespace VrdoPdg.Model.Services
         /// Возвращает действующую таблицу эффективности КП, упорядоченную по приоритету.
         /// </summary>
         /// <param name="controlPointId">Код КП.</param>
+        /// <param name="resolver">Сопоставление строк таблицы со СКРМ</param>
         /// <returns>Строки таблицы.</returns>
-        public IReadOnlyList<EfficiencyRow> GetActiveTable(int controlPointId)
+        public IReadOnlyList<EfficiencyRow> GetActiveTable(int controlPointId, EfficiencyDeviceResolver resolver)
         {
             Dictionary<int, Device> devices = _repository.GetDevices().ToDictionary(device => device.Id);
             return _repository.GetEfficiencyEntries()
@@ -78,7 +81,7 @@ namespace VrdoPdg.Model.Services
                     && entry.Priority.HasValue
                     && devices.ContainsKey(entry.DeviceId))
                 .OrderBy(entry => entry.Priority)
-                .Select(entry => CreateRow(entry.Priority, devices[entry.DeviceId]))
+                .Select(entry => resolver.CreateRow(entry.Priority, devices[entry.DeviceId]))
                 .ToList();
         }
 
@@ -86,8 +89,9 @@ namespace VrdoPdg.Model.Services
         /// Возвращает таблицу эффективности КП согласно ПУР: состав СКРМ и приоритеты по умолчанию.
         /// </summary>
         /// <param name="controlPointId">Код КП.</param>
+        /// <param name="resolver">Сопоставление строк таблицы со СКРМ</param>
         /// <returns>Строки таблицы.</returns>
-        public IReadOnlyList<EfficiencyRow> GetDefaultTable(int controlPointId)
+        public IReadOnlyList<EfficiencyRow> GetDefaultTable(int controlPointId, EfficiencyDeviceResolver resolver)
         {
             Dictionary<int, Device> devices = _repository.GetDevices().ToDictionary(device => device.Id);
             return _repository.GetEfficiencyEntries()
@@ -95,7 +99,7 @@ namespace VrdoPdg.Model.Services
                     && entry.DefaultPriority.HasValue
                     && devices.ContainsKey(entry.DeviceId))
                 .OrderBy(entry => entry.DefaultPriority)
-                .Select(entry => CreateRow(entry.DefaultPriority, devices[entry.DeviceId]))
+                .Select(entry => resolver.CreateRow(entry.DefaultPriority, devices[entry.DeviceId]))
                 .ToList();
         }
 
@@ -131,33 +135,18 @@ namespace VrdoPdg.Model.Services
         }
 
         /// <summary>
-        /// Ищет СКРМ по типу и номеру в МТ.
-        /// </summary>
-        /// <param name="devices">Справочник СКРМ.</param>
-        /// <param name="type">Тип СКРМ.</param>
-        /// <param name="number">Номер узла, реактора или генератора.</param>
-        /// <returns>СКРМ или <c>null</c>, если СКРМ нет в БД.</returns>
-        public static Device? FindDevice(IEnumerable<Device> devices, DeviceType type, int? number)
-        {
-            return number.HasValue
-                ? devices.FirstOrDefault(device => device.Type == type && device.Number == number.Value)
-                : null;
-        }
-
-        /// <summary>
         /// Проверяет корректность таблицы эффективности: заполнение приоритетов и номеров,
-        /// отсутствие повторяющихся приоритетов и СКРМ, наличие СКРМ в БД
-        /// и непрерывность приоритетов 1, 2, ..., N.
+        /// отсутствие повторяющихся приоритетов и СКРМ, наличие СКРМ в загруженной МТ
+        /// (без МТ — в БД) и непрерывность приоритетов 1, 2, ..., N
         /// </summary>
         /// <param name="rows">Строки таблицы.</param>
-        /// <param name="devices">Справочник СКРМ.</param>
+        /// <param name="resolver">Сопоставление строк таблицы со СКРМ</param>
         /// <returns>Ошибки проверки; пустой список, если таблица корректна.</returns>
         public static IReadOnlyList<EfficiencyValidationError> Validate(
             IReadOnlyList<EfficiencyRow> rows,
-            IReadOnlyList<Device> devices)
+            EfficiencyDeviceResolver resolver)
         {
             List<EfficiencyValidationError> errors = new List<EfficiencyValidationError>();
-            Dictionary<int, int> deviceRows = new Dictionary<int, int>();
             for (int index = 0; index < rows.Count; index++)
             {
                 EfficiencyRow row = rows[index];
@@ -169,32 +158,10 @@ namespace VrdoPdg.Model.Services
                 if (!row.DeviceNumber.HasValue)
                 {
                     errors.Add(new EfficiencyValidationError(index, "Не задан номер узла или реактора"));
-                    continue;
-                }
-
-                Device? device = FindDevice(devices, row.DeviceType, row.DeviceNumber);
-                if (device == null)
-                {
-                    string caption = DeviceNames.GetNumberCaption(row.DeviceType);
-                    errors.Add(new EfficiencyValidationError(
-                        index,
-                        char.ToUpper(caption[0]) + caption.Substring(1) + " " + row.DeviceNumber.Value
-                            + " не найден в БД"));
-                    continue;
-                }
-
-                int firstRow;
-                if (deviceRows.TryGetValue(device.Id, out firstRow))
-                {
-                    errors.Add(new EfficiencyValidationError(
-                        index,
-                        "СКРМ уже есть в таблице (строка " + (firstRow + 1) + ")"));
-                }
-                else
-                {
-                    deviceRows[device.Id] = index;
                 }
             }
+
+            resolver.Resolve(rows, errors);
 
             foreach (IGrouping<int, int> group in Enumerable.Range(0, rows.Count)
                 .Where(index => rows[index].Priority.HasValue && rows[index].Priority.GetValueOrDefault() > 0)
@@ -234,16 +201,24 @@ namespace VrdoPdg.Model.Services
         /// </summary>
         /// <param name="controlPoint">КП.</param>
         /// <param name="rows">Строки таблицы.</param>
+        /// <param name="resolver">Сопоставление строк таблицы со СКРМ</param>
         /// <exception cref="VrdoException">Таблица некорректна.</exception>
-        public void Save(ControlPoint controlPoint, IReadOnlyList<EfficiencyRow> rows)
+        public void Save(
+            ControlPoint controlPoint,
+            IReadOnlyList<EfficiencyRow> rows,
+            EfficiencyDeviceResolver resolver)
         {
             if (controlPoint == null)
             {
                 throw new ArgumentNullException(nameof(controlPoint));
             }
 
-            IReadOnlyList<Device> devices = _repository.GetDevices();
-            IReadOnlyList<EfficiencyValidationError> errors = Validate(rows, devices);
+            if (resolver == null)
+            {
+                throw new ArgumentNullException(nameof(resolver));
+            }
+
+            IReadOnlyList<EfficiencyValidationError> errors = Validate(rows, resolver);
             if (errors.Count > 0)
             {
                 throw new VrdoException(
@@ -251,29 +226,29 @@ namespace VrdoPdg.Model.Services
                     string.Join("; ", errors.Select(error => error.Message).Distinct()));
             }
 
+            IReadOnlyList<EfficiencyDeviceMatch?> matches =
+                resolver.Resolve(rows, new List<EfficiencyValidationError>());
             List<DevicePriority> priorities = new List<DevicePriority>();
-            foreach (EfficiencyRow row in rows)
+            List<string> added = new List<string>();
+            for (int index = 0; index < rows.Count; index++)
             {
-                Device device = FindDevice(devices, row.DeviceType, row.DeviceNumber)!;
-                priorities.Add(new DevicePriority(device.Id, row.Priority.GetValueOrDefault()));
+                EfficiencyDeviceMatch match = matches[index]!;
+                Device device = match.Device
+                    ?? _repository.AddDevice(match.Type, match.Name, match.Number, match.SwitchedKind);
+                if (match.IsNew)
+                {
+                    added.Add(device.ToString());
+                }
+
+                priorities.Add(new DevicePriority(device.Id, rows[index].Priority.GetValueOrDefault()));
             }
 
             _repository.SaveEfficiencyTable(controlPoint.Id, priorities);
             _protocol.Add(
                 ProtocolTag.Info,
                 "Таблица эффективности КП «" + controlPoint.Name + "» сохранена",
-                "СКРМ в таблице: " + priorities.Count);
-        }
-
-        /// <summary>
-        /// Создает строку таблицы для СКРМ.
-        /// </summary>
-        /// <param name="priority">Приоритет.</param>
-        /// <param name="device">СКРМ.</param>
-        /// <returns>Строка таблицы.</returns>
-        private static EfficiencyRow CreateRow(int? priority, Device device)
-        {
-            return new EfficiencyRow(priority, device.Type, device.Number);
+                "СКРМ в таблице: " + priorities.Count
+                    + (added.Count == 0 ? string.Empty : "; добавлены в БД из МТ: " + string.Join(", ", added)));
         }
     }
 }

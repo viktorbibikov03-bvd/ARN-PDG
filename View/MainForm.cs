@@ -500,7 +500,7 @@ namespace VrdoPdg.View
 
             try
             {
-                using (EfficiencyTableForm form = new EfficiencyTableForm(_services.EfficiencyTable))
+                using (EfficiencyTableForm form = new EfficiencyTableForm(_services.EfficiencyTable, _session?.Catalog))
                 {
                     form.ShowDialog(this);
                 }

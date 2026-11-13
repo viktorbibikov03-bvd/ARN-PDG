@@ -269,6 +269,34 @@ namespace VrdoPdg.Tests
         }
 
         /// <summary>
+        /// СКРМ МТ добавляется в справочник СКРМ с подтипом и считывается из БД
+        /// </summary>
+        [Test]
+        public void AddDevice_AllTypes_AddsDevicesWithSubtypes()
+        {
+            ModelDataRepository repository = OpenWorkingCopy();
+
+            Device controlled = repository.AddDevice(DeviceType.Controlled, "СТК-9", 9101, null);
+            Device capacitor = repository.AddDevice(
+                DeviceType.Switched, "БСК-9", 9102, SwitchedDeviceKind.CapacitorBank);
+            Device reactor = repository.AddDevice(DeviceType.Switched, "Р-9", 9103, SwitchedDeviceKind.Reactor);
+            Device generator = repository.AddDevice(DeviceType.Generator, "ТГ-9", 9104, null);
+
+            IReadOnlyList<Device> devices = repository.GetDevices();
+            Assert.That(devices.Single(device => device.Id == controlled.Id).Number, Is.EqualTo(9101));
+            Assert.That(
+                devices.Single(device => device.Id == capacitor.Id).SwitchedKind,
+                Is.EqualTo(SwitchedDeviceKind.CapacitorBank));
+            Assert.That(
+                devices.Single(device => device.Id == reactor.Id).SwitchedKind,
+                Is.EqualTo(SwitchedDeviceKind.Reactor));
+            Device stored = devices.Single(device => device.Id == generator.Id);
+            Assert.That(stored.Type, Is.EqualTo(DeviceType.Generator));
+            Assert.That(stored.Name, Is.EqualTo("ТГ-9"));
+            Assert.That(stored.Number, Is.EqualTo(9104));
+        }
+
+        /// <summary>
         /// СКРМ, исключенное из таблицы эффективности, теряет действующий приоритет: строка
         /// с приоритетом по умолчанию сохраняется, остальные удаляются; добавленное СКРМ
         /// сохраняется без приоритета по умолчанию.

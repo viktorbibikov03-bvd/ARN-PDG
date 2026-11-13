@@ -81,6 +81,40 @@ namespace VrdoPdg.Infrastructure.Bars
         }
 
         /// <inheritdoc/>
+        public MegapointCatalog ReadCatalog()
+        {
+            RastrTable nodes = GetNodes();
+            Dictionary<int, string> nodeNames = new Dictionary<int, string>();
+            foreach (KeyValuePair<int, int> pair in nodes.Rows)
+            {
+                nodeNames[pair.Key] = nodes.ReadString("name", pair.Value);
+            }
+
+            Dictionary<int, string> reactorNames = new Dictionary<int, string>();
+            if (_reactors != null)
+            {
+                foreach (KeyValuePair<int, int> pair in _reactors.Rows)
+                {
+                    reactorNames[pair.Key] = _reactors.ReadString("Name", pair.Value);
+                }
+            }
+
+            List<MegapointGenerator> generators = new List<MegapointGenerator>();
+            if (_generators != null)
+            {
+                foreach (KeyValuePair<int, int> pair in _generators.Rows)
+                {
+                    generators.Add(new MegapointGenerator(
+                        pair.Key,
+                        _generators.ReadInteger("Node", pair.Value),
+                        _generators.ReadString("Name", pair.Value)));
+                }
+            }
+
+            return new MegapointCatalog(nodeNames, reactorNames, generators);
+        }
+
+        /// <inheritdoc/>
         public bool SelectHour(int hour)
         {
             IRastr rastr = GetRastr();

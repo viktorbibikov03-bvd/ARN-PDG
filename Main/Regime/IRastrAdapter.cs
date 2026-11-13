@@ -19,6 +19,12 @@ namespace VrdoPdg.Model.Regime
         void Open(string megapointPath);
 
         /// <summary>
+        /// Считывает перечень узлов, реакторов и генераторов открытой МТ с наименованиями
+        /// </summary>
+        /// <returns>Перечень объектов МТ</returns>
+        MegapointCatalog ReadCatalog();
+
+        /// <summary>
         /// Делает текущим заданный час МТ и рассчитывает его установившийся режим
         /// </summary>
         /// <param name="hour">Час суток</param>

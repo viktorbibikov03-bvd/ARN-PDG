@@ -38,6 +38,7 @@ namespace VrdoPdg.Model.Services
         /// <param name="generatorNodes">Номера узлов подключения генераторов по коду СКРМ.</param>
         /// <param name="fixedDeviceHours">Часы, в которых состояние СКРМ задано в файле smp_smzu.csv.</param>
         /// <param name="loadedAt">Дата и время загрузки.</param>
+        /// <param name="catalog">Перечень объектов МТ; <c>null</c> — пустой перечень</param>
         public SessionData(
             string megapointPath,
             string smpSmzuPath,
@@ -49,7 +50,8 @@ namespace VrdoPdg.Model.Services
             RegimeSnapshot initialRegime,
             IReadOnlyDictionary<int, int> generatorNodes,
             IEnumerable<(int DeviceId, int Hour)> fixedDeviceHours,
-            DateTime loadedAt)
+            DateTime loadedAt,
+            MegapointCatalog? catalog = null)
         {
             MegapointPath = megapointPath;
             SmpSmzuPath = smpSmzuPath;
@@ -63,12 +65,18 @@ namespace VrdoPdg.Model.Services
             _devices = devices.ToDictionary(device => device.Id);
             _generatorNodes = generatorNodes;
             FixedDeviceHours = new HashSet<(int DeviceId, int Hour)>(fixedDeviceHours);
+            Catalog = catalog ?? MegapointCatalog.Empty;
         }
 
         /// <summary>
         /// Путь к файлу МТ.
         /// </summary>
         public string MegapointPath { get; }
+
+        /// <summary>
+        /// Перечень узлов, реакторов и генераторов загруженной МТ
+        /// </summary>
+        public MegapointCatalog Catalog { get; }
 
         /// <summary>
         /// Путь к файлу smp_smzu.csv.

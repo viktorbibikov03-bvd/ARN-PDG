@@ -41,6 +41,16 @@ namespace VrdoPdg.Model.Storage
         IReadOnlyList<EfficiencyEntry> GetEfficiencyEntries();
 
         /// <summary>
+        /// Добавляет в справочник СКРМ, которое есть в МТ, но отсутствует в БД
+        /// </summary>
+        /// <param name="type">Тип СКРМ</param>
+        /// <param name="name">Наименование СКРМ</param>
+        /// <param name="number">Номер узла, реактора или генератора (Num) в МТ</param>
+        /// <param name="switchedKind">Вид коммутируемого СКРМ</param>
+        /// <returns>Добавленное СКРМ с кодом в БД</returns>
+        Device AddDevice(DeviceType type, string name, int number, SwitchedDeviceKind? switchedKind);
+
+        /// <summary>
         /// Сохраняет действующую таблицу эффективности КП. СКРМ, не вошедшие в таблицу,
         /// удаляются из нее, если не входят в ПУР; у СКРМ, входящих в ПУР, очищается
         /// действующий приоритет.

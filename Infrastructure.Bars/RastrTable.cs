@@ -48,6 +48,11 @@ namespace VrdoPdg.Infrastructure.Bars
         }
 
         /// <summary>
+        /// Индексы строк по значению ключевого столбца
+        /// </summary>
+        public IReadOnlyDictionary<int, int> Rows => _rows;
+
+        /// <summary>
         /// Открывает таблицу МТ
         /// </summary>
         /// <param name="rastr">Объект ASTRALib</param>
@@ -122,6 +127,30 @@ namespace VrdoPdg.Infrastructure.Bars
         public int ReadInteger(string name, int row)
         {
             return ReadInteger(GetColumn(name), row);
+        }
+
+        /// <summary>
+        /// Считывает текстовое значение ячейки; при отсутствии столбца возвращает пустую строку
+        /// </summary>
+        /// <param name="name">Имя столбца</param>
+        /// <param name="row">Индекс строки</param>
+        /// <returns>Значение без пробелов по краям</returns>
+        public string ReadString(string name, int row)
+        {
+            ICol? column;
+            try
+            {
+                column = GetColumn(name);
+            }
+            catch (COMException)
+            {
+                return string.Empty;
+            }
+
+            object? value = Read(column, row);
+            return value == null || value is DBNull
+                ? string.Empty
+                : Convert.ToString(value, CultureInfo.InvariantCulture)?.Trim() ?? string.Empty;
         }
 
         /// <summary>

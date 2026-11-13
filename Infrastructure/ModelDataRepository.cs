@@ -221,6 +221,57 @@ namespace VrdoPdg.Infrastructure
         }
 
         /// <inheritdoc/>
+        public Device AddDevice(DeviceType type, string name, int number, SwitchedDeviceKind? switchedKind)
+        {
+            Device template = new Device(0, type, name, number, switchedKind);
+            using (SqliteConnection connection = OpenConnection())
+            using (SqliteTransaction transaction = connection.BeginTransaction())
+            {
+                long id;
+                using (SqliteCommand insert = CreateCommand(
+                    connection,
+                    transaction,
+                    "INSERT INTO Device (type_dev, name_dev) VALUES ($type, $name); SELECT last_insert_rowid()"))
+                {
+                    insert.Parameters.AddWithValue("$type", template.TypeName);
+                    insert.Parameters.AddWithValue("$name", template.Name);
+                    id = Convert.ToInt64(insert.ExecuteScalar(), CultureInfo.InvariantCulture);
+                }
+
+                string sql;
+                switch (type)
+                {
+                    case DeviceType.Controlled:
+                        sql = "INSERT INTO Controlled_device (id_dev, num_node) VALUES ($id, $number)";
+                        break;
+                    case DeviceType.Switched:
+                        sql = "INSERT INTO Switched_device (id_dev, num_reactor, kind_sd) VALUES ($id, $number, $kind)";
+                        break;
+                    default:
+                        sql = "INSERT INTO Generator (id_dev, num_node) VALUES ($id, $number)";
+                        break;
+                }
+
+                using (SqliteCommand subtype = CreateCommand(connection, transaction, sql))
+                {
+                    subtype.Parameters.AddWithValue("$id", id);
+                    subtype.Parameters.AddWithValue("$number", number);
+                    if (type == DeviceType.Switched)
+                    {
+                        subtype.Parameters.AddWithValue(
+                            "$kind",
+                            template.IsCapacitorBank ? DeviceNames.CapacitorBank : DeviceNames.Reactor);
+                    }
+
+                    subtype.ExecuteNonQuery();
+                }
+
+                transaction.Commit();
+                return new Device((int)id, type, template.Name, number, template.SwitchedKind);
+            }
+        }
+
+        /// <inheritdoc/>
         public void SaveEfficiencyTable(int controlPointId, IReadOnlyList<DevicePriority> priorities)
         {
             if (priorities == null)

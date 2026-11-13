@@ -84,6 +84,17 @@ namespace VrdoPdg.Tests.Fakes
         }
 
         /// <inheritdoc/>
+        public Device AddDevice(DeviceType type, string name, int number, SwitchedDeviceKind? switchedKind)
+        {
+            int id = Devices.Count == 0
+                ? 1
+                : Devices.Max(device => device.Id) + 1;
+            Device device = new Device(id, type, name, number, switchedKind);
+            Devices.Add(device);
+            return device;
+        }
+
+        /// <inheritdoc/>
         public void SaveEfficiencyTable(int controlPointId, IReadOnlyList<DevicePriority> priorities)
         {
             List<EfficiencyEntry> others = EfficiencyEntries

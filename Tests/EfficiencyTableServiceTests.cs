@@ -7,6 +7,7 @@ using NUnit.Framework;
 using VrdoPdg.Model;
 using VrdoPdg.Model.Entities;
 using VrdoPdg.Model.Protocol;
+using VrdoPdg.Model.Regime;
 using VrdoPdg.Model.Services;
 using VrdoPdg.Tests.Fakes;
 
@@ -30,6 +31,11 @@ namespace VrdoPdg.Tests
         };
 
         /// <summary>
+        /// Сопоставление строк со СКРМ без загруженной МТ: СКРМ проверяются по БД
+        /// </summary>
+        private static readonly EfficiencyDeviceResolver _resolver = new EfficiencyDeviceResolver(_devices, null);
+
+        /// <summary>
         /// Корректная таблица не содержит ошибок.
         /// </summary>
         [Test]
@@ -42,7 +48,7 @@ namespace VrdoPdg.Tests
                 new EfficiencyRow(3, DeviceType.Generator, 18)
             };
 
-            Assert.That(EfficiencyTableService.Validate(rows, _devices), Is.Empty);
+            Assert.That(EfficiencyTableService.Validate(rows, _resolver), Is.Empty);
         }
 
         /// <summary>
@@ -58,7 +64,7 @@ namespace VrdoPdg.Tests
                 new EfficiencyRow(3, DeviceType.Switched, 8)
             };
 
-            IReadOnlyList<EfficiencyValidationError> errors = EfficiencyTableService.Validate(rows, _devices);
+            IReadOnlyList<EfficiencyValidationError> errors = EfficiencyTableService.Validate(rows, _resolver);
 
             Assert.That(errors.Select(error => error.RowIndex), Is.EquivalentTo(new[] { 1, 2 }));
             Assert.That(errors.All(error => error.Message == "Приоритет 3 повторяется"), Is.True);
@@ -75,7 +81,7 @@ namespace VrdoPdg.Tests
                 new EfficiencyRow(1, DeviceType.Switched, 6299)
             };
 
-            IReadOnlyList<EfficiencyValidationError> errors = EfficiencyTableService.Validate(rows, _devices);
+            IReadOnlyList<EfficiencyValidationError> errors = EfficiencyTableService.Validate(rows, _resolver);
 
             Assert.That(errors, Has.Count.EqualTo(1));
             Assert.That(errors[0].RowIndex, Is.Zero);
@@ -94,7 +100,7 @@ namespace VrdoPdg.Tests
                 new EfficiencyRow(3, DeviceType.Switched, 7)
             };
 
-            IReadOnlyList<EfficiencyValidationError> errors = EfficiencyTableService.Validate(rows, _devices);
+            IReadOnlyList<EfficiencyValidationError> errors = EfficiencyTableService.Validate(rows, _resolver);
 
             Assert.That(errors, Has.Count.EqualTo(1));
             Assert.That(errors[0].RowIndex, Is.EqualTo(EfficiencyValidationError.TableRowIndex));
@@ -112,7 +118,7 @@ namespace VrdoPdg.Tests
                 new EfficiencyRow(2, DeviceType.Switched, 7)
             };
 
-            IReadOnlyList<EfficiencyValidationError> errors = EfficiencyTableService.Validate(rows, _devices);
+            IReadOnlyList<EfficiencyValidationError> errors = EfficiencyTableService.Validate(rows, _resolver);
 
             Assert.That(errors, Has.Count.EqualTo(1));
             Assert.That(errors[0].RowIndex, Is.EqualTo(1));
@@ -127,7 +133,7 @@ namespace VrdoPdg.Tests
             FakeModelDataRepository repository = CreateRepository();
             EfficiencyTableService service = new EfficiencyTableService(repository, new CalculationProtocol());
 
-            IReadOnlyList<EfficiencyRow> rows = service.GetDefaultTable(1);
+            IReadOnlyList<EfficiencyRow> rows = service.GetDefaultTable(1, service.CreateResolver(null));
 
             Assert.That(rows.Select(row => row.DeviceNumber), Is.EqualTo(new int?[] { 6269, 7, 8 }));
             Assert.That(rows.Select(row => row.Priority), Is.EqualTo(new int?[] { 1, 2, 3 }));
@@ -142,7 +148,7 @@ namespace VrdoPdg.Tests
             FakeModelDataRepository repository = CreateRepository();
             EfficiencyTableService service = new EfficiencyTableService(repository, new CalculationProtocol());
 
-            IReadOnlyList<EfficiencyRow> rows = service.GetActiveTable(1);
+            IReadOnlyList<EfficiencyRow> rows = service.GetActiveTable(1, service.CreateResolver(null));
 
             Assert.That(rows.Select(row => row.DeviceNumber), Is.EqualTo(new int?[] { 7, 6269, 18 }));
         }
@@ -158,7 +164,8 @@ namespace VrdoPdg.Tests
             List<EfficiencyRow> rows = new List<EfficiencyRow> { new EfficiencyRow(1, DeviceType.Switched, 6299) };
             ControlPoint controlPoint = new ControlPoint(1, 1, "Рубцовская", new ControlPointNode[0]);
 
-            VrdoException exception = Assert.Throws<VrdoException>(() => service.Save(controlPoint, rows))!;
+            VrdoException exception = Assert.Throws<VrdoException>(
+                () => service.Save(controlPoint, rows, service.CreateResolver(null)))!;
 
             Assert.That(exception.Message, Is.EqualTo("Изменения не сохранены: данные некорректны"));
             Assert.That(repository.EfficiencyEntries, Has.Count.EqualTo(4));
@@ -177,7 +184,7 @@ namespace VrdoPdg.Tests
                 new EfficiencyRow(1, DeviceType.Switched, null)
             };
 
-            IReadOnlyList<EfficiencyValidationError> errors = EfficiencyTableService.Validate(rows, _devices);
+            IReadOnlyList<EfficiencyValidationError> errors = EfficiencyTableService.Validate(rows, _resolver);
 
             Assert.That(errors.Count(error => error.Message == "Не задан приоритет"), Is.EqualTo(2));
             Assert.That(
@@ -202,11 +209,13 @@ namespace VrdoPdg.Tests
                 new EfficiencyRow(1, DeviceType.Generator, 18)
             };
 
-            service.Save(service.GetControlPoints()[0], rows);
+            service.Save(service.GetControlPoints()[0], rows, service.CreateResolver(null));
 
-            Assert.That(service.GetDevices(), Has.Count.EqualTo(4));
+            Assert.That(repository.Devices, Has.Count.EqualTo(4));
             Assert.That(service.GetActiveDeviceCounts()[1], Is.EqualTo(2));
-            Assert.That(service.GetActiveTable(1).Select(row => row.DeviceNumber), Is.EqualTo(new int?[] { 18, 8 }));
+            Assert.That(
+                service.GetActiveTable(1, service.CreateResolver(null)).Select(row => row.DeviceNumber),
+                Is.EqualTo(new int?[] { 18, 8 }));
             Assert.That(
                 protocol.GetEntries().Single().Message,
                 Is.EqualTo("Таблица эффективности КП «Рубцовская» сохранена"));
@@ -233,7 +242,6 @@ namespace VrdoPdg.Tests
             Assert.That(item.Device.Id, Is.EqualTo(1));
             Assert.That(item.Priority, Is.EqualTo(2));
             Assert.That(item.DefaultPriority, Is.EqualTo(1));
-            Assert.That(EfficiencyTableService.FindDevice(_devices, DeviceType.Switched, null), Is.Null);
         }
 
         /// <summary>
@@ -247,7 +255,46 @@ namespace VrdoPdg.Tests
 
             Assert.Throws<ArgumentNullException>(() => new EfficiencyTableService(null!, new CalculationProtocol()));
             Assert.Throws<ArgumentNullException>(() => new EfficiencyTableService(repository, null!));
-            Assert.Throws<ArgumentNullException>(() => service.Save(null!, new EfficiencyRow[0]));
+            Assert.Throws<ArgumentNullException>(
+                () => service.Save(null!, new EfficiencyRow[0], service.CreateResolver(null)));
+            Assert.Throws<ArgumentNullException>(() => service.Save(
+                new ControlPoint(1, 1, "Рубцовская", new ControlPointNode[0]), new EfficiencyRow[0], null!));
+            Assert.Throws<ArgumentNullException>(() => new EfficiencyDeviceResolver(null!, null));
+        }
+
+        /// <summary>
+        /// СКРМ МТ, которых нет в БД, при сохранении таблицы добавляются в БД, генератор — номером
+        /// генератора (Num); таблица выводит генератор номером узла подключения
+        /// </summary>
+        [Test]
+        public void Save_DevicesFromMegapoint_AddsDevicesToDatabase()
+        {
+            FakeModelDataRepository repository = CreateRepository();
+            CalculationProtocol protocol = new CalculationProtocol();
+            EfficiencyTableService service = new EfficiencyTableService(repository, protocol);
+            MegapointCatalog catalog = new MegapointCatalog(
+                new Dictionary<int, string> { { 6269, "Рубцовская" }, { 6300, "Рубцовская 220" } },
+                new Dictionary<int, string> { { 7, "Р-500 №1" } },
+                new[] { new MegapointGenerator(313, 6400, "Бийская ТЭЦ, ТГ-9") });
+            EfficiencyDeviceResolver resolver = service.CreateResolver(catalog);
+            List<EfficiencyRow> rows = new List<EfficiencyRow>
+            {
+                new EfficiencyRow(1, DeviceType.Switched, 7),
+                new EfficiencyRow(2, DeviceType.Controlled, 6300),
+                new EfficiencyRow(3, DeviceType.Generator, 6400)
+            };
+
+            service.Save(new ControlPoint(1, 1, "Рубцовская", new ControlPointNode[0]), rows, resolver);
+
+            Device generator = repository.Devices.Single(device => device.Type == DeviceType.Generator
+                && device.Number == 313);
+            Assert.That(generator.Name, Is.EqualTo("Бийская ТЭЦ, ТГ-9"));
+            Assert.That(repository.Devices.Any(device => device.Type == DeviceType.Controlled
+                && device.Number == 6300), Is.True);
+            IReadOnlyList<EfficiencyRow> saved = service.GetActiveTable(1, service.CreateResolver(catalog));
+            Assert.That(saved.Select(row => row.DeviceNumber), Is.EqualTo(new int?[] { 7, 6300, 6400 }));
+            Assert.That(protocol.GetEntries().Single().Details, Does.Contain(
+                "добавлены в БД из МТ: Рубцовская 220 (узел 6300), Бийская ТЭЦ, ТГ-9 (генератор 313)"));
         }
 
         /// <summary>
