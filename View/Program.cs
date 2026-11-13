@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Windows.Forms;
 
@@ -71,7 +72,7 @@ namespace VrdoPdg.View
                         new DataLoadService(
                             rastrAdapter,
                             repository,
-                            new CkModel(settings.LowerVoltageBound, settings.UpperVoltageBound),
+                            CreateCkModel(settings),
                             new SmpSmzuCsvReader(),
                             protocol,
                             observedObjects),
@@ -86,6 +87,42 @@ namespace VrdoPdg.View
                     worker.Run(rastrAdapter.Dispose).Wait(_shutdownTimeout);
                 }
             }
+        }
+
+        /// <summary>
+        /// Создает модуль взаимодействия с ОИК «СК-11» с границами графиков из настроек.
+        /// Неправильно заполненные границы отдельных КП пропускаются с предупреждением
+        /// </summary>
+        /// <param name="settings">Настройки системы</param>
+        /// <returns>Модуль взаимодействия с ОИК «СК-11»</returns>
+        private static CkModel CreateCkModel(AppSettings settings)
+        {
+            List<ControlPointBounds> controlPointBounds = new List<ControlPointBounds>();
+            List<string> errors = new List<string>();
+            foreach (ControlPointBoundsSetting setting in settings.ControlPointBounds)
+            {
+                try
+                {
+                    controlPointBounds.Add(
+                        new ControlPointBounds(setting.ControlPoint, setting.LowerBound, setting.UpperBound));
+                }
+                catch (ArgumentException exception)
+                {
+                    errors.Add("«" + setting.ControlPoint + "»: " + exception.Message);
+                }
+            }
+
+            if (errors.Count > 0)
+            {
+                MessageBox.Show(
+                    "Границы графиков отдельных КП в " + AppSettings.FileName + " заполнены неправильно и пропущены:"
+                        + Environment.NewLine + string.Join(Environment.NewLine, errors),
+                    "АС «ВРДО ПДГ»",
+                    MessageBoxButtons.OK,
+                    MessageBoxIcon.Warning);
+            }
+
+            return new CkModel(settings.LowerVoltageBound, settings.UpperVoltageBound, controlPointBounds);
         }
 
         /// <summary>

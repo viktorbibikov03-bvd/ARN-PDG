@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Text.Json;
 
@@ -44,6 +45,12 @@ namespace VrdoPdg.View
         /// Верхняя граница графиков напряжений, используемая до реализации запроса к ОИК «СК-11», кВ.
         /// </summary>
         public double UpperVoltageBound { get; set; } = 525;
+
+        /// <summary>
+        /// Постоянные границы графиков отдельных КП, например КП класса напряжения 220 кВ,
+        /// используемые до реализации запроса к ОИК «СК-11»
+        /// </summary>
+        public List<ControlPointBoundsSetting> ControlPointBounds { get; set; } = new List<ControlPointBoundsSetting>();
 
         /// <summary>
         /// Загружает настройки из файла; при отсутствии или ошибке чтения файла
