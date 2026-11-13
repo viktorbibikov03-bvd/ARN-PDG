@@ -73,6 +73,12 @@ namespace VrdoPdg.Model.Services
         public List<UnresolvedViolation> Unresolved { get; } = new List<UnresolvedViolation>();
 
         /// <summary>
+        /// СКРМ, добавленные в БД после загрузки данных: их исходный режим считывается из МТ
+        /// перед вводом режима в каждом часе
+        /// </summary>
+        public List<Device> AddedDevices { get; } = new List<Device>();
+
+        /// <summary>
         /// Количество часов КП, в которых напряжение выходило за границы графика.
         /// </summary>
         public int ViolationCount => _hourEntries.Count;

@@ -116,9 +116,12 @@ namespace VrdoPdg.Model.Services
                 "МТ: " + session.MegapointPath);
             try
             {
-                IReadOnlyDictionary<int, IReadOnlyList<EfficiencyItem>> tables = LoadEfficiencyTables(session);
+                IReadOnlyList<Device> addedDevices;
+                IReadOnlyDictionary<int, IReadOnlyList<EfficiencyItem>> tables =
+                    LoadEfficiencyTables(session, out addedDevices);
                 IReadOnlyList<ControlPoint> controlPoints = SelectControlPoints(session);
                 RegulationRun run = new RegulationRun(session, tables, controlPoints, _protocol);
+                run.AddedDevices.AddRange(addedDevices);
 
                 OpenMegapoint(session.MegapointPath);
                 for (int hour = 1; hour <= RegimeSnapshot.HourCount; hour++)
@@ -197,14 +200,27 @@ namespace VrdoPdg.Model.Services
         }
 
         /// <summary>
-        /// Считывает действующие таблицы эффективности из БД.
+        /// Считывает действующие таблицы эффективности из БД. Справочник СКРМ сеанса дополняется
+        /// СКРМ, добавленными в БД после загрузки данных, например из МТ через таблицу эффективности
         /// </summary>
         /// <param name="session">Исходные данные сеанса.</param>
+        /// <param name="addedDevices">СКРМ, добавленные в справочник сеанса</param>
         /// <returns>Таблицы эффективности по коду КП.</returns>
-        private IReadOnlyDictionary<int, IReadOnlyList<EfficiencyItem>> LoadEfficiencyTables(SessionData session)
+        private IReadOnlyDictionary<int, IReadOnlyList<EfficiencyItem>> LoadEfficiencyTables(
+            SessionData session,
+            out IReadOnlyList<Device> addedDevices)
         {
             try
             {
+                addedDevices = session.AddDevices(_repository.GetDevices());
+                if (addedDevices.Count > 0)
+                {
+                    _protocol.Add(
+                        ProtocolTag.Info,
+                        "В расчет включены СКРМ, добавленные в БД после загрузки данных",
+                        string.Join("; ", addedDevices.Select(device => device.ToString())));
+                }
+
                 return EfficiencyTableService.BuildActiveTables(_repository.GetEfficiencyEntries(), session.Devices);
             }
             catch (Exception exception)
@@ -289,6 +305,7 @@ namespace VrdoPdg.Model.Services
                 return;
             }
 
+            ReadAddedDeviceModes(run, hour);
             HourState hourState = new HourState(hour);
             try
             {
@@ -318,6 +335,24 @@ namespace VrdoPdg.Model.Services
             finally
             {
                 _rastrAdapter.UndoAllChanges();
+            }
+        }
+
+        /// <summary>
+        /// Считывает исходный режим часа СКРМ, добавленных в БД после загрузки данных,
+        /// и дополняет им исходный режим сеанса
+        /// </summary>
+        /// <param name="run">Данные расчета</param>
+        /// <param name="hour">Час суток (1–24)</param>
+        private void ReadAddedDeviceModes(RegulationRun run, int hour)
+        {
+            foreach (Device device in run.AddedDevices)
+            {
+                DeviceMode? mode = RegimeReader.ReadMode(_rastrAdapter, device, hour, run.Session.FixedDeviceHours);
+                if (mode != null)
+                {
+                    run.Session.InitialRegime.SetMode(mode);
+                }
             }
         }
 

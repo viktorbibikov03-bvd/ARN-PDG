@@ -5,6 +5,7 @@ using System.Threading;
 
 using NUnit.Framework;
 
+using VrdoPdg.Infrastructure;
 using VrdoPdg.Model;
 using VrdoPdg.Model.Entities;
 using VrdoPdg.Model.Protocol;
@@ -744,6 +745,39 @@ namespace VrdoPdg.Tests
                 "Барнаульская Час 2",
                 "Рубцовская Час 2"
             }));
+        }
+
+        /// <summary>
+        /// СКРМ, добавленное в БД после загрузки данных (например, из МТ через таблицу эффективности),
+        /// участвует в расчете: справочник сеанса дополняется, исходный режим СКРМ считывается из МТ,
+        /// а изменение СКРМ записывается в файл результатов
+        /// </summary>
+        [Test]
+        public void Run_DeviceAddedAfterLoad_IsUsedAndExported()
+        {
+            const int reactorId = 50;
+            const int reactorNumber = 30;
+            RegulationScenario scenario = new RegulationScenario();
+            scenario.SetVoltage(1, 535);
+            SessionData session = scenario.CreateSession();
+            scenario.Adapter.SwitchedDevices[reactorNumber] =
+                new FakeSwitchedDevice(false, -6, RegulationScenario.MainNode);
+            AddDevice(scenario, new Device(reactorId, DeviceType.Switched, "Р-3", reactorNumber,
+                SwitchedDeviceKind.Reactor), 0);
+
+            CalculationResult result = scenario.Service.Run(session, null, CancellationToken.None);
+
+            Assert.That(session.Devices.Any(device => device.Id == reactorId), Is.True);
+            Assert.That(session.InitialRegime.GetMode(reactorId, 1)!.IsOn, Is.False);
+            Assert.That(result.After.GetMode(reactorId, 1)!.IsOn, Is.True);
+            Assert.That(result.After.GetMode(RegulationScenario.ReactorId, 1)!.IsOn, Is.False);
+            Assert.That(scenario.Protocol.GetEntries().Any(entry => entry.Message
+                == "В расчет включены СКРМ, добавленные в БД после загрузки данных"
+                && entry.Details == "Р-3 (реактор 30)"), Is.True);
+            ResultExportService export = new ResultExportService(new SmpSmzuCsvWriter(), scenario.Protocol);
+            Assert.That(
+                export.CreateRecords(result).Select(record => SmpSmzuCsvWriter.FormatRecord(record, ',')),
+                Does.Contain("20;1;1;30;0;0;1;0;0"));
         }
 
         /// <summary>

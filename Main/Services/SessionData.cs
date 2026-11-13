@@ -22,7 +22,12 @@ namespace VrdoPdg.Model.Services
         /// <summary>
         /// Номера узлов подключения генераторов по коду СКРМ.
         /// </summary>
-        private readonly IReadOnlyDictionary<int, int> _generatorNodes;
+        private readonly Dictionary<int, int> _generatorNodes;
+
+        /// <summary>
+        /// Справочник СКРМ, дополняемый СКРМ, добавленными в БД после загрузки данных
+        /// </summary>
+        private readonly List<Device> _deviceList;
 
         /// <summary>
         /// Создает исходные данные сеанса.
@@ -58,12 +63,12 @@ namespace VrdoPdg.Model.Services
             SmpSmzuDocument = smpSmzuDocument;
             PowerSystems = powerSystems;
             ControlPoints = controlPoints;
-            Devices = devices;
             Schedule = schedule;
             InitialRegime = initialRegime;
             LoadedAt = loadedAt;
+            _deviceList = devices.ToList();
             _devices = devices.ToDictionary(device => device.Id);
-            _generatorNodes = generatorNodes;
+            _generatorNodes = new Dictionary<int, int>(generatorNodes);
             FixedDeviceHours = new HashSet<(int DeviceId, int Hour)>(fixedDeviceHours);
             Catalog = catalog ?? MegapointCatalog.Empty;
         }
@@ -99,9 +104,9 @@ namespace VrdoPdg.Model.Services
         public IReadOnlyList<ControlPoint> ControlPoints { get; }
 
         /// <summary>
-        /// Справочник СКРМ.
+        /// Справочник СКРМ
         /// </summary>
-        public IReadOnlyList<Device> Devices { get; }
+        public IReadOnlyList<Device> Devices => _deviceList;
 
         /// <summary>
         /// Графики напряжений в КП.
@@ -145,6 +150,34 @@ namespace VrdoPdg.Model.Services
             return _generatorNodes.TryGetValue(deviceId, out nodeNumber)
                 ? nodeNumber
                 : (int?)null;
+        }
+
+        /// <summary>
+        /// Дополняет справочник СКРМ сеанса СКРМ, добавленными в БД после загрузки данных
+        /// (например, СКРМ МТ, добавленными в таблицу эффективности). Узлы подключения
+        /// новых генераторов определяются по перечню объектов МТ
+        /// </summary>
+        /// <param name="devices">СКРМ из БД</param>
+        /// <returns>СКРМ, которых не было в справочнике сеанса</returns>
+        public IReadOnlyList<Device> AddDevices(IEnumerable<Device> devices)
+        {
+            List<Device> added = new List<Device>();
+            foreach (Device device in devices.Where(item => !_devices.ContainsKey(item.Id)))
+            {
+                _devices[device.Id] = device;
+                _deviceList.Add(device);
+                MegapointGenerator? generator = device.Type == DeviceType.Generator
+                    ? Catalog.GetGenerator(device.Number)
+                    : null;
+                if (generator != null)
+                {
+                    _generatorNodes[device.Id] = generator.NodeNumber;
+                }
+
+                added.Add(device);
+            }
+
+            return added;
         }
     }
 }
