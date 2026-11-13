@@ -475,7 +475,7 @@ namespace VrdoPdg.View.Controls
                         ? bounds.Bottom - top
                         : partHeight;
                     Rectangle part = new Rectangle(bounds.Left, top, bounds.Width, height);
-                    CellText value = GetCellText(column.Source!, model.Sources[index], hour, count > 1 ? index : -1);
+                    CellText value = GetCellText(column, model.Sources[index], hour, count > 1 ? index : -1);
                     if (value.BackColor.HasValue)
                     {
                         using (SolidBrush brush = new SolidBrush(value.BackColor.Value))
@@ -525,13 +525,14 @@ namespace VrdoPdg.View.Controls
         /// <summary>
         /// Формирует текст и цвета значения ячейки по виду столбца.
         /// </summary>
-        /// <param name="column">Столбец схемы таблиц.</param>
+        /// <param name="gridColumn">Описание столбца таблицы</param>
         /// <param name="source">Источник значений.</param>
         /// <param name="hour">Час суток.</param>
         /// <param name="runIndex">Индекс сравниваемого расчета; -1 — предпросмотр.</param>
         /// <returns>Текст и цвета.</returns>
-        private CellText GetCellText(HourlyLayoutColumn column, HourlyValueSource source, int hour, int runIndex)
+        private CellText GetCellText(HourlyColumn gridColumn, HourlyValueSource source, int hour, int runIndex)
         {
+            HourlyLayoutColumn column = gridColumn.Source!;
             Color numberColor = runIndex < 0
                 ? Palette.Text
                 : runIndex == 0
@@ -560,7 +561,7 @@ namespace VrdoPdg.View.Controls
             switch (column.Kind)
             {
                 case HourlyLayoutColumnKind.BusVoltage:
-                    return GetBusVoltageText(node, source, hour, numberColor);
+                    return GetBusVoltageText(gridColumn.ControlPoint!, node, source, hour, numberColor);
                 case HourlyLayoutColumnKind.SetVoltage:
                     return new CellText(ValueFormat.ShortVoltage(node.SetVoltage), numberColor, null);
                 case HourlyLayoutColumnKind.ReactivePower:
@@ -577,14 +578,17 @@ namespace VrdoPdg.View.Controls
 
         /// <summary>
         /// Формирует значение напряжения на шинах с выделением выхода за границы графика.
-        /// Напряжения вне диапазона выделения схемы таблиц (узлы другого класса напряжения) не выделяются.
+        /// Напряжения КП без своих границ вне диапазона выделения схемы таблиц (узлы другого
+        /// класса напряжения) не выделяются
         /// </summary>
+        /// <param name="controlPoint">КП схемы таблиц</param>
         /// <param name="node">Значения узла.</param>
         /// <param name="source">Источник значений.</param>
         /// <param name="hour">Час суток.</param>
         /// <param name="numberColor">Цвет значения в границах графика.</param>
         /// <returns>Текст и цвета.</returns>
         private CellText GetBusVoltageText(
+            HourlyLayoutControlPoint controlPoint,
             ObservedNodeState node,
             HourlyValueSource source,
             int hour,
@@ -596,12 +600,12 @@ namespace VrdoPdg.View.Controls
             }
 
             string text = ValueFormat.ShortVoltage(node.Voltage);
-            if (!_model!.Layout.IsHighlighted(node.Voltage))
+            if (!_model!.Layout.IsHighlighted(controlPoint, node.Voltage))
             {
                 return new CellText(text, numberColor, null);
             }
 
-            VoltageBounds bounds = _model!.GetBounds(source, node.NodeNumber, hour);
+            VoltageBounds bounds = _model!.GetBounds(source, controlPoint, node.NodeNumber, hour);
             if (bounds.IsAbove(node.Voltage))
             {
                 return new CellText(text, _aboveText, Palette.BlueDark);

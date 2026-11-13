@@ -126,18 +126,49 @@ namespace VrdoPdg.View.Layout
                     "Нижняя граница напряжений, выделяемых цветом, должна быть меньше верхней");
             }
 
+            foreach (HourlyLayoutControlPoint controlPoint in layout.PowerSystems
+                .SelectMany(powerSystem => powerSystem.Blocks)
+                .SelectMany(block => block.ControlPoints))
+            {
+                CheckControlPointBounds(controlPoint);
+            }
+
             return layout;
         }
 
         /// <summary>
-        /// Проверяет, выделяется ли напряжение цветом при выходе за границы графика: выделяются
-        /// только напряжения в диапазоне от <see cref="HighlightMinVoltage"/> до <see cref="HighlightMaxVoltage"/>.
+        /// Проверяет, выделяется ли напряжение КП цветом при выходе за границы графика. Для КП
+        /// со своими границами выделяются все напряжения: границы заданы для его класса напряжения.
+        /// Для остальных КП выделяются только напряжения в диапазоне от <see cref="HighlightMinVoltage"/>
+        /// до <see cref="HighlightMaxVoltage"/>
         /// </summary>
-        /// <param name="voltage">Напряжение, кВ.</param>
-        /// <returns><c>true</c>, если напряжение выделяется цветом.</returns>
-        public bool IsHighlighted(double voltage)
+        /// <param name="controlPoint">КП схемы таблиц</param>
+        /// <param name="voltage">Напряжение, кВ</param>
+        /// <returns><c>true</c>, если напряжение выделяется цветом</returns>
+        public bool IsHighlighted(HourlyLayoutControlPoint controlPoint, double voltage)
         {
-            return voltage >= HighlightMinVoltage && voltage <= HighlightMaxVoltage;
+            return controlPoint.HasOwnBounds
+                || (voltage >= HighlightMinVoltage && voltage <= HighlightMaxVoltage);
+        }
+
+        /// <summary>
+        /// Проверяет границы напряжения КП: задаются обе границы, нижняя меньше верхней
+        /// </summary>
+        /// <param name="controlPoint">КП схемы таблиц</param>
+        /// <exception cref="InvalidDataException">Границы КП заданы неправильно</exception>
+        private static void CheckControlPointBounds(HourlyLayoutControlPoint controlPoint)
+        {
+            if (controlPoint.LowerVoltageBound.HasValue != controlPoint.UpperVoltageBound.HasValue)
+            {
+                throw new InvalidDataException(
+                    "КП «" + controlPoint.Name + "»: должны быть заданы обе границы напряжения");
+            }
+
+            if (controlPoint.HasOwnBounds && controlPoint.LowerVoltageBound >= controlPoint.UpperVoltageBound)
+            {
+                throw new InvalidDataException(
+                    "КП «" + controlPoint.Name + "»: нижняя граница напряжения должна быть меньше верхней");
+            }
         }
 
         /// <summary>

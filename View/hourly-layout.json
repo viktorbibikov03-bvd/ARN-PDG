@@ -210,6 +210,18 @@
                   ]
                 }
               ]
+            },
+            {
+              "name": "Юрга",
+              "groups": [
+                {
+                  "caption": "U сш",
+                  "columns": [
+                    { "kind": "BusVoltage", "number": 6230 },
+                    { "kind": "BusVoltage", "number": 6231 }
+                  ]
+                }
+              ]
             }
           ]
         },
@@ -748,6 +760,39 @@
                     { "kind": "Reactor", "number": 273 },
                     { "kind": "Reactor", "number": 274 },
                     { "kind": "Reactor", "number": 275 }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "controlPoints": [
+            {
+              "name": "БЦБК",
+              "lowerVoltageBound": 220,
+              "upperVoltageBound": 252,
+              "groups": [
+                {
+                  "caption": "U сш",
+                  "columns": [
+                    { "kind": "BusVoltage", "number": 197 }
+                  ]
+                }
+              ]
+            },
+            {
+              "name": "Петровск-Забайкальская",
+              "lowerVoltageBound": 220,
+              "upperVoltageBound": 252,
+              "groups": [
+                {
+                  "caption": "U сш",
+                  "columns": [
+                    { "kind": "BusVoltage", "number": 6240 },
+                    { "kind": "BusVoltage", "number": 6241 },
+                    { "kind": "BusVoltage", "number": 6253 },
+                    { "kind": "BusVoltage", "number": 6254 }
                   ]
                 }
               ]

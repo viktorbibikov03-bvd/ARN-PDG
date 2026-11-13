@@ -73,16 +73,26 @@ namespace VrdoPdg.View.Layout
 
         /// <summary>
         /// Возвращает границы напряжения на шинах: график КП БД, в который входит узел,
-        /// или границы схемы таблиц для остальных узлов.
+        /// для остальных узлов — границы КП схемы таблиц или общие границы схемы
         /// </summary>
-        /// <param name="source">Источник значений.</param>
-        /// <param name="nodeNumber">Номер узла.</param>
-        /// <param name="hour">Час суток (1–24).</param>
-        /// <returns>Границы напряжения.</returns>
-        public VoltageBounds GetBounds(HourlyValueSource source, int nodeNumber, int hour)
+        /// <param name="source">Источник значений</param>
+        /// <param name="controlPoint">КП схемы таблиц</param>
+        /// <param name="nodeNumber">Номер узла</param>
+        /// <param name="hour">Час суток (1–24)</param>
+        /// <returns>Границы напряжения</returns>
+        public VoltageBounds GetBounds(
+            HourlyValueSource source,
+            HourlyLayoutControlPoint controlPoint,
+            int nodeNumber,
+            int hour)
         {
             return source.GetScheduleBounds(nodeNumber, hour)
-                ?? new VoltageBounds(0, hour, Layout.LowerVoltageBound, Layout.UpperVoltageBound, DateTime.MinValue);
+                ?? new VoltageBounds(
+                    0,
+                    hour,
+                    controlPoint.LowerVoltageBound ?? Layout.LowerVoltageBound,
+                    controlPoint.UpperVoltageBound ?? Layout.UpperVoltageBound,
+                    DateTime.MinValue);
         }
     }
 }
