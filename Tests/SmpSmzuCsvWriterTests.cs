@@ -104,7 +104,7 @@ namespace VrdoPdg.Tests
                 new SmpSmzuRecord[0],
                 "\r\n",
                 new UTF8Encoding(false),
-                '.');
+                ',');
 
             IReadOnlyList<string> lines = new SmpSmzuCsvWriter(',').ComposeLines(source, new[] { _records[1] });
 

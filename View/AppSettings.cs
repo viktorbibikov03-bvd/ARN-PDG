@@ -34,7 +34,7 @@ namespace VrdoPdg.View
         /// Десятичный разделитель значений в файле smp_smzu.csv, если его нельзя определить
         /// по исходному файлу: «,» или «.».
         /// </summary>
-        public string CsvDecimalSeparator { get; set; } = ",";
+        public string CsvDecimalSeparator { get; set; } = ".";
 
         /// <summary>
         /// Нижняя граница графиков напряжений, используемая до реализации запроса к ОИК «СК-11», кВ.
@@ -110,9 +110,9 @@ namespace VrdoPdg.View
         /// <returns>Точка или запятая.</returns>
         public char GetCsvDecimalSeparator()
         {
-            return CsvDecimalSeparator == "."
-                ? '.'
-                : ',';
+            return CsvDecimalSeparator == ","
+                ? ','
+                : '.';
         }
     }
 }

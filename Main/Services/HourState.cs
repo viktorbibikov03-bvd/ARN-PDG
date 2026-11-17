@@ -9,7 +9,7 @@ namespace VrdoPdg.Model.Services
     internal sealed class HourState
     {
         /// <summary>
-        /// СКРМ, исключенные из перебора для КП: режим не сошелся или изменение не подействовало.
+        /// СКРМ, исключенные из перебора для КП: режим не сошелся или изменение не подействовало
         /// </summary>
         private readonly HashSet<(int ControlPointId, int DeviceId)> _exhausted =
             new HashSet<(int ControlPointId, int DeviceId)>();
@@ -22,26 +22,26 @@ namespace VrdoPdg.Model.Services
             new HashSet<(int ControlPointId, int DeviceId)>();
 
         /// <summary>
-        /// Направления изменений СКРМ, выполненных в этом часе.
+        /// Направления изменений СКРМ, выполненных в этом часе
         /// </summary>
         private readonly Dictionary<int, RegulationDirection> _directions = new Dictionary<int, RegulationDirection>();
 
         /// <summary>
-        /// Число шагов изменения заданного напряжения генераторов в этом часе.
+        /// Число шагов изменения заданного напряжения генераторов в этом часе
         /// </summary>
         private readonly Dictionary<int, int> _generatorSteps = new Dictionary<int, int>();
 
         /// <summary>
-        /// Создает состояние часа.
+        /// Создает состояние часа
         /// </summary>
-        /// <param name="hour">Час суток (1–24).</param>
+        /// <param name="hour">Час суток</param>
         public HourState(int hour)
         {
             Hour = hour;
         }
 
         /// <summary>
-        /// Час суток (1–24).
+        /// Час суток
         /// </summary>
         public int Hour { get; }
 
@@ -80,7 +80,7 @@ namespace VrdoPdg.Model.Services
         }
 
         /// <summary>
-        /// Исключает СКРМ из перебора для КП в этом часе.
+        /// Исключает СКРМ из перебора для КП в этом часе
         /// </summary>
         /// <param name="controlPointId">Код КП.</param>
         /// <param name="deviceId">Код СКРМ.</param>

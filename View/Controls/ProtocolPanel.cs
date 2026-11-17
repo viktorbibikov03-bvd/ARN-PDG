@@ -113,6 +113,11 @@ namespace VrdoPdg.View.Controls
         private bool _isExpandAllMode;
 
         /// <summary>
+        /// Последний номер записи, удаленной при очистке панели.
+        /// </summary>
+        private int _clearedThroughId;
+
+        /// <summary>
         /// Создает панель протокола.
         /// </summary>
         public ProtocolPanel()
@@ -178,15 +183,17 @@ namespace VrdoPdg.View.Controls
             _flushTimer.Tick += FlushTimer_Tick;
         }
 
-        /// <summary>
-        /// Подключает панель к протоколу расчета.
-        /// </summary>
-        /// <param name="protocol">Протокол расчета.</param>
         public void Attach(CalculationProtocol protocol)
         {
             Detach();
-            _protocol = protocol ?? throw new ArgumentNullException(nameof(protocol));
+
+            _protocol = protocol
+                ?? throw new ArgumentNullException(nameof(protocol));
+
+            _clearedThroughId = 0;
+
             _protocol.EntryAdded += Protocol_EntryAdded;
+
             Rebuild();
             _flushTimer.Start();
         }
@@ -230,11 +237,6 @@ namespace VrdoPdg.View.Controls
             return TextFormat.Plural(count, "запись", "записи", "записей");
         }
 
-        /// <summary>
-        /// Создает заголовок панели.
-        /// </summary>
-        /// <param name="expandButton">Кнопка «Развернуть всё».</param>
-        /// <returns>Заголовок.</returns>
         private Panel CreateHeader(out RoundedButton expandButton)
         {
             Panel header = new Panel
@@ -262,11 +264,32 @@ namespace VrdoPdg.View.Controls
                 Width = 170,
                 Text = "Развернуть всё"
             };
+
             UiStyle.ApplyFlat(expandButton, null);
             expandButton.Click += ExpandButton_Click;
 
-            header.Controls.Add(expandButton);
+            RoundedButton clearButton = new RoundedButton
+            {
+                Dock = DockStyle.Left,
+                Width = 110,
+                Text = "Очистить"
+            };
+
+            UiStyle.ApplyFlat(clearButton, null);
+            clearButton.Click += ClearButton_Click;
+
+            Panel actions = new Panel
+            {
+                Dock = DockStyle.Right,
+                Width = 290
+            };
+
+            actions.Controls.Add(expandButton);
+            actions.Controls.Add(clearButton);
+
+            header.Controls.Add(actions);
             header.Controls.Add(title);
+
             return header;
         }
 
@@ -405,7 +428,7 @@ namespace VrdoPdg.View.Controls
         /// <param name="entry">Запись протокола.</param>
         private void AddEntry(ProtocolEntry entry)
         {
-            if (!_processed.Add(entry.Id))
+            if (entry.Id <= _clearedThroughId || !_processed.Add(entry.Id))
             {
                 return;
             }
@@ -527,6 +550,26 @@ namespace VrdoPdg.View.Controls
             }
 
             _tree.Invalidate();
+        }
+
+        /// <summary>
+        /// Очищает протокол от записей
+        /// </summary>
+        /// <param name="sender">Кнопка</param>
+        /// <param name="e">Аргументы события</param>
+        private void ClearButton_Click(object? sender, EventArgs e)
+        {
+            if (_protocol == null)
+            {
+                return;
+            }
+            _clearedThroughId = _protocol.Clear();
+
+            _expanded.Clear();
+            _isExpandAllMode = false;
+            _expandButton.Text = "Развернуть всё";
+
+            Rebuild();
         }
 
         /// <summary>

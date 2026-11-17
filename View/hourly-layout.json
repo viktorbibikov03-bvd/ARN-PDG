@@ -10,7 +10,7 @@
         {
           "controlPoints": [
             {
-              "name": "Таврич.",
+              "name": "Таврическая",
               "groups": [
                 {
                   "caption": "U сш",
@@ -228,7 +228,7 @@
         {
           "controlPoints": [
             {
-              "name": "Белоская ГРЭС",
+              "name": "Беловская ГРЭС",
               "groups": [
                 {
                   "caption": "U сш",
@@ -271,7 +271,7 @@
               ]
             },
             {
-              "name": "СШГЭС",
+              "name": "Саяно-Шушенская ГЭС",
               "groups": [
                 {
                   "caption": "U сш",
@@ -579,7 +579,7 @@
               ]
             },
             {
-              "name": "БПП",
+              "name": "Братский ПП",
               "groups": [
                 {
                   "caption": "U сш",
@@ -633,10 +633,31 @@
                 {
                   "caption": "U сш",
                   "columns": [
-                    { "kind": "BusVoltage", "number": 6001 },
-                    { "kind": "BusVoltage", "number": 6000 },
-                    { "kind": "BusVoltage", "number": 6004 },
-                    { "kind": "BusVoltage", "number": 6003 }
+
+                    {
+                      "kind": "BusVoltage",
+                      "number": 821
+                    },
+                    {
+                      "kind": "BusVoltage",
+                      "number": 824
+                    },
+                    {
+                      "kind": "BusVoltage",
+                      "number": 6001
+                    },
+                    {
+                      "kind": "BusVoltage",
+                      "number": 6000
+                    },
+                    {
+                      "kind": "BusVoltage",
+                      "number": 6004
+                    },
+                    {
+                      "kind": "BusVoltage",
+                      "number": 6003
+                    }
                   ]
                 },
                 {
@@ -649,13 +670,23 @@
               ]
             },
             {
-              "name": "Усть_Кут",
+              "name": "Усть-Кут",
               "groups": [
                 {
                   "caption": "U сш",
                   "columns": [
-                    { "kind": "BusVoltage", "number": 6100 },
-                    { "kind": "BusVoltage", "number": 6099 }
+                    {
+                      "kind": "BusVoltage",
+                      "number": 876
+                    },
+                    {
+                      "kind": "BusVoltage",
+                      "number": 6100
+                    },
+                    {
+                      "kind": "BusVoltage",
+                      "number": 6099
+                    }
                   ]
                 },
                 {
@@ -722,7 +753,7 @@
                 {
                   "caption": "U сш",
                   "columns": [
-                    { "kind": "BusVoltage", "number": 6483 }
+                    { "kind": "BusVoltage", "number": 110 }
                   ]
                 },
                 {
@@ -739,27 +770,7 @@
                 {
                   "caption": "U сш",
                   "columns": [
-                    { "kind": "BusVoltage", "number": 6490 }
-                  ]
-                }
-              ]
-            },
-            {
-              "name": "Нижнеангарская",
-              "groups": [
-                {
-                  "caption": "U сш",
-                  "columns": [
-                    { "kind": "BusVoltage", "number": 947 },
-                    { "kind": "BusVoltage", "number": 983 }
-                  ]
-                },
-                {
-                  "caption": "СКРМ",
-                  "columns": [
-                    { "kind": "Reactor", "number": 273 },
-                    { "kind": "Reactor", "number": 274 },
-                    { "kind": "Reactor", "number": 275 }
+                    { "kind": "BusVoltage", "number": 133 }
                   ]
                 }
               ]
@@ -769,6 +780,61 @@
         {
           "controlPoints": [
             {
+              "name": "Нижнеангарская",
+              "groups": [
+                {
+                  "caption": "U сш",
+                  "columns": [
+                    {
+                      "kind": "BusVoltage",
+                      "number": 948
+                    },
+                    {
+                      "kind": "BusVoltage",
+                      "number": 947
+                    },
+                    {
+                      "kind": "BusVoltage",
+                      "number": 983
+                    }
+                  ]
+                },
+                {
+                  "caption": "СКРМ",
+                  "columns": [
+                    {
+                      "kind": "Reactor",
+                      "number": 273
+                    },
+                    {
+                      "kind": "Reactor",
+                      "number": 274
+                    },
+                    {
+                      "kind": "Reactor",
+                      "number": 275
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "name": "Мамакан",
+              "lowerVoltageBound": 220,
+              "upperVoltageBound": 252,
+              "groups": [
+                {
+                  "caption": "U сш",
+                  "columns": [
+                    {
+                      "kind": "BusVoltage",
+                      "number": 892
+                    }
+                  ]
+                }
+              ]
+            },
+            {
               "name": "БЦБК",
               "lowerVoltageBound": 220,
               "upperVoltageBound": 252,
@@ -776,7 +842,10 @@
                 {
                   "caption": "U сш",
                   "columns": [
-                    { "kind": "BusVoltage", "number": 197 }
+                    {
+                      "kind": "BusVoltage",
+                      "number": 197
+                    }
                   ]
                 }
               ]
@@ -789,10 +858,22 @@
                 {
                   "caption": "U сш",
                   "columns": [
-                    { "kind": "BusVoltage", "number": 6240 },
-                    { "kind": "BusVoltage", "number": 6241 },
-                    { "kind": "BusVoltage", "number": 6253 },
-                    { "kind": "BusVoltage", "number": 6254 }
+                    {
+                      "kind": "BusVoltage",
+                      "number": 6240
+                    },
+                    {
+                      "kind": "BusVoltage",
+                      "number": 6241
+                    },
+                    {
+                      "kind": "BusVoltage",
+                      "number": 6253
+                    },
+                    {
+                      "kind": "BusVoltage",
+                      "number": 6254
+                    }
                   ]
                 }
               ]

@@ -23,7 +23,7 @@ namespace VrdoPdg.Infrastructure
         /// Создает модуль формирования файла с десятичной запятой по умолчанию.
         /// </summary>
         public SmpSmzuCsvWriter()
-            : this(',')
+            : this('.')
         {
         }
 
@@ -83,7 +83,7 @@ namespace VrdoPdg.Infrastructure
                 lines.Add(string.Empty);
             }
 
-            char decimalSeparator = source.DecimalSeparator ?? _defaultDecimalSeparator;
+            char decimalSeparator = _defaultDecimalSeparator;
             lines.AddRange(addedRecords.Select(record => FormatRecord(record, decimalSeparator)));
             return lines;
         }

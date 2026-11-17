@@ -30,6 +30,16 @@ namespace VrdoPdg.Model.Protocol
         private readonly Dictionary<ProtocolTag, int> _counts = new Dictionary<ProtocolTag, int>();
 
         /// <summary>
+        /// Последний выданный номер записи. При очистке не сбрасывается.
+        /// </summary>
+        private int _lastEntryId;
+
+        /// <summary>
+        /// Номер, до которого записи были удалены включительно.
+        /// </summary>
+        private int _clearedThroughId;
+
+        /// <summary>
         /// Возникает при добавлении записи в протокол. Обработчик вызывается
         /// в потоке, добавившем запись
         /// </summary>
@@ -57,18 +67,27 @@ namespace VrdoPdg.Model.Protocol
         /// <param name="details">Пояснение к сообщению</param>
         /// <param name="parent">Родительская запись</param>
         /// <returns>Добавленная запись</returns>
-        public ProtocolEntry Add(ProtocolTag tag, string message, string? details = null, ProtocolEntry? parent = null)
+        public ProtocolEntry Add(ProtocolTag tag,
+            string message, string? details = null,
+            ProtocolEntry? parent = null)
         {
             ProtocolEntry entry;
+
             lock (_syncRoot)
             {
+                if (parent != null && parent.Id <= _clearedThroughId)
+                {
+                    parent = null;
+                }
+
                 entry = new ProtocolEntry(
-                    _entries.Count + 1,
+                    ++_lastEntryId,
                     DateTime.Now,
                     tag,
                     message ?? string.Empty,
                     details ?? string.Empty,
                     parent);
+
                 _entries.Add(entry);
 
                 int count;
@@ -77,6 +96,7 @@ namespace VrdoPdg.Model.Protocol
             }
 
             EntryAdded?.Invoke(this, new ProtocolEntryEventArgs(entry));
+
             return entry;
         }
 
@@ -105,6 +125,25 @@ namespace VrdoPdg.Model.Protocol
                 return _counts.TryGetValue(tag, out count)
                     ? count
                     : 0;
+            }
+        }
+
+        /// <summary>
+        /// Удаляет записи протокола и сбрасывает счетчики меток.
+        /// </summary>
+        /// <returns>
+        /// Последний удаленный номер записи.
+        /// </returns>
+        public int Clear()
+        {
+            lock (_syncRoot)
+            {
+                _entries.Clear();
+                _counts.Clear();
+
+                _clearedThroughId = _lastEntryId;
+
+                return _clearedThroughId;
             }
         }
     }

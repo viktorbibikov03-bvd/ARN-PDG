@@ -57,7 +57,8 @@ namespace VrdoPdg.View.Controls
             _textBox = new TextBox
             {
                 BorderStyle = BorderStyle.None,
-                Location = new Point(HorizontalPadding, 0)
+                Location = new Point(HorizontalPadding, 0),
+                ForeColor = Palette.Text
             };
             _textBox.TextChanged += TextBox_TextChanged;
             _textBox.Enter += TextBox_FocusChanged;
@@ -291,13 +292,27 @@ namespace VrdoPdg.View.Controls
         }
 
         /// <summary>
-        /// Снимает отметку наведения указателя мыши, если указатель покинул поле.
+        /// Снимает отметку наведения указателя мыши, если указатель покинул поле
         /// </summary>
-        /// <param name="e">Аргументы события.</param>
+        /// <param name="e">Аргументы события</param>
         protected override void OnMouseLeave(EventArgs e)
         {
             base.OnMouseLeave(e);
             UpdateHover();
+        }
+
+        /// <summary>
+        /// Цвет вводимых символов при поиске КП в таблице
+        /// </summary>
+        /// <param name="e">Аргументы события</param>
+        protected override void OnForeColorChanged(EventArgs e)
+        {
+            base.OnForeColorChanged(e);
+
+            if (_textBox != null)
+            {
+                _textBox.ForeColor = ForeColor;
+            }
         }
 
         /// <summary>

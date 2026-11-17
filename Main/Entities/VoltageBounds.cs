@@ -20,7 +20,8 @@ namespace VrdoPdg.Model.Entities
         /// <param name="lowerBound">Нижняя граница графика, кВ</param>
         /// <param name="upperBound">Верхняя граница графика, кВ</param>
         /// <param name="receivedAt">Дата и время получения границ</param>
-        public VoltageBounds(int controlPointId, int hour, double lowerBound, double upperBound, DateTime receivedAt)
+        public VoltageBounds(int controlPointId, int hour, double lowerBound,
+            double upperBound, DateTime receivedAt)
         {
             if (lowerBound > upperBound)
             {

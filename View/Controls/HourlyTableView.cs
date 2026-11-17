@@ -246,7 +246,6 @@ namespace VrdoPdg.View.Controls
                 ? _model.PowerSystems[index].Blocks
                 : new HourlyLayoutBlock[0];
 
-            // Элементы с привязкой к верху размещаются в обратном порядке добавления.
             for (int blockIndex = blocks.Count - 1; blockIndex >= 0; blockIndex--)
             {
                 _blocksPanel.Controls.Add(new Panel
