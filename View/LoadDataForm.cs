@@ -74,7 +74,7 @@ namespace VrdoPdg.View
             UiStyle.ApplyFlat(_closeButton, IconGlyph.Close);
             UiStyle.ApplyOutlined(_cancelButton, null);
             UiStyle.ApplyPrimary(_doneButton, null);
-            _hintIcon.Image = IconFactory.Create(IconGlyph.Info, Palette.TextSecondary, 20);
+            _hintIcon.Image = IconFactory.Create(IconGlyph.Info, Palette.TextSecondary, 32);
             UpdateDoneButton();
         }
 

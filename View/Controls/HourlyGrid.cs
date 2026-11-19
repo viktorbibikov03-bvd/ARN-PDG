@@ -100,11 +100,6 @@ namespace VrdoPdg.View.Controls
         }
 
         /// <summary>
-        /// Признак таблицы без столбцов КП.
-        /// </summary>
-        public bool IsEmpty => _ranges.Count == 0;
-
-        /// <summary>
         /// Высота таблицы, при которой видны все 24 часа и полоса горизонтальной прокрутки.
         /// </summary>
         public int PreferredHeight => ColumnHeadersHeight + (RowCount * RowTemplate.Height)

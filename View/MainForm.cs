@@ -105,7 +105,7 @@ namespace VrdoPdg.View
             UiStyle.ApplyOutlined(_previewButton, IconGlyph.View);
             UiStyle.ApplyOutlined(_archiveButton, IconGlyph.Archive);
             UiStyle.ApplyFlat(_settingsButton, IconGlyph.Settings);
-            _progressIcon.Image = IconFactory.Create(IconGlyph.Refresh, Palette.Purple, 18);
+            _progressIcon.Image = IconFactory.Create(IconGlyph.Refresh, Palette.Purple, 32);
             SetRunButtonState(false);
             UpdateIndicators();
         }
@@ -335,10 +335,7 @@ namespace VrdoPdg.View
                     _archiveForm.RefreshResults();
                 }
             }
-            catch (OperationCanceledException)
-            {
-                // Остановка расчета записана в протокол сервисом ввода режима.
-            }
+            catch (OperationCanceledException) { }
             catch (VrdoException exception)
             {
                 ShowError(exception.Message, exception.Details);

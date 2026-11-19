@@ -242,7 +242,7 @@ namespace VrdoPdg.View.Controls
             Panel header = new Panel
             {
                 Dock = DockStyle.Top,
-                Height = 50,
+                Height = 60,
                 BackColor = Palette.SurfaceSunken,
                 Padding = new Padding(16, 0, 12, 0)
             };
@@ -261,7 +261,7 @@ namespace VrdoPdg.View.Controls
             expandButton = new RoundedButton
             {
                 Dock = DockStyle.Right,
-                Width = 170,
+                Width = 220,
                 Text = "Развернуть всё"
             };
 
@@ -271,7 +271,7 @@ namespace VrdoPdg.View.Controls
             RoundedButton clearButton = new RoundedButton
             {
                 Dock = DockStyle.Left,
-                Width = 110,
+                Width = 140,
                 Text = "Очистить"
             };
 
@@ -281,7 +281,7 @@ namespace VrdoPdg.View.Controls
             Panel actions = new Panel
             {
                 Dock = DockStyle.Right,
-                Width = 290
+                Width = 360
             };
 
             actions.Controls.Add(expandButton);
@@ -303,16 +303,16 @@ namespace VrdoPdg.View.Controls
             FlowLayoutPanel panel = new FlowLayoutPanel
             {
                 Dock = DockStyle.Top,
-                Height = 54,
+                Height = 70,
                 BackColor = Palette.SurfaceSunken,
                 Padding = new Padding(14, 10, 14, 8),
                 WrapContents = false,
-                AutoScroll = false
+                AutoScroll = true
             };
 
             allButton = new RoundedButton
             {
-                Size = new Size(96, 34),
+                Size = new Size(170, 50),
                 Margin = new Padding(0, 0, 10, 0),
                 Text = "Все 0"
             };
@@ -326,7 +326,7 @@ namespace VrdoPdg.View.Controls
             {
                 RoundedButton button = new RoundedButton
                 {
-                    Size = new Size(108, 34),
+                    Size = new Size(170, 50),
                     Margin = new Padding(0, 0, 10, 0),
                     Checked = true,
                     Tag = tag,
@@ -360,7 +360,7 @@ namespace VrdoPdg.View.Controls
             button.CheckedState.FillColor = ProtocolTagStyle.GetBackColor(tag);
             button.CheckedState.ForeColor = color;
             button.CheckedState.BorderColor = color;
-            button.CheckedState.Image = IconFactory.Create(IconGlyph.CheckMark, color, 14);
+            button.CheckedState.Image = IconFactory.Create(IconGlyph.CheckMark, color, 32);
         }
 
         /// <summary>

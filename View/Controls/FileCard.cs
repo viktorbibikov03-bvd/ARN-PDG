@@ -74,8 +74,6 @@ namespace VrdoPdg.View.Controls
                 BorderThickness = 1
             };
 
-            // Рамка добавляется до вложенных элементов: привязка кнопки к правому краю
-            // рассчитывается от ширины рамки, а не от ширины панели по умолчанию.
             Controls.Add(_frame);
 
             _iconBox = new RoundedPanel
@@ -107,8 +105,8 @@ namespace VrdoPdg.View.Controls
 
             _chooseButton = new RoundedButton
             {
-                Size = new Size(140, 36),
-                Location = new Point(316, 20),
+                Size = new Size(180, 36),
+                Location = new Point(276, 20),
                 Anchor = AnchorStyles.Top | AnchorStyles.Right,
                 Text = "Выбрать файл"
             };
@@ -227,7 +225,7 @@ namespace VrdoPdg.View.Controls
                 _frame.BorderColor = Palette.Accent;
                 _frame.BorderDashStyle = DashStyle.Solid;
                 _iconBox.FillColor = Palette.Accent;
-                _icon.Image = IconFactory.Create(IconGlyph.CheckMark, Palette.OnAccent, 24);
+                _icon.Image = IconFactory.Create(IconGlyph.CheckMark, Palette.OnAccent, 64);
                 _extensionLabel.ForeColor = Palette.Accent;
                 _nameLabel.Text = Path.GetFileName(FilePath);
                 _nameLabel.ForeColor = Palette.Text;
@@ -240,7 +238,7 @@ namespace VrdoPdg.View.Controls
                 _frame.BorderColor = Palette.Border;
                 _frame.BorderDashStyle = DashStyle.Dash;
                 _iconBox.FillColor = Palette.SurfaceSunken;
-                _icon.Image = IconFactory.Create(IconGlyph.Document, Palette.TextSecondary, 24);
+                _icon.Image = IconFactory.Create(IconGlyph.Document, Palette.TextSecondary, 64);
                 _extensionLabel.ForeColor = Palette.TextSecondary;
                 _nameLabel.Text = "Файл не выбран";
                 _nameLabel.ForeColor = Palette.TextSecondary;

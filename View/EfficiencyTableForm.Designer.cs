@@ -215,7 +215,7 @@ namespace VrdoPdg.View
             _leftPanel.Dock = System.Windows.Forms.DockStyle.Left;
             _leftPanel.Name = "_leftPanel";
             _leftPanel.Padding = new System.Windows.Forms.Padding(16);
-            _leftPanel.Size = new System.Drawing.Size(270, 508);
+            _leftPanel.Size = new System.Drawing.Size(380, 508);
             _leftPanel.TabIndex = 2;
             //
             // _controlPointList
@@ -323,7 +323,7 @@ namespace VrdoPdg.View
             _numberColumn.HeaderText = "УЗЕЛ / РЕАКТОР";
             _numberColumn.MaxInputLength = 9;
             _numberColumn.Name = "_numberColumn";
-            _numberColumn.Width = 150;
+            _numberColumn.Width = 160;
             //
             // _nameColumn
             //
@@ -427,7 +427,7 @@ namespace VrdoPdg.View
             AutoScaleDimensions = new System.Drawing.SizeF(96F, 96F);
             AutoScaleMode = System.Windows.Forms.AutoScaleMode.Dpi;
             BackColor = System.Drawing.Color.FromArgb(24, 24, 24);
-            ClientSize = new System.Drawing.Size(1040, 660);
+            ClientSize = new System.Drawing.Size(1240, 660);
             Controls.Add(_rightPanel);
             Controls.Add(_leftLine);
             Controls.Add(_leftPanel);

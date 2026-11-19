@@ -28,6 +28,7 @@ namespace VrdoPdg.View
         /// </summary>
         private void InitializeComponent()
         {
+            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(MainForm));
             _toolbarPanel = new System.Windows.Forms.Panel();
             _rightToolbar = new System.Windows.Forms.FlowLayoutPanel();
             _megapointIndicator = new VrdoPdg.View.Controls.RoundedButton();
@@ -56,62 +57,73 @@ namespace VrdoPdg.View
             ((System.ComponentModel.ISupportInitialize)_progressIcon).BeginInit();
             _contentPanel.SuspendLayout();
             SuspendLayout();
-            //
+            // 
             // _toolbarPanel
-            //
+            // 
             _toolbarPanel.BackColor = System.Drawing.Color.FromArgb(17, 17, 17);
             _toolbarPanel.Controls.Add(_rightToolbar);
             _toolbarPanel.Controls.Add(_leftToolbar);
             _toolbarPanel.Dock = System.Windows.Forms.DockStyle.Top;
             _toolbarPanel.Location = new System.Drawing.Point(0, 0);
+            _toolbarPanel.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
             _toolbarPanel.Name = "_toolbarPanel";
-            _toolbarPanel.Padding = new System.Windows.Forms.Padding(16, 12, 16, 12);
-            _toolbarPanel.Size = new System.Drawing.Size(1264, 66);
+            _toolbarPanel.Padding = new System.Windows.Forms.Padding(24, 18, 24, 18);
+            _toolbarPanel.Size = new System.Drawing.Size(1896, 99);
             _toolbarPanel.TabIndex = 0;
-            //
+            // 
             // _rightToolbar
-            //
+            // 
             _rightToolbar.AutoSize = true;
             _rightToolbar.Controls.Add(_megapointIndicator);
             _rightToolbar.Controls.Add(_smpSmzuIndicator);
             _rightToolbar.Controls.Add(_settingsButton);
             _rightToolbar.Dock = System.Windows.Forms.DockStyle.Right;
-            _rightToolbar.Location = new System.Drawing.Point(894, 12);
+            _rightToolbar.Location = new System.Drawing.Point(1443, 18);
+            _rightToolbar.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
             _rightToolbar.Name = "_rightToolbar";
-            _rightToolbar.Size = new System.Drawing.Size(354, 42);
+            _rightToolbar.Size = new System.Drawing.Size(429, 63);
             _rightToolbar.TabIndex = 1;
             _rightToolbar.WrapContents = false;
-            //
+            // 
             // _megapointIndicator
-            //
-            _megapointIndicator.Margin = new System.Windows.Forms.Padding(0, 6, 8, 0);
+            // 
+            _megapointIndicator.AccessibleRole = System.Windows.Forms.AccessibleRole.PushButton;
+            _megapointIndicator.Location = new System.Drawing.Point(0, 9);
+            _megapointIndicator.Margin = new System.Windows.Forms.Padding(0, 9, 12, 0);
             _megapointIndicator.Name = "_megapointIndicator";
-            _megapointIndicator.Size = new System.Drawing.Size(100, 30);
+            _megapointIndicator.Padding = new System.Windows.Forms.Padding(21, 0, 21, 0);
+            _megapointIndicator.Size = new System.Drawing.Size(150, 45);
             _megapointIndicator.TabIndex = 0;
             _megapointIndicator.TabStop = false;
             _megapointIndicator.Text = "mptsmz";
-            //
+            // 
             // _smpSmzuIndicator
-            //
-            _smpSmzuIndicator.Margin = new System.Windows.Forms.Padding(0, 6, 16, 0);
+            // 
+            _smpSmzuIndicator.AccessibleRole = System.Windows.Forms.AccessibleRole.PushButton;
+            _smpSmzuIndicator.Location = new System.Drawing.Point(162, 9);
+            _smpSmzuIndicator.Margin = new System.Windows.Forms.Padding(0, 9, 24, 0);
             _smpSmzuIndicator.Name = "_smpSmzuIndicator";
-            _smpSmzuIndicator.Size = new System.Drawing.Size(76, 30);
+            _smpSmzuIndicator.Padding = new System.Windows.Forms.Padding(21, 0, 21, 0);
+            _smpSmzuIndicator.Size = new System.Drawing.Size(114, 45);
             _smpSmzuIndicator.TabIndex = 1;
             _smpSmzuIndicator.TabStop = false;
             _smpSmzuIndicator.Text = "csv";
-            //
+            // 
             // _settingsButton
-            //
+            // 
+            _settingsButton.AccessibleRole = System.Windows.Forms.AccessibleRole.PushButton;
             _settingsButton.AutoSize = true;
+            _settingsButton.Location = new System.Drawing.Point(300, 0);
             _settingsButton.Margin = new System.Windows.Forms.Padding(0);
             _settingsButton.Name = "_settingsButton";
-            _settingsButton.Size = new System.Drawing.Size(146, 40);
+            _settingsButton.Padding = new System.Windows.Forms.Padding(21, 0, 21, 0);
+            _settingsButton.Size = new System.Drawing.Size(129, 60);
             _settingsButton.TabIndex = 2;
             _settingsButton.Text = "Настройка";
             _settingsButton.Click += SettingsButton_Click;
-            //
+            // 
             // _leftToolbar
-            //
+            // 
             _leftToolbar.AutoSize = true;
             _leftToolbar.Controls.Add(_loadButton);
             _leftToolbar.Controls.Add(_saveButton);
@@ -121,171 +133,211 @@ namespace VrdoPdg.View
             _leftToolbar.Controls.Add(_previewButton);
             _leftToolbar.Controls.Add(_archiveButton);
             _leftToolbar.Dock = System.Windows.Forms.DockStyle.Left;
-            _leftToolbar.Location = new System.Drawing.Point(16, 12);
+            _leftToolbar.Location = new System.Drawing.Point(24, 18);
+            _leftToolbar.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
             _leftToolbar.Name = "_leftToolbar";
-            _leftToolbar.Size = new System.Drawing.Size(860, 42);
+            _leftToolbar.Size = new System.Drawing.Size(932, 63);
             _leftToolbar.TabIndex = 0;
             _leftToolbar.WrapContents = false;
-            //
+            // 
             // _loadButton
-            //
+            // 
+            _loadButton.AccessibleRole = System.Windows.Forms.AccessibleRole.PushButton;
             _loadButton.AutoSize = true;
-            _loadButton.Margin = new System.Windows.Forms.Padding(0, 0, 4, 0);
+            _loadButton.Location = new System.Drawing.Point(0, 0);
+            _loadButton.Margin = new System.Windows.Forms.Padding(0, 0, 6, 0);
             _loadButton.Name = "_loadButton";
-            _loadButton.Size = new System.Drawing.Size(140, 40);
+            _loadButton.Padding = new System.Windows.Forms.Padding(21, 0, 21, 0);
+            _loadButton.Size = new System.Drawing.Size(122, 60);
             _loadButton.TabIndex = 0;
             _loadButton.Text = "Загрузить";
             _loadButton.Click += LoadButton_Click;
-            //
+            // 
             // _saveButton
-            //
+            // 
+            _saveButton.AccessibleRole = System.Windows.Forms.AccessibleRole.PushButton;
             _saveButton.AutoSize = true;
-            _saveButton.Margin = new System.Windows.Forms.Padding(0, 0, 4, 0);
+            _saveButton.Location = new System.Drawing.Point(128, 0);
+            _saveButton.Margin = new System.Windows.Forms.Padding(0, 0, 6, 0);
             _saveButton.Name = "_saveButton";
-            _saveButton.Size = new System.Drawing.Size(144, 40);
+            _saveButton.Padding = new System.Windows.Forms.Padding(21, 0, 21, 0);
+            _saveButton.Size = new System.Drawing.Size(128, 60);
             _saveButton.TabIndex = 1;
             _saveButton.Text = "Сохранить";
             _saveButton.Click += SaveButton_Click;
-            //
+            // 
             // _helpButton
-            //
+            // 
+            _helpButton.AccessibleRole = System.Windows.Forms.AccessibleRole.PushButton;
             _helpButton.AutoSize = true;
-            _helpButton.Margin = new System.Windows.Forms.Padding(0, 0, 4, 0);
+            _helpButton.Location = new System.Drawing.Point(262, 0);
+            _helpButton.Margin = new System.Windows.Forms.Padding(0, 0, 6, 0);
             _helpButton.Name = "_helpButton";
-            _helpButton.Size = new System.Drawing.Size(124, 40);
+            _helpButton.Padding = new System.Windows.Forms.Padding(21, 0, 21, 0);
+            _helpButton.Size = new System.Drawing.Size(111, 60);
             _helpButton.TabIndex = 2;
             _helpButton.Text = "Справка";
             _helpButton.Click += HelpButton_Click;
-            //
+            // 
             // _separatorPanel
-            //
+            // 
             _separatorPanel.BackColor = System.Drawing.Color.FromArgb(48, 48, 48);
-            _separatorPanel.Margin = new System.Windows.Forms.Padding(12, 4, 16, 4);
+            _separatorPanel.Location = new System.Drawing.Point(397, 6);
+            _separatorPanel.Margin = new System.Windows.Forms.Padding(18, 6, 24, 6);
             _separatorPanel.Name = "_separatorPanel";
-            _separatorPanel.Size = new System.Drawing.Size(1, 32);
+            _separatorPanel.Size = new System.Drawing.Size(2, 48);
             _separatorPanel.TabIndex = 3;
-            //
+            // 
             // _runButton
-            //
-            _runButton.Margin = new System.Windows.Forms.Padding(0, 0, 8, 0);
+            // 
+            _runButton.AccessibleRole = System.Windows.Forms.AccessibleRole.PushButton;
+            _runButton.Location = new System.Drawing.Point(423, 0);
+            _runButton.Margin = new System.Windows.Forms.Padding(0, 0, 12, 0);
             _runButton.Name = "_runButton";
-            _runButton.Size = new System.Drawing.Size(150, 40);
+            _runButton.Padding = new System.Windows.Forms.Padding(21, 0, 21, 0);
+            _runButton.Size = new System.Drawing.Size(225, 60);
             _runButton.TabIndex = 4;
             _runButton.Text = "Запустить";
             _runButton.Click += RunButton_Click;
-            //
+            // 
             // _previewButton
-            //
+            // 
+            _previewButton.AccessibleRole = System.Windows.Forms.AccessibleRole.PushButton;
             _previewButton.AutoSize = true;
-            _previewButton.Margin = new System.Windows.Forms.Padding(0, 0, 8, 0);
+            _previewButton.Location = new System.Drawing.Point(660, 0);
+            _previewButton.Margin = new System.Windows.Forms.Padding(0, 0, 12, 0);
             _previewButton.Name = "_previewButton";
-            _previewButton.Size = new System.Drawing.Size(176, 40);
+            _previewButton.Padding = new System.Windows.Forms.Padding(21, 0, 21, 0);
+            _previewButton.Size = new System.Drawing.Size(167, 60);
             _previewButton.TabIndex = 5;
             _previewButton.Text = "Предпросмотр";
             _previewButton.Click += PreviewButton_Click;
-            //
+            // 
             // _archiveButton
-            //
+            // 
+            _archiveButton.AccessibleRole = System.Windows.Forms.AccessibleRole.PushButton;
             _archiveButton.AutoSize = true;
+            _archiveButton.Location = new System.Drawing.Point(839, 0);
             _archiveButton.Margin = new System.Windows.Forms.Padding(0);
             _archiveButton.Name = "_archiveButton";
-            _archiveButton.Size = new System.Drawing.Size(116, 40);
+            _archiveButton.Padding = new System.Windows.Forms.Padding(21, 0, 21, 0);
+            _archiveButton.Size = new System.Drawing.Size(93, 60);
             _archiveButton.TabIndex = 6;
             _archiveButton.Text = "Архив";
             _archiveButton.Click += ArchiveButton_Click;
-            //
+            // 
             // _toolbarLine
-            //
+            // 
             _toolbarLine.BackColor = System.Drawing.Color.FromArgb(48, 48, 48);
             _toolbarLine.Dock = System.Windows.Forms.DockStyle.Top;
-            _toolbarLine.Location = new System.Drawing.Point(0, 66);
+            _toolbarLine.Location = new System.Drawing.Point(0, 99);
+            _toolbarLine.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
             _toolbarLine.Name = "_toolbarLine";
-            _toolbarLine.Size = new System.Drawing.Size(1264, 1);
+            _toolbarLine.Size = new System.Drawing.Size(1896, 2);
             _toolbarLine.TabIndex = 1;
-            //
+            // 
             // _progressPanel
-            //
+            // 
             _progressPanel.BackColor = System.Drawing.Color.FromArgb(24, 24, 24);
             _progressPanel.Controls.Add(_progressBar);
             _progressPanel.Controls.Add(_progressPercentLabel);
             _progressPanel.Controls.Add(_progressLabel);
             _progressPanel.Controls.Add(_progressIcon);
             _progressPanel.Dock = System.Windows.Forms.DockStyle.Top;
-            _progressPanel.Location = new System.Drawing.Point(0, 67);
+            _progressPanel.Location = new System.Drawing.Point(0, 101);
+            _progressPanel.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
             _progressPanel.Name = "_progressPanel";
-            _progressPanel.Padding = new System.Windows.Forms.Padding(20, 12, 20, 12);
-            _progressPanel.Size = new System.Drawing.Size(1264, 46);
+            _progressPanel.Padding = new System.Windows.Forms.Padding(30, 18, 30, 18);
+            _progressPanel.Size = new System.Drawing.Size(1896, 69);
             _progressPanel.TabIndex = 2;
             _progressPanel.Visible = false;
-            //
+            // 
             // _progressBar
-            //
+            // 
+            _progressBar.AccessibleRole = System.Windows.Forms.AccessibleRole.ProgressBar;
             _progressBar.Dock = System.Windows.Forms.DockStyle.Fill;
-            _progressBar.TrackColor = System.Drawing.Color.FromArgb(40, 40, 40);
+            _progressBar.Location = new System.Drawing.Point(300, 18);
+            _progressBar.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
             _progressBar.Name = "_progressBar";
             _progressBar.ProgressColor = System.Drawing.Color.FromArgb(176, 150, 255);
+            _progressBar.Size = new System.Drawing.Size(1476, 33);
             _progressBar.TabIndex = 0;
-            //
+            _progressBar.TabStop = false;
+            _progressBar.TrackColor = System.Drawing.Color.FromArgb(40, 40, 40);
+            // 
             // _progressPercentLabel
-            //
+            // 
             _progressPercentLabel.Dock = System.Windows.Forms.DockStyle.Right;
             _progressPercentLabel.Font = new System.Drawing.Font("Consolas", 10F);
             _progressPercentLabel.ForeColor = System.Drawing.Color.FromArgb(176, 150, 255);
+            _progressPercentLabel.Location = new System.Drawing.Point(1776, 18);
+            _progressPercentLabel.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             _progressPercentLabel.Name = "_progressPercentLabel";
-            _progressPercentLabel.Size = new System.Drawing.Size(60, 22);
+            _progressPercentLabel.Size = new System.Drawing.Size(90, 33);
             _progressPercentLabel.TabIndex = 1;
             _progressPercentLabel.Text = "0%";
             _progressPercentLabel.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
-            //
+            // 
             // _progressLabel
-            //
+            // 
             _progressLabel.Dock = System.Windows.Forms.DockStyle.Left;
             _progressLabel.Font = new System.Drawing.Font("Segoe UI Semibold", 10.5F);
             _progressLabel.ForeColor = System.Drawing.Color.FromArgb(236, 236, 236);
+            _progressLabel.Location = new System.Drawing.Point(75, 18);
+            _progressLabel.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             _progressLabel.Name = "_progressLabel";
-            _progressLabel.Size = new System.Drawing.Size(150, 22);
+            _progressLabel.Size = new System.Drawing.Size(225, 33);
             _progressLabel.TabIndex = 2;
             _progressLabel.Text = "Идёт расчёт…";
             _progressLabel.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
-            //
+            // 
             // _progressIcon
-            //
+            // 
             _progressIcon.Dock = System.Windows.Forms.DockStyle.Left;
+            _progressIcon.Location = new System.Drawing.Point(30, 18);
+            _progressIcon.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
             _progressIcon.Name = "_progressIcon";
-            _progressIcon.Size = new System.Drawing.Size(30, 22);
+            _progressIcon.Size = new System.Drawing.Size(45, 33);
             _progressIcon.SizeMode = System.Windows.Forms.PictureBoxSizeMode.CenterImage;
             _progressIcon.TabIndex = 3;
             _progressIcon.TabStop = false;
-            //
+            // 
             // _contentPanel
-            //
+            // 
             _contentPanel.BackColor = System.Drawing.Color.FromArgb(17, 17, 17);
             _contentPanel.Controls.Add(_protocolPanel);
             _contentPanel.Dock = System.Windows.Forms.DockStyle.Fill;
-            _contentPanel.Location = new System.Drawing.Point(0, 113);
+            _contentPanel.Location = new System.Drawing.Point(0, 170);
+            _contentPanel.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
             _contentPanel.Name = "_contentPanel";
-            _contentPanel.Padding = new System.Windows.Forms.Padding(20);
-            _contentPanel.Size = new System.Drawing.Size(1264, 568);
+            _contentPanel.Padding = new System.Windows.Forms.Padding(30, 30, 30, 30);
+            _contentPanel.Size = new System.Drawing.Size(1896, 852);
             _contentPanel.TabIndex = 3;
-            //
+            // 
             // _protocolPanel
-            //
+            // 
+            _protocolPanel.BackColor = System.Drawing.Color.FromArgb(17, 17, 17);
             _protocolPanel.Dock = System.Windows.Forms.DockStyle.Fill;
+            _protocolPanel.Location = new System.Drawing.Point(30, 30);
+            _protocolPanel.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
             _protocolPanel.Name = "_protocolPanel";
+            _protocolPanel.Size = new System.Drawing.Size(1836, 792);
             _protocolPanel.TabIndex = 0;
-            //
+            // 
             // MainForm
-            //
-            AutoScaleDimensions = new System.Drawing.SizeF(96F, 96F);
+            // 
+            AutoScaleDimensions = new System.Drawing.SizeF(144F, 144F);
             AutoScaleMode = System.Windows.Forms.AutoScaleMode.Dpi;
             BackColor = System.Drawing.Color.FromArgb(17, 17, 17);
-            ClientSize = new System.Drawing.Size(1264, 681);
+            ClientSize = new System.Drawing.Size(1896, 1022);
             Controls.Add(_contentPanel);
             Controls.Add(_progressPanel);
             Controls.Add(_toolbarLine);
             Controls.Add(_toolbarPanel);
             ForeColor = System.Drawing.Color.FromArgb(236, 236, 236);
-            MinimumSize = new System.Drawing.Size(1220, 560);
+            Icon = (System.Drawing.Icon)resources.GetObject("$this.Icon");
+            Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            MinimumSize = new System.Drawing.Size(1819, 812);
             Name = "MainForm";
             StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
             Text = "ВРДО ПДГ — Ввод режима по напряжению в допустимую область";
@@ -293,7 +345,9 @@ namespace VrdoPdg.View
             _toolbarPanel.ResumeLayout(false);
             _toolbarPanel.PerformLayout();
             _rightToolbar.ResumeLayout(false);
+            _rightToolbar.PerformLayout();
             _leftToolbar.ResumeLayout(false);
+            _leftToolbar.PerformLayout();
             _progressPanel.ResumeLayout(false);
             ((System.ComponentModel.ISupportInitialize)_progressIcon).EndInit();
             _contentPanel.ResumeLayout(false);

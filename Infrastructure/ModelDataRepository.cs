@@ -3,9 +3,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
-
 using Microsoft.Data.Sqlite;
-
 using VrdoPdg.Model;
 using VrdoPdg.Model.Entities;
 using VrdoPdg.Model.Storage;

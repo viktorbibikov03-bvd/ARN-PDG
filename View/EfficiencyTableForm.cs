@@ -185,8 +185,8 @@ namespace VrdoPdg.View
         /// </summary>
         private void ApplyTheme()
         {
-            _icon.Image = IconFactory.Create(IconGlyph.List, Palette.Purple, 24);
-            _errorIcon.Image = IconFactory.Create(IconGlyph.Warning, Palette.Danger, 20);
+            _icon.Image = IconFactory.Create(IconGlyph.List, Palette.Purple, 32);
+            _errorIcon.Image = IconFactory.Create(IconGlyph.Warning, Palette.Danger, 32);
             _closeButton.Text = string.Empty;
             UiStyle.ApplyFlat(_closeButton, IconGlyph.Close);
             UiStyle.ApplyPrimary(_defaultButton, null);
@@ -194,12 +194,12 @@ namespace VrdoPdg.View
             UiStyle.ApplyPrimary(_saveButton, IconGlyph.Save);
             UiStyle.ApplyOutlined(_addButton, IconGlyph.Add);
 
-            _searchBox.BorderRadius = 10;
+            _searchBox.BorderRadius = 8;
             _searchBox.FillColor = Palette.Surface;
             _searchBox.BorderColor = Palette.Border;
             _searchBox.ForeColor = Palette.Text;
             _searchBox.Font = UiFonts.Regular(10.5f);
-            _searchBox.Image = IconFactory.Create(IconGlyph.Search, Palette.TextSecondary, 18);
+            _searchBox.Image = IconFactory.Create(IconGlyph.Search, Palette.TextSecondary, 32);
             _searchBox.FocusedBorderColor = Palette.Accent;
             _searchBox.HoverBorderColor = Palette.TextMuted;
 
@@ -631,7 +631,7 @@ namespace VrdoPdg.View
                 Color color = columnIndex == _deleteColumn.Index
                     ? Palette.Danger
                     : Palette.TextSecondary;
-                Image? image = IconFactory.Create(glyph, color, 18);
+                Image? image = IconFactory.Create(glyph, color, 32);
                 if (image != null)
                 {
                     graphics.DrawImage(

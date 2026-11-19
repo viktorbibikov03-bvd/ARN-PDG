@@ -106,8 +106,7 @@ namespace VrdoPdg.View
             _hintLabel.Name = "_hintLabel";
             _hintLabel.Size = new System.Drawing.Size(436, 46);
             _hintLabel.TabIndex = 1;
-            _hintLabel.Text = "Серый — файл ещё не загружен, зелёный — загружен. "
-                + "Сообщения о загрузке дублируются в протоколе.";
+            _hintLabel.Text = "Серый — файл ещё не загружен, зелёный — загружен.";
             _hintLabel.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
             //
             // _cancelButton

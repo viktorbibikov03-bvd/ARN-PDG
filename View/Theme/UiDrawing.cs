@@ -5,7 +5,7 @@ using System.Drawing.Drawing2D;
 namespace VrdoPdg.View.Theme
 {
     /// <summary>
-    /// Вспомогательные методы рисования элементов интерфейса.
+    /// Вспомогательные методы рисования элементов интерфейса
     /// </summary>
     internal static class UiDrawing
     {

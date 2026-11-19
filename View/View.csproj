@@ -12,6 +12,7 @@
     <AssemblyTitle>АС «ВРДО ПДГ»</AssemblyTitle>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <NoWarn>$(NoWarn);WFO1000</NoWarn>
+    <ApplicationIcon>Assets\app.ico</ApplicationIcon>
   </PropertyGroup>
 
   <ItemGroup>
@@ -27,13 +28,29 @@
   </ItemGroup>
 
   <ItemGroup>
-    <EmbeddedResource Include="Help\UserGuide.md" LogicalName="VrdoPdg.View.UserGuide.md" />
     <None Update="appsettings.json">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
     </None>
+
     <None Update="hourly-layout.json">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
     </None>
+
+    <None Update="Data\VrdoPdg.db">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+    </None>
+  </ItemGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Include="Help\UserGuide.md"
+                      LogicalName="VrdoPdg.View.UserGuide.md" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="Assets\" />
   </ItemGroup>
 
 </Project>

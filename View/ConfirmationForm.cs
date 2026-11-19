@@ -35,7 +35,7 @@ namespace VrdoPdg.View
             _messageLabel.Text = message;
             _confirmButton.Text = confirmText;
             _cancelButton.Text = cancelText;
-            _icon.Image = IconFactory.Create(IconGlyph.Warning, Palette.Warning, 24);
+            _icon.Image = IconFactory.Create(IconGlyph.Warning, Palette.Warning, 64);
             UiStyle.ApplyOutlined(_cancelButton, null);
             if (isDangerous)
             {

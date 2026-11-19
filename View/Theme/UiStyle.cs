@@ -19,7 +19,7 @@ namespace VrdoPdg.View.Theme
         /// <summary>
         /// Размер значков кнопок, пикселей.
         /// </summary>
-        public const int IconSize = 18;
+        public const int IconSize = 32;
 
         /// <summary>
         /// Оформляет кнопку без заливки (панель инструментов, «Загрузить», «Справка»).
@@ -91,7 +91,7 @@ namespace VrdoPdg.View.Theme
         /// <param name="glyph">Значок.</param>
         public static void ApplyPill(RoundedButton button, Color foreColor, Color fillColor, char? glyph)
         {
-            button.BorderRadius = 10;
+            button.BorderRadius = 8;
             button.Cursor = Cursors.Default;
             button.TabStop = false;
             button.Font = UiFonts.Monospace(9.5f);
@@ -102,7 +102,7 @@ namespace VrdoPdg.View.Theme
             button.HoverState.ForeColor = foreColor;
             button.PressedState.FillColor = fillColor;
             button.Image = glyph.HasValue
-                ? IconFactory.Create(glyph.Value, foreColor, 14)
+                ? IconFactory.Create(glyph.Value, foreColor, 24)
                 : null;
         }
 
