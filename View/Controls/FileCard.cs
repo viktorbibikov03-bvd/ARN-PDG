@@ -84,8 +84,7 @@ namespace VrdoPdg.View.Controls
             };
             _icon = new PictureBox
             {
-                Dock = DockStyle.Fill,
-                SizeMode = PictureBoxSizeMode.CenterImage,
+                SizeMode = PictureBoxSizeMode.Zoom,
                 BackColor = Color.Transparent
             };
             _iconBox.Controls.Add(_icon);
@@ -120,6 +119,39 @@ namespace VrdoPdg.View.Controls
             _frame.Controls.Add(_titleLabel);
             _frame.Controls.Add(_iconBox);
             UpdateView();
+            PerformLayout();
+        }
+
+        /// <summary>
+        /// Размещает элементы карточки с учетом ширины и масштаба Windows.
+        /// </summary>
+        /// <param name="e">Аргументы изменения компоновки.</param>
+        protected override void OnLayout(LayoutEventArgs e)
+        {
+            base.OnLayout(e);
+            // Компоновка может выполняться до завершения конструктора.
+            if (_frame == null || _iconBox == null || _icon == null
+                || _chooseButton == null || _titleLabel == null
+                || _extensionLabel == null || _nameLabel == null || _statusLabel == null)
+            {
+                return;
+            }
+
+            int D(int value) => LogicalToDeviceUnits(value);
+            int width = _frame.ClientSize.Width;
+            int textLeft = D(78);
+            int iconSize = D(46);
+
+            _iconBox.SetBounds(D(16), Math.Max(D(12), (_frame.ClientSize.Height - iconSize) / 2),
+                iconSize, iconSize);
+            _icon.SetBounds(D(8), D(8), iconSize - D(16), iconSize - D(16));
+            _chooseButton.SetBounds(width - D(16) - D(180), D(16), D(180), D(36));
+            _titleLabel.Location = new Point(textLeft, D(12));
+            _extensionLabel.Location = new Point(_titleLabel.Right + D(12), D(14));
+            _nameLabel.SetBounds(textLeft, D(38),
+                Math.Max(0, _chooseButton.Left - textLeft - D(12)), D(22));
+            _statusLabel.SetBounds(textLeft, D(64),
+                Math.Max(0, width - textLeft - D(16)), D(24));
         }
 
         /// <summary>
@@ -140,7 +172,7 @@ namespace VrdoPdg.View.Controls
             set
             {
                 _titleLabel.Text = value;
-                _extensionLabel.Left = _titleLabel.Right + 12;
+                PerformLayout();
             }
         }
 

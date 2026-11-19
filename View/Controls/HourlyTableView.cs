@@ -2,7 +2,6 @@ using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Windows.Forms;
-
 using VrdoPdg.View.Layout;
 using VrdoPdg.View.Theme;
 
@@ -62,42 +61,44 @@ namespace VrdoPdg.View.Controls
         {
             BackColor = Palette.Background;
 
-            Panel toolbar = new Panel
+            TableLayoutPanel toolbar = new TableLayoutPanel
             {
                 Dock = DockStyle.Top,
-                Height = 60,
+                AutoSize = true,
+                AutoSizeMode = AutoSizeMode.GrowAndShrink,
+                ColumnCount = 1,
+                RowCount = 2,
                 BackColor = Palette.Background,
-                Padding = new Padding(0, 8, 0, 8)
+                Padding = new Padding(0, LogicalToDeviceUnits(8), 0, LogicalToDeviceUnits(8))
             };
+            toolbar.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100f));
+            toolbar.RowStyles.Add(new RowStyle(SizeType.AutoSize));
+            toolbar.RowStyles.Add(new RowStyle(SizeType.AutoSize));
 
-            RoundedPanel switchFrame = new RoundedPanel
-            {
-                Dock = DockStyle.Left,
-                Width = 420,
-                BorderRadius = 12,
-                FillColor = Palette.Surface,
-                BorderColor = Palette.Border,
-                BorderThickness = 1,
-                Padding = new Padding(4)
-            };
             _powerSystemPanel = new FlowLayoutPanel
             {
                 Dock = DockStyle.Fill,
-                BackColor = Color.Transparent,
-                WrapContents = false
+                AutoSize = true,
+                AutoSizeMode = AutoSizeMode.GrowAndShrink,
+                BackColor = Palette.Background,
+                FlowDirection = FlowDirection.LeftToRight,
+                Margin = Padding.Empty,
+                WrapContents = true
             };
-            switchFrame.Controls.Add(_powerSystemPanel);
 
             _legendPanel = new FlowLayoutPanel
             {
                 Dock = DockStyle.Fill,
+                AutoSize = true,
+                AutoSizeMode = AutoSizeMode.GrowAndShrink,
                 BackColor = Palette.Background,
-                Padding = new Padding(16, 6, 0, 0),
-                WrapContents = false
+                FlowDirection = FlowDirection.LeftToRight,
+                Margin = new Padding(0, LogicalToDeviceUnits(6), 0, 0),
+                WrapContents = true
             };
 
-            toolbar.Controls.Add(_legendPanel);
-            toolbar.Controls.Add(switchFrame);
+            toolbar.Controls.Add(_powerSystemPanel, 0, 0);
+            toolbar.Controls.Add(_legendPanel, 0, 1);
 
             _blocksPanel = new StableScrollPanel
             {
@@ -159,17 +160,18 @@ namespace VrdoPdg.View.Controls
         /// <param name="foreColor">Цвет текста.</param>
         /// <param name="fillColor">Цвет заливки.</param>
         /// <returns>Метка легенды.</returns>
-        private static RoundedButton CreateLegendItem(string text, Color foreColor, Color fillColor)
+        private RoundedButton CreateLegendItem(string text, Color foreColor, Color fillColor)
         {
             RoundedButton item = new RoundedButton
             {
                 Text = text,
-                Margin = new Padding(0, 4, 8, 0),
-                Height = 28
+                Margin = new Padding(0, LogicalToDeviceUnits(4), LogicalToDeviceUnits(8), 0),
+                Height = LogicalToDeviceUnits(30)
             };
             UiStyle.ApplyPill(item, foreColor, fillColor, null);
             item.Font = UiFonts.Regular(9f);
-            item.Width = TextRenderer.MeasureText(text, item.Font).Width + 24;
+            item.Padding = new Padding(LogicalToDeviceUnits(12), 0, LogicalToDeviceUnits(12), 0);
+            item.AutoSize = true;
             return item;
         }
 
@@ -192,12 +194,13 @@ namespace VrdoPdg.View.Controls
                 {
                     Text = powerSystems[index].Name,
                     Tag = index,
-                    Height = 36,
-                    Margin = new Padding(0, 0, 4, 0)
+                    Height = LogicalToDeviceUnits(40),
+                    Margin = new Padding(0, 0, LogicalToDeviceUnits(8), 0)
                 };
                 UiStyle.ApplyFlat(button, null);
                 button.Font = UiFonts.Semibold(10f);
-                button.Width = TextRenderer.MeasureText(button.Text, button.Font).Width + 32;
+                button.Padding = new Padding(LogicalToDeviceUnits(14), 0, LogicalToDeviceUnits(14), 0);
+                button.AutoSize = true;
                 button.CheckedState.FillColor = Palette.Accent;
                 button.CheckedState.ForeColor = Palette.OnAccent;
                 button.Click += PowerSystemButton_Click;

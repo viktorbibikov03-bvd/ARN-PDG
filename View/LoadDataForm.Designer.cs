@@ -28,111 +28,132 @@ namespace VrdoPdg.View
         /// </summary>
         private void InitializeComponent()
         {
+            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(LoadDataForm));
             _titleLabel = new System.Windows.Forms.Label();
             _closeButton = new VrdoPdg.View.Controls.RoundedButton();
             _megapointCard = new VrdoPdg.View.Controls.FileCard();
             _smpSmzuCard = new VrdoPdg.View.Controls.FileCard();
             _hintPanel = new VrdoPdg.View.Controls.RoundedPanel();
-            _hintIcon = new System.Windows.Forms.PictureBox();
             _hintLabel = new System.Windows.Forms.Label();
+            _hintIcon = new System.Windows.Forms.PictureBox();
             _cancelButton = new VrdoPdg.View.Controls.RoundedButton();
             _doneButton = new VrdoPdg.View.Controls.RoundedButton();
             _hintPanel.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)_hintIcon).BeginInit();
             SuspendLayout();
-            //
+            // 
             // _titleLabel
-            //
+            // 
             _titleLabel.AutoSize = true;
             _titleLabel.Font = new System.Drawing.Font("Segoe UI Semibold", 18F);
             _titleLabel.ForeColor = System.Drawing.Color.FromArgb(236, 236, 236);
-            _titleLabel.Location = new System.Drawing.Point(22, 20);
+            _titleLabel.Location = new System.Drawing.Point(33, 30);
+            _titleLabel.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             _titleLabel.Name = "_titleLabel";
-            _titleLabel.Size = new System.Drawing.Size(220, 41);
+            _titleLabel.Size = new System.Drawing.Size(305, 48);
             _titleLabel.TabIndex = 0;
             _titleLabel.Text = "Загрузка данных";
-            //
+            // 
             // _closeButton
-            //
-            _closeButton.Location = new System.Drawing.Point(486, 20);
+            // 
+            _closeButton.AccessibleRole = System.Windows.Forms.AccessibleRole.PushButton;
+            _closeButton.Location = new System.Drawing.Point(729, 30);
+            _closeButton.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
             _closeButton.Name = "_closeButton";
-            _closeButton.Size = new System.Drawing.Size(36, 36);
+            _closeButton.Padding = new System.Windows.Forms.Padding(21, 0, 21, 0);
+            _closeButton.Size = new System.Drawing.Size(54, 54);
             _closeButton.TabIndex = 6;
             _closeButton.Click += CancelButton_Click;
-            //
+            // 
             // _megapointCard
-            //
-            _megapointCard.Location = new System.Drawing.Point(24, 80);
+            // 
+            _megapointCard.BackColor = System.Drawing.Color.FromArgb(24, 24, 24);
+            _megapointCard.Extension = "";
+            _megapointCard.Location = new System.Drawing.Point(36, 120);
+            _megapointCard.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
             _megapointCard.Name = "_megapointCard";
-            _megapointCard.Size = new System.Drawing.Size(498, 96);
+            _megapointCard.Size = new System.Drawing.Size(747, 144);
             _megapointCard.TabIndex = 1;
+            _megapointCard.Title = "";
             _megapointCard.ChooseRequested += MegapointCard_ChooseRequested;
-            //
+            // 
             // _smpSmzuCard
-            //
-            _smpSmzuCard.Location = new System.Drawing.Point(24, 190);
+            // 
+            _smpSmzuCard.BackColor = System.Drawing.Color.FromArgb(24, 24, 24);
+            _smpSmzuCard.Extension = "";
+            _smpSmzuCard.Location = new System.Drawing.Point(36, 285);
+            _smpSmzuCard.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
             _smpSmzuCard.Name = "_smpSmzuCard";
-            _smpSmzuCard.Size = new System.Drawing.Size(498, 96);
+            _smpSmzuCard.Size = new System.Drawing.Size(747, 144);
             _smpSmzuCard.TabIndex = 2;
+            _smpSmzuCard.Title = "";
             _smpSmzuCard.ChooseRequested += SmpSmzuCard_ChooseRequested;
-            //
+            // 
             // _hintPanel
-            //
-            _hintPanel.BorderRadius = 12;
+            // 
             _hintPanel.Controls.Add(_hintLabel);
             _hintPanel.Controls.Add(_hintIcon);
             _hintPanel.FillColor = System.Drawing.Color.FromArgb(32, 32, 32);
-            _hintPanel.Location = new System.Drawing.Point(24, 302);
+            _hintPanel.Location = new System.Drawing.Point(36, 453);
+            _hintPanel.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
             _hintPanel.Name = "_hintPanel";
-            _hintPanel.Size = new System.Drawing.Size(498, 62);
+            _hintPanel.Size = new System.Drawing.Size(747, 93);
             _hintPanel.TabIndex = 3;
-            //
-            // _hintIcon
-            //
-            _hintIcon.BackColor = System.Drawing.Color.Transparent;
-            _hintIcon.Location = new System.Drawing.Point(14, 17);
-            _hintIcon.Name = "_hintIcon";
-            _hintIcon.Size = new System.Drawing.Size(28, 28);
-            _hintIcon.SizeMode = System.Windows.Forms.PictureBoxSizeMode.CenterImage;
-            _hintIcon.TabIndex = 0;
-            _hintIcon.TabStop = false;
-            //
+            // 
             // _hintLabel
-            //
+            // 
             _hintLabel.BackColor = System.Drawing.Color.Transparent;
             _hintLabel.Font = new System.Drawing.Font("Segoe UI", 9.5F);
             _hintLabel.ForeColor = System.Drawing.Color.FromArgb(140, 140, 140);
-            _hintLabel.Location = new System.Drawing.Point(50, 8);
+            _hintLabel.Location = new System.Drawing.Point(75, 12);
+            _hintLabel.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             _hintLabel.Name = "_hintLabel";
-            _hintLabel.Size = new System.Drawing.Size(436, 46);
+            _hintLabel.Size = new System.Drawing.Size(654, 69);
             _hintLabel.TabIndex = 1;
             _hintLabel.Text = "Серый — файл ещё не загружен, зелёный — загружен.";
             _hintLabel.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
-            //
+            // 
+            // _hintIcon
+            // 
+            _hintIcon.BackColor = System.Drawing.Color.Transparent;
+            _hintIcon.Location = new System.Drawing.Point(21, 26);
+            _hintIcon.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            _hintIcon.Name = "_hintIcon";
+            _hintIcon.Size = new System.Drawing.Size(42, 42);
+            _hintIcon.SizeMode = System.Windows.Forms.PictureBoxSizeMode.CenterImage;
+            _hintIcon.TabIndex = 0;
+            _hintIcon.TabStop = false;
+            // 
             // _cancelButton
-            //
-            _cancelButton.Location = new System.Drawing.Point(286, 392);
+            // 
+            _cancelButton.AccessibleRole = System.Windows.Forms.AccessibleRole.PushButton;
+            _cancelButton.Location = new System.Drawing.Point(429, 588);
+            _cancelButton.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
             _cancelButton.Name = "_cancelButton";
-            _cancelButton.Size = new System.Drawing.Size(112, 42);
+            _cancelButton.Padding = new System.Windows.Forms.Padding(21, 0, 21, 0);
+            _cancelButton.Size = new System.Drawing.Size(168, 63);
             _cancelButton.TabIndex = 5;
             _cancelButton.Text = "Отмена";
             _cancelButton.Click += CancelButton_Click;
-            //
+            // 
             // _doneButton
-            //
-            _doneButton.Location = new System.Drawing.Point(410, 392);
+            // 
+            _doneButton.AccessibleRole = System.Windows.Forms.AccessibleRole.PushButton;
+            _doneButton.Location = new System.Drawing.Point(615, 588);
+            _doneButton.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
             _doneButton.Name = "_doneButton";
-            _doneButton.Size = new System.Drawing.Size(112, 42);
+            _doneButton.Padding = new System.Windows.Forms.Padding(21, 0, 21, 0);
+            _doneButton.Size = new System.Drawing.Size(168, 63);
             _doneButton.TabIndex = 4;
             _doneButton.Text = "Готово";
             _doneButton.Click += DoneButton_Click;
-            //
+            // 
             // LoadDataForm
-            //
-            AutoScaleDimensions = new System.Drawing.SizeF(96F, 96F);
+            // 
+            AutoScaleDimensions = new System.Drawing.SizeF(144F, 144F);
             AutoScaleMode = System.Windows.Forms.AutoScaleMode.Dpi;
             BackColor = System.Drawing.Color.FromArgb(24, 24, 24);
-            ClientSize = new System.Drawing.Size(546, 458);
+            ClientSize = new System.Drawing.Size(819, 687);
             Controls.Add(_doneButton);
             Controls.Add(_cancelButton);
             Controls.Add(_hintPanel);
@@ -140,8 +161,9 @@ namespace VrdoPdg.View
             Controls.Add(_megapointCard);
             Controls.Add(_closeButton);
             Controls.Add(_titleLabel);
-            FormBorderStyle = System.Windows.Forms.FormBorderStyle.None;
+            Icon = (System.Drawing.Icon)resources.GetObject("$this.Icon");
             KeyPreview = true;
+            Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
             Name = "LoadDataForm";
             ShowInTaskbar = false;
             StartPosition = System.Windows.Forms.FormStartPosition.CenterParent;
