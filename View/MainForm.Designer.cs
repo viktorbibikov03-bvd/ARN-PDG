@@ -210,7 +210,7 @@ namespace VrdoPdg.View
             _previewButton.Padding = new System.Windows.Forms.Padding(21, 0, 21, 0);
             _previewButton.Size = new System.Drawing.Size(167, 60);
             _previewButton.TabIndex = 5;
-            _previewButton.Text = "Предпросмотр";
+            _previewButton.Text = "Результат";
             _previewButton.Click += PreviewButton_Click;
             // 
             // _archiveButton

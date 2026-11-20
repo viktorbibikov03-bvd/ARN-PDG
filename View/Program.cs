@@ -115,7 +115,7 @@ namespace VrdoPdg.View
             if (errors.Count > 0)
             {
                 MessageBox.Show(
-                    "Границы графиков отдельных КП в " + AppSettings.FileName + " заполнены неправильно и пропущены:"
+                    "Границы графиков отдельных объектов в " + AppSettings.FileName + " заполнены неправильно и пропущены:"
                         + Environment.NewLine + string.Join(Environment.NewLine, errors),
                     "АС «ВРДО ПДГ»",
                     MessageBoxButtons.OK,

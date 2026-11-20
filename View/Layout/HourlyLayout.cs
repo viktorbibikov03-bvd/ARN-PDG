@@ -161,13 +161,13 @@ namespace VrdoPdg.View.Layout
             if (controlPoint.LowerVoltageBound.HasValue != controlPoint.UpperVoltageBound.HasValue)
             {
                 throw new InvalidDataException(
-                    "КП «" + controlPoint.Name + "»: должны быть заданы обе границы напряжения");
+                    "Объект «" + controlPoint.Name + "»: должны быть заданы обе границы напряжения");
             }
 
             if (controlPoint.HasOwnBounds && controlPoint.LowerVoltageBound >= controlPoint.UpperVoltageBound)
             {
                 throw new InvalidDataException(
-                    "КП «" + controlPoint.Name + "»: нижняя граница напряжения должна быть меньше верхней");
+                    "Объект «" + controlPoint.Name + "»: нижняя граница напряжения должна быть меньше верхней");
             }
         }
 

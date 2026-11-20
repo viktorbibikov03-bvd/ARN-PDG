@@ -264,7 +264,7 @@ namespace VrdoPdg.View
             {
                 _original = new List<EfficiencyRow>();
                 _rows = new List<EfficiencyRow>();
-                _controlPointLabel.Text = "КП не выбран";
+                _controlPointLabel.Text = "Объект не выбран";
             }
             else
             {
@@ -478,7 +478,7 @@ namespace VrdoPdg.View
             return ConfirmationForm.Confirm(
                 this,
                 "Отменить изменения?",
-                "В таблице эффективности КП «" + _controlPoint.Name + "» есть " + changes
+                "В таблице эффективности СКРМ для объекта «" + _controlPoint.Name + "» есть " + changes
                     + ". Если закрыть окно, они будут потеряны.",
                 "Отменить",
                 "Продолжить редактирование",
@@ -991,7 +991,7 @@ namespace VrdoPdg.View
             bool isConfirmed = ConfirmationForm.Confirm(
                 this,
                 "Восстановить по умолчанию?",
-                "Таблица эффективности КП «" + _controlPoint.Name
+                "Таблица эффективности СКРМ для объекта «" + _controlPoint.Name
                     + "» будет заменена составом и приоритетами СКРМ согласно ПУР. "
                     + "Изменения запишутся в БД после нажатия «Сохранить».",
                 "Восстановить",

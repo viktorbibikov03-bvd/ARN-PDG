@@ -104,7 +104,7 @@ namespace VrdoPdg.View
             _subtitleLabel.ForeColor = System.Drawing.Color.FromArgb(140, 140, 140);
             _subtitleLabel.Name = "_subtitleLabel";
             _subtitleLabel.TabIndex = 1;
-            _subtitleLabel.Text = "Порядок задействования СКРМ при вводе режима по напряжению в КП";
+            _subtitleLabel.Text = "Порядок задействования СКРМ при вводе режима по напряжению на объекте";
             //
             // _titleLabel
             //
@@ -242,7 +242,7 @@ namespace VrdoPdg.View
             //
             _searchBox.Dock = System.Windows.Forms.DockStyle.Top;
             _searchBox.Name = "_searchBox";
-            _searchBox.PlaceholderText = "Поиск КП...";
+            _searchBox.PlaceholderText = "Поиск объекта...";
             _searchBox.Size = new System.Drawing.Size(238, 44);
             _searchBox.TabIndex = 0;
             _searchBox.TextChanged += SearchBox_TextChanged;
