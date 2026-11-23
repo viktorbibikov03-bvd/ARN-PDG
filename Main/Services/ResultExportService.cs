@@ -98,7 +98,7 @@ namespace VrdoPdg.Model.Services
         /// </summary>
         /// <param name="result">Расчет.</param>
         /// <returns>Записи об изменении управляемых СКРМ (код 03), коммутируемых СКРМ (код 20)
-        /// и заданного напряжения генераторов (код 01).</returns>
+        /// и заданного напряжения генераторов и управляемых СКРМ (код 01).</returns>
         public IReadOnlyList<SmpSmzuRecord> CreateRecords(CalculationResult result)
         {
             if (result == null)
@@ -120,6 +120,8 @@ namespace VrdoPdg.Model.Services
 
                 double?[] values = new double?[RegimeSnapshot.HourCount + 1];
                 double?[] secondValues = new double?[RegimeSnapshot.HourCount + 1];
+                double?[] voltageValues = new double?[RegimeSnapshot.HourCount + 1];
+                double?[] voltageSecondValues = new double?[RegimeSnapshot.HourCount + 1];
                 for (int hour = 1; hour <= RegimeSnapshot.HourCount; hour++)
                 {
                     DeviceMode? before = result.Before.GetMode(device.Id, hour);
@@ -130,9 +132,19 @@ namespace VrdoPdg.Model.Services
                     }
 
                     SetChangedValues(device.Type, before, after, hour, values, secondValues);
+                    if (device.Type == DeviceType.Controlled && !AreEqual(before.SetVoltage, after.SetVoltage))
+                    {
+                        voltageValues[hour] = Round(after.SetVoltage);
+                        voltageSecondValues[hour] = 0;
+                    }
                 }
 
                 AddRecords(records, GetRecordType(device.Type), address.Value, values, secondValues);
+                if (device.Type == DeviceType.Controlled)
+                {
+                    AddRecords(records, SmpSmzuRecordType.NodeVoltage, address.Value,
+                        voltageValues, voltageSecondValues);
+                }
             }
 
             return records

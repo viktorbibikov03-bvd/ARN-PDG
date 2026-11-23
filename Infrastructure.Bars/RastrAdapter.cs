@@ -2,7 +2,9 @@ using System;
 using System.Collections.Generic;
 using System.Runtime.InteropServices;
 using System.Runtime.Versioning;
+
 using ASTRALib;
+
 using VrdoPdg.Model.Regime;
 
 namespace VrdoPdg.Infrastructure.Bars
@@ -173,7 +175,9 @@ namespace VrdoPdg.Infrastructure.Bars
 
             double minReactivePower = nodes.ReadDouble("qmin", row);
             double maxReactivePower = nodes.ReadDouble("qmax", row);
-            bool isOff = nodes.ReadBoolean("sta", row) || (minReactivePower == 0 && maxReactivePower == 0);
+            // qmin = qmax = 0 может быть промежуточным шагом регулирования Q.
+            // Состояние узла определяется признаком sta.
+            bool isOff = nodes.ReadBoolean("sta", row);
             return new ControlledDeviceState(
                 !isOff,
                 nodes.ReadDouble("qg", row),
@@ -230,6 +234,27 @@ namespace VrdoPdg.Infrastructure.Bars
             List<CellValue> change = new List<CellValue>();
             SetValue(change, nodes.GetColumn("qmin"), row, reactivePower);
             SetValue(change, nodes.GetColumn("qmax"), row, reactivePower);
+            _changes.Push(change);
+        }
+
+        /// <inheritdoc/>
+        public void SetControlledDeviceVoltage(
+            int nodeNumber, double voltage, double minReactivePower, double maxReactivePower)
+        {
+            RastrTable nodes = GetNodes();
+            int row = FindRow(nodes, nodeNumber, "Узел");
+            List<CellValue> change = new List<CellValue>();
+            try
+            {
+                SetValue(change, nodes.GetColumn("qmin"), row, minReactivePower);
+                SetValue(change, nodes.GetColumn("qmax"), row, maxReactivePower);
+                SetValue(change, nodes.GetColumn("vzd"), row, voltage);
+            }
+            catch
+            {
+                Restore(change);
+                throw;
+            }
             _changes.Push(change);
         }
 

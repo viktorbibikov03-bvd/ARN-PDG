@@ -180,6 +180,12 @@ namespace VrdoPdg.Tests.Fakes
                 voltage += generator.GetEffect(nodeNumber);
             }
 
+            if (ControlledDevices.TryGetValue(nodeNumber, out FakeControlledDevice? localDevice)
+                && localDevice.IsOn && localDevice.UsesVoltageControl)
+            {
+                return localDevice.SetVoltage;
+            }
+
             return voltage;
         }
 
@@ -234,13 +240,38 @@ namespace VrdoPdg.Tests.Fakes
             FakeControlledDevice device = ControlledDevices[nodeNumber];
             double min = device.MinReactivePower;
             double max = device.MaxReactivePower;
+            bool usesVoltageControl = device.UsesVoltageControl;
             _undo.Push(() =>
             {
                 device.MinReactivePower = min;
                 device.MaxReactivePower = max;
+                device.UsesVoltageControl = usesVoltageControl;
             });
             device.MinReactivePower = reactivePower;
             device.MaxReactivePower = reactivePower;
+            device.UsesVoltageControl = false;
+        }
+
+        /// <inheritdoc/>
+        public void SetControlledDeviceVoltage(
+            int nodeNumber, double voltage, double minReactivePower, double maxReactivePower)
+        {
+            FakeControlledDevice device = ControlledDevices[nodeNumber];
+            double previousVoltage = device.SetVoltage;
+            double previousMin = device.MinReactivePower;
+            double previousMax = device.MaxReactivePower;
+            bool previousMode = device.UsesVoltageControl;
+            _undo.Push(() =>
+            {
+                device.SetVoltage = previousVoltage;
+                device.MinReactivePower = previousMin;
+                device.MaxReactivePower = previousMax;
+                device.UsesVoltageControl = previousMode;
+            });
+            device.MinReactivePower = minReactivePower;
+            device.MaxReactivePower = maxReactivePower;
+            device.SetVoltage = voltage;
+            device.UsesVoltageControl = true;
         }
 
         /// <inheritdoc/>

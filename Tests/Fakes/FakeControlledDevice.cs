@@ -61,6 +61,9 @@ namespace VrdoPdg.Tests.Fakes
         /// </summary>
         public double SetVoltage { get; set; } = 230;
 
+        /// <summary>Локальное напряжение поддерживается по уставке в тестах режима U.</summary>
+        public bool UsesVoltageControl { get; set; }
+
         /// <summary>
         /// Изменение напряжения на 1 Мвар, кВ.
         /// </summary>

@@ -81,6 +81,17 @@ namespace VrdoPdg.Model.Regime
         void SetControlledDeviceReactivePower(int nodeNumber, double reactivePower);
 
         /// <summary>
+        /// Устанавливает напряжение управляемого СКРМ и восстанавливает доступный диапазон Q.
+        /// Все три параметра составляют одно изменение для UndoLastChange.
+        /// </summary>
+        /// <param name="nodeNumber">Номер узла СКРМ.</param>
+        /// <param name="voltage">Заданное напряжение, кВ.</param>
+        /// <param name="minReactivePower">Исходный нижний предел Q, Мвар.</param>
+        /// <param name="maxReactivePower">Исходный верхний предел Q, Мвар.</param>
+        void SetControlledDeviceVoltage(
+            int nodeNumber, double voltage, double minReactivePower, double maxReactivePower);
+
+        /// <summary>
         /// Изменяет состояние коммутируемого СКРМ
         /// </summary>
         /// <param name="reactorNumber">Номер в таблице «Реакторы»</param>

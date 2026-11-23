@@ -44,6 +44,12 @@ namespace VrdoPdg.Model.Services
         /// </summary>
         private const double ReactivePowerTolerance = 0.01;
 
+        /// <summary>Порог включения специального регулирования управляемого СКРМ, Мвар.</summary>
+        private const double LargeControlledDeviceThreshold = 400;
+
+        /// <summary>Шаг изменения реактивной мощности крупного управляемого СКРМ, Мвар.</summary>
+        private const double LargeControlledDeviceStep = 50;
+
         /// <summary>
         /// Модуль взаимодействия с ПО «Барс».
         /// </summary>
@@ -489,7 +495,7 @@ namespace VrdoPdg.Model.Services
                 switch (device.Type)
                 {
                     case DeviceType.Controlled:
-                        change = CreateControlledChange(device, direction);
+                        change = CreateControlledChange(run, hourState, controlPoint, device, direction);
                         break;
                     case DeviceType.Switched:
                         change = run.Session.IsFixed(device.Id, hourState.Hour)
@@ -511,18 +517,77 @@ namespace VrdoPdg.Model.Services
         }
 
         /// <summary>
-        /// Формирует изменение загрузки управляемого СКРМ: разгрузку до Qmin при снижении
-        /// напряжения или загрузку до Qmax при повышении. Отключенное СКРМ пропускается.
+        /// Для СКРМ с исходным пределом по модулю больше 400 Мвар задает среднее напряжение
+        /// в собственном узле КП либо меняет Q шагом до 50 Мвар при регулировании другого узла.
+        /// Для остальных СКРМ сохраняет изменение до Qmin или Qmax.
         /// </summary>
+        /// <param name="run">Данные расчета и исходные пределы СКРМ.</param>
+        /// <param name="hourState">Состояние текущего часа.</param>
+        /// <param name="controlPoint">Регулируемый КП.</param>
         /// <param name="device">СКРМ.</param>
         /// <param name="direction">Направление ввода режима.</param>
         /// <returns>Изменение или <c>null</c>, если резерва нет.</returns>
-        private DeviceChange? CreateControlledChange(Device device, RegulationDirection direction)
+        private DeviceChange? CreateControlledChange(
+            RegulationRun run,
+            HourState hourState,
+            ControlPoint controlPoint,
+            Device device,
+            RegulationDirection direction)
         {
             ControlledDeviceState? state = _rastrAdapter.GetControlledDevice(device.Number);
             if (state == null || !state.IsOn)
             {
                 return null;
+            }
+
+            // После фиксации Q адаптер задает qmin = qmax = Q. Физический диапазон
+            // и принадлежность к крупным СКРМ определяются по исходному снимку часа.
+            DeviceMode? initial = run.Session.InitialRegime.GetMode(device.Id, hourState.Hour);
+            double originalMin = initial?.MinReactivePower ?? state.MinReactivePower;
+            double originalMax = initial?.MaxReactivePower ?? state.MaxReactivePower;
+            if (Math.Abs(originalMin) > LargeControlledDeviceThreshold
+                || Math.Abs(originalMax) > LargeControlledDeviceThreshold)
+            {
+                if (device.Number == controlPoint.MainNode!.Number)
+                {
+                    VoltageBounds bounds = run.Session.Schedule.GetBounds(controlPoint.Id, hourState.Hour)!;
+                    double setVoltage = (bounds.LowerBound + bounds.UpperBound) / 2;
+                    if (Math.Abs(state.SetVoltage - setVoltage) <= VoltageBounds.Tolerance
+                        && Math.Abs(state.MinReactivePower - originalMin) <= ReactivePowerTolerance
+                        && Math.Abs(state.MaxReactivePower - originalMax) <= ReactivePowerTolerance)
+                    {
+                        return null;
+                    }
+
+                    return new DeviceChange(
+                        device,
+                        direction,
+                        device.TypeName + " · Uзад: " + ValueFormat.Voltage(state.SetVoltage)
+                            + " → " + ValueFormat.Voltage(setVoltage) + " кВ; диапазон Q: "
+                            + ValueFormat.Power(originalMin) + "…" + ValueFormat.Power(originalMax) + " Мвар",
+                        () => _rastrAdapter.SetControlledDeviceVoltage(
+                            device.Number, setVoltage, originalMin, originalMax),
+                        null);
+                }
+
+                double stepTarget = direction == RegulationDirection.Decrease
+                    ? Math.Max(originalMin, state.ReactivePower - LargeControlledDeviceStep)
+                    : Math.Min(originalMax, state.ReactivePower + LargeControlledDeviceStep);
+                stepTarget = Math.Clamp(stepTarget, originalMin, originalMax);
+                if (Math.Abs(stepTarget - state.ReactivePower) <= ReactivePowerTolerance
+                    || (Math.Abs(state.MinReactivePower - stepTarget) <= ReactivePowerTolerance
+                        && Math.Abs(state.MaxReactivePower - stepTarget) <= ReactivePowerTolerance))
+                {
+                    return null;
+                }
+
+                return new DeviceChange(
+                    device,
+                    direction,
+                    device.TypeName + " · Q: " + ValueFormat.Power(state.ReactivePower)
+                        + " → " + ValueFormat.Power(stepTarget) + " Мвар (шаг не более 50 Мвар)",
+                    () => _rastrAdapter.SetControlledDeviceReactivePower(device.Number, stepTarget),
+                    null);
             }
 
             double target;
@@ -546,6 +611,14 @@ namespace VrdoPdg.Model.Services
 
                 target = state.MaxReactivePower;
                 limitName = "Qmax";
+            }
+
+            // qg может иметь остаточное отклонение от заданного Q. Проверяем саму
+            // команду qmin/qmax, чтобы повторно не задавать уже установленный предел.
+            if (Math.Abs(state.MinReactivePower - target) <= ReactivePowerTolerance
+                && Math.Abs(state.MaxReactivePower - target) <= ReactivePowerTolerance)
+            {
+                return null;
             }
 
             string description = device.TypeName + " · Q: " + ValueFormat.Power(state.ReactivePower)
@@ -767,8 +840,9 @@ namespace VrdoPdg.Model.Services
 
         /// <summary>
         /// Применяет изменение СКРМ и рассчитывает установившийся режим. Изменение отменяется
-        /// и СКРМ исключается из перебора для КП в этом часе, если режим не сошелся или изменение
-        /// генератора не повлияло на его загрузку. Если напряжение в другом КП расчета, которое
+        /// и СКРМ исключается из перебора для КП в этом часе, если режим не сошелся, изменение
+        /// генератора не повлияло на его загрузку или управляемое СКРМ не изменило ни Q,
+        /// ни напряжение регулируемого КП. Если напряжение в другом КП расчета, которое
         /// было в допустимой области, вышло за границы графика, решение принимает метод
         /// <see cref="AcceptViolation"/>
         /// </summary>
@@ -792,6 +866,12 @@ namespace VrdoPdg.Model.Services
             Device device = change.Device;
             IReadOnlyList<ControlPoint> protectedPoints = GetControlPointsInBounds(run, hourState.Hour, controlPoint);
             IReadOnlyDictionary<int, double> deviationsBefore = GetDeviations(run, hourState.Hour);
+            ControlledDeviceState? controlledBefore = device.Type == DeviceType.Controlled
+                ? _rastrAdapter.GetControlledDevice(device.Number)
+                : null;
+            double? voltageBefore = controlledBefore == null
+                ? null
+                : _rastrAdapter.GetNodeVoltage(mainNodeNumber);
             change.Apply();
             _protocol.Add(ProtocolTag.Device, device.ToString(), change.Description, hourEntry);
 
@@ -805,6 +885,32 @@ namespace VrdoPdg.Model.Services
                 _protocol.Add(ProtocolTag.Warning, "Режим не сошелся, изменение отменено", details, hourEntry);
                 hourState.MarkExhausted(controlPoint.Id, device.Id);
                 return false;
+            }
+
+            if (controlledBefore != null && voltageBefore.HasValue)
+            {
+                ControlledDeviceState? controlledAfter = _rastrAdapter.GetControlledDevice(device.Number);
+                double? voltageAfter = _rastrAdapter.GetNodeVoltage(mainNodeNumber);
+                if (controlledAfter != null && voltageAfter.HasValue
+                    && Math.Abs(controlledAfter.ReactivePower - controlledBefore.ReactivePower) <= ReactivePowerTolerance
+                    && Math.Abs(voltageAfter.Value - voltageBefore.Value) <= VoltageBounds.Tolerance)
+                {
+                    _rastrAdapter.UndoLastChange();
+                    bool isRestored = _rastrAdapter.CalculateRegime();
+                    string details = device.ToString()
+                        + "; Q: " + ValueFormat.Power(controlledBefore.ReactivePower)
+                        + " → " + ValueFormat.Power(controlledAfter.ReactivePower)
+                        + " Мвар; U: " + ValueFormat.Voltage(voltageBefore.Value)
+                        + " → " + ValueFormat.Voltage(voltageAfter.Value) + " кВ"
+                        + (isRestored ? string.Empty : "; восстановительный расчет не сошелся");
+                    _protocol.Add(
+                        ProtocolTag.Warning,
+                        "Управляемое СКРМ не изменило Q и напряжение КП, изменение отменено",
+                        details,
+                        hourEntry);
+                    hourState.MarkExhausted(controlPoint.Id, device.Id);
+                    return false;
+                }
             }
 
             if (device.Type == DeviceType.Generator)

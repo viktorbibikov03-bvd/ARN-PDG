@@ -17,7 +17,9 @@
 
   <ItemGroup>
     <Reference Include="ASTRALib">
-      <HintPath>..\..\..\..\RastrWin3\ASTRALib.dll</HintPath>
+      <HintPath>..\lib\ASTRALib.dll</HintPath>
+      <Private>true</Private>
+      <EmbedInteropTypes>false</EmbedInteropTypes>
     </Reference>
   </ItemGroup>
 
