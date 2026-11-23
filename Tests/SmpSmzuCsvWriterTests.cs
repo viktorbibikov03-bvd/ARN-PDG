@@ -94,21 +94,28 @@ namespace VrdoPdg.Tests
         }
 
         /// <summary>
-        /// Десятичный разделитель исходного файла имеет приоритет над разделителем по умолчанию.
+        /// Новые записи используют настроенную десятичную точку,
+        /// даже если исходный файл содержит десятичную запятую.
         /// </summary>
         [Test]
-        public void ComposeLines_SourceDecimalSeparator_UsesSourceSeparator()
+        public void ComposeLines_SourceUsesComma_AddedRecordsUseConfiguredDot()
         {
             SmpSmzuDocument source = new SmpSmzuDocument(
-                new[] { "01;1;24;263;0;0;218.5;0;0" },
+                new[] { "01;1;24;263;0;0;218,5;0;0" },
                 new SmpSmzuRecord[0],
                 "\r\n",
                 new UTF8Encoding(false),
                 ',');
 
-            IReadOnlyList<string> lines = new SmpSmzuCsvWriter(',').ComposeLines(source, new[] { _records[1] });
+            SmpSmzuCsvWriter writer = new SmpSmzuCsvWriter('.');
 
-            Assert.That(lines[lines.Count - 1], Is.EqualTo("01;4;19;263;0;0;235.7;0;0"));
+            IReadOnlyList<string> lines = writer.ComposeLines(
+                source,
+                new[] { _records[1] });
+
+            Assert.That(
+                lines[lines.Count - 1],
+                Is.EqualTo("01;4;19;263;0;0;235.7;0;0"));
         }
 
         /// <summary>

@@ -71,5 +71,43 @@ namespace VrdoPdg.Tests
                 tags.Select(ProtocolTags.GetLabel),
                 Is.EqualTo(new[] { "ВРДО", "ЧАС", "СКРМ", "УР", "WARN", "INFO", "ERR" }));
         }
+
+        /// <summary>
+        /// После очистки подписчики сохраняются, счетчики начинаются заново,
+        /// а идентификаторы не переиспользуются.
+        /// </summary>
+        [Test]
+        public void Add_AfterClear_PreservesSubscribersAndContinuesNumbering()
+        {
+            CalculationProtocol protocol = new CalculationProtocol();
+            List<ProtocolEntry> received = new List<ProtocolEntry>();
+            protocol.EntryAdded += (_, e) => received.Add(e.Entry);
+            ProtocolEntry first = protocol.Add(ProtocolTag.Info, "До очистки");
+
+            protocol.Clear();
+            ProtocolEntry second = protocol.Add(ProtocolTag.Info, "После очистки");
+
+            Assert.That(protocol.Count, Is.EqualTo(1));
+            Assert.That(protocol.GetCount(ProtocolTag.Info), Is.EqualTo(1));
+            Assert.That(protocol.GetEntries(), Is.EqualTo(new[] { second }));
+            Assert.That(second.Id, Is.GreaterThan(first.Id));
+            Assert.That(received, Is.EqualTo(new[] { first, second }));
+        }
+
+        /// <summary>Запись не сохраняет ссылку на удаленного при очистке родителя.</summary>
+        [Test]
+        public void Add_WithClearedParent_CreatesRootEntry()
+        {
+            CalculationProtocol protocol = new CalculationProtocol();
+            ProtocolEntry oldParent = protocol.Add(ProtocolTag.Vrdo, "Старая группа");
+            protocol.Clear();
+
+            ProtocolEntry entry = protocol.Add(
+                ProtocolTag.Hour, "Час после очистки", parent: oldParent);
+
+            Assert.That(entry.Parent, Is.Null);
+            Assert.That(entry.Level, Is.Zero);
+            Assert.That(protocol.GetEntries(), Is.EqualTo(new[] { entry }));
+        }
     }
 }

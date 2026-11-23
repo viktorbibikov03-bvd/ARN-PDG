@@ -917,7 +917,7 @@
               ]
             },
             {
-              "name": "Усть-Кам",
+              "name": "Усть-Каменогорская",
               "groups": [
                 {
                   "caption": "U сш",
@@ -1194,7 +1194,7 @@
         {
           "controlPoints": [
             {
-              "name": "ЦГПП",
+              "name": "ЦГПП (Акмола)",
               "groups": [
                 {
                   "caption": "U сш",
@@ -1278,7 +1278,7 @@
               ]
             },
             {
-              "name": "Костанай",
+              "name": "Костанайская",
               "groups": [
                 {
                   "caption": "U сш",
@@ -1526,7 +1526,7 @@
               ]
             },
             {
-              "name": "Ириклинской ГРЭС",
+              "name": "Ириклинская ГРЭС",
               "groups": [
                 {
                   "caption": "U сш",
@@ -1586,7 +1586,6 @@
                 {
                   "caption": "U сш",
                   "columns": [
-                    { "kind": "BusVoltage", "number": 4044 },
                     { "kind": "SetVoltage", "number": 4044 }
                   ]
                 }
@@ -1978,7 +1977,6 @@
                 {
                   "caption": "U сш",
                   "columns": [
-                    { "kind": "BusVoltage", "number": 4099 },
                     { "kind": "SetVoltage", "number": 4099 }
                   ]
                 }
@@ -1990,7 +1988,6 @@
                 {
                   "caption": "U сш",
                   "columns": [
-                    { "kind": "BusVoltage", "number": 4100 },
                     { "kind": "SetVoltage", "number": 4100 }
                   ]
                 }
@@ -2002,7 +1999,6 @@
                 {
                   "caption": "U сш",
                   "columns": [
-                    { "kind": "BusVoltage", "number": 4101 },
                     { "kind": "SetVoltage", "number": 4101 }
                   ]
                 }
@@ -2014,7 +2010,6 @@
                 {
                   "caption": "U сш",
                   "columns": [
-                    { "kind": "BusVoltage", "number": 4102 },
                     { "kind": "SetVoltage", "number": 4102 }
                   ]
                 }
@@ -2113,7 +2108,7 @@
               ]
             },
             {
-              "name": "Жигулой ГЭС",
+              "name": "Жигулевская ГЭС",
               "groups": [
                 {
                   "caption": "U сш",
