@@ -753,7 +753,7 @@
                 {
                   "caption": "U сш",
                   "columns": [
-                    { "kind": "BusVoltage", "number": 110 }
+                    { "kind": "BusVoltage", "number": 6483 }
                   ]
                 },
                 {
@@ -770,7 +770,7 @@
                 {
                   "caption": "U сш",
                   "columns": [
-                    { "kind": "BusVoltage", "number": 133 }
+                    { "kind": "BusVoltage", "number": 6490 }
                   ]
                 }
               ]
